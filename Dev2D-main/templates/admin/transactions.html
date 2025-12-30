@@ -256,84 +256,6 @@
                             </button>
                             {% endif %}
                         </div>
-
-                        <!-- Transaction Details Modal -->
-                        <div class="modal fade" id="txnModal{{ txn.id }}" tabindex="-1" aria-hidden="true">
-                            <div class="modal-dialog modal-dialog-centered">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title fw-bold">Transaction Details</h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                            aria-label="Close"></button>
-                                    </div>
-                                    <div class="modal-body">
-                                        <div class="text-center mb-4">
-                                            <div
-                                                class="display-6 fw-bold {% if txn.type == 'Deposit' or txn.type == 'Store Credit Transfer' %}text-success{% else %}text-danger{% endif %}">
-                                                {% if txn.type == 'Deposit' or txn.type == 'Store Credit Transfer' %}+{%
-                                                else %}-{% endif %}
-                                                GH₵ {{ "{:,.2f}".format(txn.amount | default(0)) }}
-                                            </div>
-                                            <div class="badge bg-light text-dark border mt-2">{{ txn.type }}</div>
-                                        </div>
-
-                                        <ul class="list-group list-group-flush">
-                                            <li
-                                                class="list-group-item d-flex justify-content-between align-items-center">
-                                                <span class="text-muted small">Status</span>
-                                                {% if txn.status == 'Success' %}
-                                                <span
-                                                    class="badge bg-success-subtle text-success border border-success-subtle">Success</span>
-                                                {% elif txn.status == 'Pending' %}
-                                                <span
-                                                    class="badge bg-warning-subtle text-warning border border-warning-subtle">Pending</span>
-                                                {% else %}
-                                                <span
-                                                    class="badge bg-danger-subtle text-danger border border-danger-subtle">{{
-                                                    txn.status }}</span>
-                                                {% endif %}
-                                            </li>
-                                            <li
-                                                class="list-group-item d-flex justify-content-between align-items-center">
-                                                <span class="text-muted small">Reference</span>
-                                                <span class="font-monospace small">{{ txn.reference }}</span>
-                                            </li>
-                                            <li
-                                                class="list-group-item d-flex justify-content-between align-items-center">
-                                                <span class="text-muted small">Date</span>
-                                                <span>{{ txn.date.strftime('%b %d, %Y %H:%M') }}</span>
-                                            </li>
-                                            <li
-                                                class="list-group-item d-flex justify-content-between align-items-center">
-                                                <span class="text-muted small">User</span>
-                                                <span class="fw-bold">{{ txn.user.username }}</span>
-                                            </li>
-                                            {% if txn.user.store %}
-                                            <li
-                                                class="list-group-item d-flex justify-content-between align-items-center">
-                                                <span class="text-muted small">Store</span>
-                                                <span>{{ txn.user.store.name }}</span>
-                                            </li>
-                                            {% endif %}
-                                        </ul>
-
-                                        {% if txn.type == 'Withdrawal' and txn.status == 'Pending' %}
-                                        <div class="d-grid gap-2 mt-4">
-                                            <a href="{{ url_for('admin_manage_withdrawal', txn_id=txn.id, action='approve') }}"
-                                                class="btn btn-success">
-                                                Approve Withdrawal
-                                            </a>
-                                            <a href="{{ url_for('admin_manage_withdrawal', txn_id=txn.id, action='reject') }}"
-                                                class="btn btn-outline-danger"
-                                                onclick="return confirm('Reject withdrawal and refund user?')">
-                                                Reject Withdrawal
-                                            </a>
-                                        </div>
-                                        {% endif %}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
                     </td>
                 </tr>
                 {% endfor %}
@@ -362,4 +284,73 @@
         </ul>
     </nav>
 </div>
+
+<!-- Modals Section (Moved outside table to prevent backdrop/z-index issues) -->
+{% for txn in transactions.items %}
+<div class="modal fade" id="txnModal{{ txn.id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold">Transaction Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center mb-4">
+                    <div
+                        class="display-6 fw-bold {% if txn.type == 'Deposit' or txn.type == 'Store Credit Transfer' %}text-success{% else %}text-danger{% endif %}">
+                        {% if txn.type == 'Deposit' or txn.type == 'Store Credit Transfer' %}+{% else %}-{% endif %}
+                        GH₵ {{ "{:,.2f}".format(txn.amount | default(0)) }}
+                    </div>
+                    <div class="badge bg-light text-dark border mt-2">{{ txn.type }}</div>
+                </div>
+
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span class="text-muted small">Status</span>
+                        {% if txn.status == 'Success' %}
+                        <span class="badge bg-success-subtle text-success border border-success-subtle">Success</span>
+                        {% elif txn.status == 'Pending' %}
+                        <span class="badge bg-warning-subtle text-warning border border-warning-subtle">Pending</span>
+                        {% else %}
+                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle">{{ txn.status
+                            }}</span>
+                        {% endif %}
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span class="text-muted small">Reference</span>
+                        <span class="font-monospace small">{{ txn.reference }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span class="text-muted small">Date</span>
+                        <span>{{ txn.date.strftime('%b %d, %Y %H:%M') }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span class="text-muted small">User</span>
+                        <span class="fw-bold">{{ txn.user.username }}</span>
+                    </li>
+                    {% if txn.user.store %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span class="text-muted small">Store</span>
+                        <span>{{ txn.user.store.name }}</span>
+                    </li>
+                    {% endif %}
+                </ul>
+
+                {% if txn.type == 'Withdrawal' and txn.status == 'Pending' %}
+                <div class="d-grid gap-2 mt-4">
+                    <a href="{{ url_for('admin_manage_withdrawal', txn_id=txn.id, action='approve') }}"
+                        class="btn btn-success">
+                        Approve Withdrawal
+                    </a>
+                    <a href="{{ url_for('admin_manage_withdrawal', txn_id=txn.id, action='reject') }}"
+                        class="btn btn-outline-danger" onclick="return confirm('Reject withdrawal and refund user?')">
+                        Reject Withdrawal
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
 {% endblock %}

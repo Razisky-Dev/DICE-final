@@ -7,10 +7,79 @@
 {% block content %}
 <div class="table-card">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h5 class="fw-bold mb-0">Total Transactions: {{ transactions.total }}</h5>
-        <a href="{{ url_for('admin_export_transactions') }}" class="btn btn-sm btn-success">
-            <i class="bi bi-file-earmark-spreadsheet me-2"></i>Export CSV
-        </a>
+        <div>
+            <h5 class="fw-bold mb-0">Total Transactions: {{ transactions.total }}</h5>
+            <p class="text-muted small mb-0">Manage and track all system activities</p>
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-sm btn-outline-primary" type="button" data-bs-toggle="collapse"
+                data-bs-target="#filterCollapse" aria-expanded="false" aria-controls="filterCollapse">
+                <i class="bi bi-funnel me-1"></i>Filter
+            </button>
+            <a href="{{ url_for('admin_export_transactions', **request.args) }}" class="btn btn-sm btn-success">
+                <i class="bi bi-file-earmark-spreadsheet me-2"></i>Export CSV
+            </a>
+        </div>
+    </div>
+
+    <!-- Filter Section (Collapsible) -->
+    <div class="collapse mb-4" id="filterCollapse">
+        <div class="card border-0 shadow-sm card-body bg-light">
+            <form action="{{ url_for('admin_transactions') }}" method="GET">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label small fw-bold text-muted">Search</label>
+                        <input type="text" name="search" class="form-control form-control-sm"
+                            placeholder="Ref, Username, Email..." value="{{ request.args.get('search', '') }}">
+                    </div>
+                    <div class="col-6 col-md-2">
+                        <label class="form-label small fw-bold text-muted">Type</label>
+                        <select name="type" class="form-select form-select-sm">
+                            <option value="">All Types</option>
+                            <option value="Deposit" {% if request.args.get('type')=='Deposit' %}selected{% endif %}>
+                                Deposit</option>
+                            <option value="Withdrawal" {% if request.args.get('type')=='Withdrawal' %}selected{% endif
+                                %}>Withdrawal</option>
+                            <option value="Data Purchase" {% if request.args.get('type')=='Data Purchase' %}selected{%
+                                endif %}>Data Purchase</option>
+                            <option value="Store Credit Transfer" {% if
+                                request.args.get('type')=='Store Credit Transfer' %}selected{% endif %}>Transfer
+                            </option>
+                        </select>
+                    </div>
+                    <div class="col-6 col-md-2">
+                        <label class="form-label small fw-bold text-muted">Status</label>
+                        <select name="status" class="form-select form-select-sm">
+                            <option value="">All Statuses</option>
+                            <option value="Success" {% if request.args.get('status')=='Success' %}selected{% endif %}>
+                                Success</option>
+                            <option value="Pending" {% if request.args.get('status')=='Pending' %}selected{% endif %}>
+                                Pending</option>
+                            <option value="Failed" {% if request.args.get('status')=='Failed' %}selected{% endif %}>
+                                Failed</option>
+                        </select>
+                    </div>
+                    <div class="col-6 col-md-2">
+                        <label class="form-label small fw-bold text-muted">From</label>
+                        <input type="date" name="date_from" class="form-control form-control-sm"
+                            value="{{ request.args.get('date_from', '') }}">
+                    </div>
+                    <div class="col-6 col-md-2">
+                        <label class="form-label small fw-bold text-muted">To</label>
+                        <input type="date" name="date_to" class="form-control form-control-sm"
+                            value="{{ request.args.get('date_to', '') }}">
+                    </div>
+                    <div class="col-md-1 d-flex align-items-end">
+                        <div class="d-flex gap-1 w-100">
+                            <button type="submit" class="btn btn-sm btn-primary w-100"><i
+                                    class="bi bi-search"></i></button>
+                            <a href="{{ url_for('admin_transactions') }}" class="btn btn-sm btn-outline-secondary"
+                                title="Reset"><i class="bi bi-x-lg"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
     </div>
 
     <!-- Profit Breakdown -->

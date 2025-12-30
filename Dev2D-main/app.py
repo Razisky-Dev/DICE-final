@@ -842,7 +842,50 @@ def buy_data():
 def admin_transactions():
     page = request.args.get('page', 1, type=int)
     per_page = 20
-    transactions = Transaction.query.order_by(Transaction.date.desc()).paginate(page=page, per_page=per_page)
+    
+    # Filter Parameters
+    search_query = request.args.get('search', '').strip()
+    txn_type = request.args.get('type', '')
+    status = request.args.get('status', '')
+    date_from = request.args.get('date_from', '')
+    date_to = request.args.get('date_to', '')
+
+    query = Transaction.query
+
+    # Apply Filters
+    if search_query:
+        query = query.join(Transaction.user).filter(
+            db.or_(
+                Transaction.reference.ilike(f'%{search_query}%'),
+                User.username.ilike(f'%{search_query}%'),
+                User.email.ilike(f'%{search_query}%')
+            )
+        )
+    
+    if txn_type:
+        query = query.filter(Transaction.type == txn_type)
+    
+    if status:
+        query = query.filter(Transaction.status == status)
+
+    if date_from:
+        try:
+            start_date = datetime.strptime(date_from, '%Y-%m-%d')
+            query = query.filter(Transaction.date >= start_date)
+        except ValueError:
+            pass # Ignore invalid date format
+            
+    if date_to:
+        try:
+            end_date = datetime.strptime(date_to, '%Y-%m-%d')
+             # Add one day to include the end date fully (up to 23:59:59 effectively if checking equality, but here we just do < next day usually, or just use date)
+             # Simpler: just match date part. But field is DateTime.
+            end_date = datetime.strptime(date_to, '%Y-%m-%d') + timedelta(days=1)
+            query = query.filter(Transaction.date < end_date)
+        except ValueError:
+            pass
+
+    transactions = query.order_by(Transaction.date.desc()).paginate(page=page, per_page=per_page)
     
     # PROFIT BREAKDOWN CALCULATION
     # Fetch all plans for cost lookup

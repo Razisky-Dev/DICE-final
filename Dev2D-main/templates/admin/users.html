@@ -40,8 +40,10 @@
                             <span class="text-danger">Suspended</span>
                             {% elif user.is_admin %}
                             <span class="text-warning">Admin</span>
+                            {% elif user.store %}
+                            <span class="text-primary">Agent</span>
                             {% else %}
-                            <span class="text-info">Active</span>
+                            <span class="text-secondary">User</span>
                             {% endif %}
                         </div>
                     </td>
@@ -51,8 +53,10 @@
                         <span class="badge bg-danger">Suspended</span>
                         {% elif user.is_admin %}
                         <span class="badge bg-warning text-dark">Admin</span>
+                        {% elif user.store %}
+                        <span class="badge bg-primary">Agent</span>
                         {% else %}
-                        <span class="badge bg-info">Active</span>
+                        <span class="badge bg-secondary">User</span>
                         {% endif %}
                     </td>
                     <td>

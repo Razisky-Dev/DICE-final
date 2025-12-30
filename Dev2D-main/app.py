@@ -533,6 +533,20 @@ def store_withdraw():
             status="Success"
         )
         db.session.add(txn)
+        
+        # Log to Store Orders History
+        new_order = StoreOrder(
+            store_id=store.id,
+            phone=current_user.mobile or "N/A",  # Or "Wallet Transfer"
+            email=current_user.email,
+            network="System",
+            package="Transfer to Wallet",
+            price=amount,
+            commission=0,
+            status="Success"
+        )
+        db.session.add(new_order)
+        
         db.session.commit()
         flash(f"Transferred GH₵{amount} from store to main wallet.", "success")
     else:
@@ -625,6 +639,20 @@ def store_withdraw_momo():
                 status="Pending" # Paystack transfers are async
             )
             db.session.add(txn)
+
+            # Log to Store Orders History
+            new_order = StoreOrder(
+                store_id=store.id,
+                phone=phone,
+                email=current_user.email,
+                network=network,
+                package="Withdraw to MoMo",
+                price=amount,
+                commission=0,
+                status="Pending" # Pending
+            )
+            db.session.add(new_order)
+
             db.session.commit()
             
             flash(f"Withdrawal of GH₵{amount} to {phone} ({network}) initiated successfully.", "success")

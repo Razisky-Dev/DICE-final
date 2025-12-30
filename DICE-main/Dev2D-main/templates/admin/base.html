@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Admin Dashboard{% endblock %} | RazilHub</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #f0f2f5;
+        }
+
+        .sidebar {
+            width: 260px;
+            background-color: #1a1a2e;
+            color: #fff;
+            min-height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            padding: 20px;
+            z-index: 1000;
+        }
+
+        .main-content {
+            margin-left: 260px;
+            padding: 30px;
+        }
+
+        .nav-link {
+            color: rgba(255, 255, 255, 0.7);
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+        }
+
+        .table-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        @media (max-width: 991.98px) {
+            .sidebar {
+                width: 70px;
+                padding: 15px 5px;
+            }
+
+            .sidebar h3,
+            .sidebar span,
+            .nav-link span {
+                display: none;
+            }
+
+            .main-content {
+                margin-left: 70px;
+            }
+
+            .nav-link {
+                justify-content: center;
+                padding: 12px 0;
+            }
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <h3 class="mb-4 fw-bold ps-2">RazilHub <span class="text-danger fs-6 align-top">ADMIN</span></h3>
+
+        <nav class="nav flex-column">
+            <a href="{{ url_for('admin_dashboard') }}"
+                class="nav-link {% if request.endpoint == 'admin_dashboard' %}active{% endif %}">
+                <i class="bi bi-speedometer2"></i> <span>Dashboard</span>
+            </a>
+            <a href="{{ url_for('admin_users') }}"
+                class="nav-link {% if request.endpoint == 'admin_users' %}active{% endif %}">
+                <i class="bi bi-people"></i> <span>Users</span>
+            </a>
+            <a href="{{ url_for('admin_stores') }}"
+                class="nav-link {% if request.endpoint == 'admin_stores' %}active{% endif %}">
+                <i class="bi bi-shop"></i> <span>Stores</span>
+            </a>
+            <a href="{{ url_for('admin_transactions') }}"
+                class="nav-link {% if request.endpoint == 'admin_transactions' %}active{% endif %}">
+                <i class="bi bi-receipt-cutoff"></i> <span>Transactions</span>
+            </a>
+            <a href="{{ url_for('admin_pricing') }}"
+                class="nav-link {% if request.endpoint == 'admin_pricing' %}active{% endif %}">
+                <i class="bi bi-tags-fill"></i> <span>Pricing</span>
+            </a>
+        </nav>
+
+        <div class="mt-auto pt-5">
+            <a href="{{ url_for('logout') }}" class="nav-link text-danger">
+                <i class="bi bi-box-arrow-right"></i> <span>Logout</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-5">
+            <div>
+                <h2 class="fw-bold mb-0">{% block header_title %}System Overview{% endblock %}</h2>
+                <p class="text-muted">{% block header_subtitle %}Welcome back, Administrator.{% endblock %}</p>
+            </div>
+            <div class="d-flex align-items-center gap-3">
+                <div class="bg-white p-2 px-3 rounded-pill shadow-sm">
+                    <span class="fw-bold text-dark">{{ current_user.email }}</span>
+                </div>
+            </div>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show mb-4"
+            role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+
+</html>

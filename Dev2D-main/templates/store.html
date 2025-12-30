@@ -22,9 +22,12 @@
         #sidebar-wrapper {
             min-width: 260px;
             max-width: 260px;
-            background-color: #1a1a2e;
             color: #fff;
             min-height: 100vh;
+        }
+
+        .bg-gradient-sidebar {
+            background: linear-gradient(180deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
         }
 
         #sidebar-wrapper .sidebar-heading {
@@ -49,6 +52,11 @@
             color: #fff;
             padding-left: 30px;
             /* Slight movement effect */
+            background: rgba(255, 255, 255, 0.15);
+            color: #fff;
+            padding-left: 30px;
+            backdrop-filter: blur(5px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
 
         /* Page Content */
@@ -192,7 +200,11 @@
             <!-- Navbar -->
             <nav class="navbar navbar-expand-lg navbar-light border-bottom">
                 <div class="container-fluid">
-                    <button class="btn btn-light shadow-sm" id="sidebarToggle"><i class="bi bi-list fs-5"></i></button>
+                    <button class="btn btn-primary shadow-sm border-0 d-flex align-items-center justify-content-center"
+                        id="sidebarToggle"
+                        style="width: 45px; height: 45px; background: linear-gradient(45deg, #1e90ff, #00bfff);">
+                        <i class="bi bi-list fs-3 text-white"></i>
+                    </button>
                     <div class="ms-auto">
                         Store Management
                     </div>

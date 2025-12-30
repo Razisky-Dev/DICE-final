@@ -1234,6 +1234,15 @@ def admin_note():
         
     return render_template("admin/note.html", notice=notice_setting.value if notice_setting else "")
 
+@app.route("/support")
+@login_required
+def support():
+    # Fetch support details from the user's store settings (or default system settings)
+    # Since the request is "customer and agent have live chat with the admin", we use the admin's contact info.
+    # For now, we'll hardcode a default admin WhatsApp or use the store's support number if available.
+    # Ideally, this should come from a SystemSetting, but for now we'll pass context.
+    return render_template("support.html")
+
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()

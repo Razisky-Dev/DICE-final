@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+
+{% block title %}Customer Support{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-8 col-lg-6">
+        <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+            <div class="card-header bg-gradient-brand text-white p-4 border-0 text-center"
+                style="background: linear-gradient(135deg, #25d366 0%, #128c7e 100%);">
+                <i class="bi bi-headset fs-1 mb-2"></i>
+                <h3 class="mb-0 fw-bold">Customer Support</h3>
+                <p class="mb-0 opacity-75">We are here to help you 24/7</p>
+            </div>
+
+            <div class="card-body p-5 text-center bg-white">
+
+                <h5 class="fw-bold mb-4">Chat with Admin</h5>
+
+                <div class="mb-4">
+                    <!-- Replace with your actual WhatsApp QR Code image source or generate one dynamically -->
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://wa.me/233000000000"
+                        alt="WhatsApp QR Code" class="img-fluid rounded shadow-sm border p-2">
+                    <p class="text-muted small mt-2">Scan to start a chat instantly</p>
+                </div>
+
+                <div class="d-grid gap-3">
+                    <a href="https://wa.me/233000000000" target="_blank"
+                        class="btn btn-success btn-lg rounded-pill fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2">
+                        <i class="bi bi-whatsapp fs-4"></i>
+                        <span>Start Live Chat on WhatsApp</span>
+                    </a>
+                </div>
+
+                <hr class="my-4 opacity-10">
+
+                <div class="text-muted small">
+                    <p class="mb-1"><strong>Need immediate assistance?</strong></p>
+                    <p>Click the button above to connect directly with our support team on WhatsApp.</p>
+                </div>
+
+            </div>
+
+            <div class="card-footer bg-light p-3 text-center border-0">
+                <a href="{{ url_for('dashboard') }}" class="text-decoration-none text-muted small fw-bold">
+                    <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .rounded-4 {
+        border-radius: 1.5rem !important;
+    }
+
+    .bg-gradient-brand {
+        background: linear-gradient(135deg, #128c7e 0%, #25d366 100%);
+    }
+
+    .btn-success {
+        background-color: #25d366;
+        border-color: #25d366;
+        transition: all 0.3s;
+    }
+
+    .btn-success:hover {
+        background-color: #128c7e;
+        border-color: #128c7e;
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(37, 211, 102, 0.4) !important;
+    }
+</style>
+{% endblock %}

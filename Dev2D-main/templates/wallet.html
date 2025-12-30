@@ -14,53 +14,77 @@
 
     <style>
         body {
-            font-family: 'Arial', sans-serif;
+            font-family: 'Segoe UI', sans-serif;
             background-color: #f5f7fa;
         }
 
+        /* Sidebar */
         #sidebar-wrapper {
-            min-width: 250px;
-            max-width: 250px;
+            min-width: 260px;
+            max-width: 260px;
+            background-color: #1a1a2e;
+            color: #fff;
+            min-height: 100vh;
         }
 
-        #sidebar-wrapper .list-group-item {
-            border: none;
-            padding: 20px 25px;
-            font-size: 1rem;
-            color: #333;
-        }
-
-        #sidebar-wrapper .list-group-item:hover {
-            background-color: #007bff;
+        #sidebar-wrapper .sidebar-heading {
+            padding: 1.5rem;
+            font-size: 1.5rem;
+            font-weight: bold;
             color: white;
         }
 
+        #sidebar-wrapper .list-group-item {
+            background-color: transparent;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1rem;
+            color: rgba(255, 255, 255, 0.7);
+            transition: all 0.3s;
+        }
+
+        #sidebar-wrapper .list-group-item:hover,
+        #sidebar-wrapper .list-group-item.active {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            padding-left: 30px;
+            /* Slight movement effect */
+        }
+
+        /* Page Content */
         #page-content-wrapper {
             width: 100%;
         }
 
+        /* Cards */
         .card {
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
         }
 
+        /* Navbar */
         .navbar {
-            padding: 0.8rem 1rem;
+            padding: 1rem;
             background-color: #fff;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
         }
 
+        /* Sidebar toggle */
         #wrapper.toggled #sidebar-wrapper {
-            margin-left: -250px;
+            margin-left: -260px;
         }
 
         #sidebar-wrapper {
-            transition: margin 0.25s ease-out;
+            transition: margin 0.3s ease-in-out;
         }
 
         @media (max-width: 768px) {
             #sidebar-wrapper {
-                margin-left: -250px;
+                margin-left: -260px;
+                position: fixed;
+                z-index: 1000;
+                height: 100vh;
             }
 
             #wrapper.toggled #sidebar-wrapper {
@@ -75,18 +99,43 @@
     <div class="d-flex" id="wrapper">
 
         <!-- Sidebar -->
-        <div class="bg-light border-end" id="sidebar-wrapper">
-            <div class="sidebar-heading py-4 fs-4 fw-bold" style="padding-left: 25px;">RazilHub</div>
+        <div class="border-end" id="sidebar-wrapper">
+            <div class="sidebar-heading">
+                RazilHub
+            </div>
             <div class="list-group list-group-flush">
+                {% if current_user.is_admin %}
+                <a href="{{ url_for('admin_dashboard') }}"
+                    class="list-group-item list-group-item-action text-warning fw-bold">
+                    <i class="bi bi-shield-lock-fill me-2"></i> Admin Panel
+                </a>
+                {% endif %}
                 <a href="{{ url_for('dashboard') }}"
-                    class="list-group-item list-group-item-action bg-light">Dashboard</a>
-                <a href="{{ url_for('orders') }}" class="list-group-item list-group-item-action bg-light">Orders</a>
+                    class="list-group-item list-group-item-action {% if request.endpoint == 'dashboard' %}active{% endif %}">
+                    <i class="bi bi-speedometer2 me-2"></i> Dashboard
+                </a>
+                <a href="{{ url_for('orders') }}"
+                    class="list-group-item list-group-item-action {% if request.endpoint == 'orders' %}active{% endif %}">
+                    <i class="bi bi-receipt me-2"></i> Orders
+                </a>
                 <a href="{{ url_for('wallet') }}"
-                    class="list-group-item list-group-item-action bg-light active">Wallet</a>
-                <a href="{{ url_for('buy_data') }}" class="list-group-item list-group-item-action bg-light">Buy Data</a>
-                <a href="{{ url_for('store') }}" class="list-group-item list-group-item-action bg-light">Store</a>
-                <a href="{{ url_for('profile') }}" class="list-group-item list-group-item-action bg-light">Profile</a>
-                <a href="{{ url_for('logout') }}" class="list-group-item list-group-item-action bg-light">Logout</a>
+                    class="list-group-item list-group-item-action {% if request.endpoint == 'wallet' %}active{% endif %}">
+                    <i class="bi bi-wallet2 me-2"></i> Wallet
+                </a>
+                <a href="{{ url_for('dashboard') }}#buy-data-section" class="list-group-item list-group-item-action">
+                    <i class="bi bi-wifi me-2"></i> Buy Data
+                </a>
+                <a href="{{ url_for('store') }}"
+                    class="list-group-item list-group-item-action {% if request.endpoint == 'store' or 'store' in request.endpoint %}active{% endif %}">
+                    <i class="bi bi-shop me-2"></i> Store
+                </a>
+                <a href="{{ url_for('profile') }}"
+                    class="list-group-item list-group-item-action {% if request.endpoint == 'profile' %}active{% endif %}">
+                    <i class="bi bi-person-circle me-2"></i> Profile
+                </a>
+                <a href="{{ url_for('logout') }}" class="list-group-item list-group-item-action text-danger mt-5">
+                    <i class="bi bi-box-arrow-right me-2"></i> Logout
+                </a>
             </div>
         </div>
 
@@ -96,7 +145,7 @@
             <!-- Navbar -->
             <nav class="navbar navbar-expand-lg navbar-light border-bottom">
                 <div class="container-fluid">
-                    <button class="btn btn-primary" id="sidebarToggle">☰</button>
+                    <button class="btn btn-light shadow-sm" id="sidebarToggle"><i class="bi bi-list fs-5"></i></button>
                     <div class="ms-auto">
                         Wallet Overview
                     </div>

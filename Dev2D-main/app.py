@@ -3,6 +3,8 @@ from flask_sqlalchemy import SQLAlchemy
 import csv
 import io
 import re
+import os
+import requests
 from flask_mail import Mail, Message
 from itsdangerous import URLSafeTimedSerializer
 from flask_login import (
@@ -536,6 +538,103 @@ def store_withdraw():
     else:
         flash("Insufficient store credit.", "error")
         
+    return redirect(url_for("store"))
+
+@app.route("/store/withdraw/momo", methods=["POST"])
+@login_required
+def store_withdraw_momo():
+    amount = float(request.form.get("amount"))
+    network = request.form.get("network")
+    phone = request.form.get("phone")
+    store = current_user.store
+
+    # 1. Validation
+    if amount > store.credit_balance:
+        flash("Insufficient store credit.", "error")
+        return redirect(url_for("store"))
+    
+    PAYSTACK_SECRET_KEY = os.getenv("PAYSTACK_SECRET_KEY")
+    # Fallback to config if env not set, though env is preferred
+    if not PAYSTACK_SECRET_KEY:
+         PAYSTACK_SECRET_KEY = app.config.get("PAYSTACK_SECRET_KEY")
+
+    if not PAYSTACK_SECRET_KEY:
+        flash("System error: Payment gateway not configured. Please contact admin.", "error")
+        return redirect(url_for("store"))
+
+    # Map Network to Paystack Bank Code
+    # MTN -> 'MTN', Telecel -> 'VOD', AirtelTigo -> 'ATL'
+    bank_code_map = {
+        'MTN': 'MTN',
+        'TELECEL': 'VOD',
+        'AIRTELTIGO': 'ATL'
+    }
+    bank_code = bank_code_map.get(network)
+    
+    if not bank_code:
+        flash("Invalid Network selected.", "error")
+        return redirect(url_for("store"))
+
+    try:
+        headers = {
+            "Authorization": f"Bearer {PAYSTACK_SECRET_KEY}",
+            "Content-Type": "application/json"
+        }
+
+        # 2. Create Transfer Recipient
+        recipient_url = "https://api.paystack.co/transferrecipient"
+        recipient_data = {
+            "type": "mobile_money",
+            "name": f"{current_user.first_name} {current_user.last_name}",
+            "account_number": phone,
+            "bank_code": bank_code,
+            "currency": "GHS"
+        }
+        
+        rec_response = requests.post(recipient_url, json=recipient_data, headers=headers)
+        rec_json = rec_response.json()
+
+        if not rec_json.get('status'):
+            flash(f"Error creating recipient: {rec_json.get('message')}", "error")
+            return redirect(url_for("store"))
+        
+        recipient_code = rec_json['data']['recipient_code']
+
+        # 3. Initiate Transfer
+        transfer_url = "https://api.paystack.co/transfer"
+        transfer_data = {
+            "source": "balance", 
+            "reason": "Store Withdrawal", 
+            "amount": int(amount * 100), # Amount in pesewas
+            "recipient": recipient_code
+        }
+        
+        transfer_res = requests.post(transfer_url, json=transfer_data, headers=headers)
+        transfer_json = transfer_res.json()
+
+        if transfer_json.get('status'):
+            # Success - Update DB
+            store.credit_balance -= amount
+            store.total_withdrawn += amount
+            
+            txn = Transaction(
+                user_id=current_user.id,
+                reference=f"ST-MOMO-{int(datetime.utcnow().timestamp())}",
+                type="Store Withdrawal (MoMo)",
+                amount=amount,
+                status="Pending" # Paystack transfers are async
+            )
+            db.session.add(txn)
+            db.session.commit()
+            
+            flash(f"Withdrawal of GH₵{amount} to {phone} ({network}) initiated successfully.", "success")
+        else:
+            flash(f"Transfer failed: {transfer_json.get('message')}", "error")
+
+    except Exception as e:
+        flash(f"An error occurred: {str(e)}", "error")
+        print(f"Paystack Error: {e}")
+
     return redirect(url_for("store"))
 
 @app.route("/store/<slug>")

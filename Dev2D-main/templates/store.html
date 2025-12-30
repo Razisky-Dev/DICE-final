@@ -200,12 +200,20 @@
                                         <h6>Store Credit</h6>
                                         <h4>GH₵{{ "{:,.2f}".format(store.credit_balance) }}</h4>
                                         <div class="mt-3">
-                                            <form action="{{ url_for('store_withdraw') }}" method="POST"
-                                                class="d-inline">
-                                                <input type="hidden" name="amount" value="{{ store.credit_balance }}">
-                                                <button type="submit" class="btn btn-light btn-sm" {{ 'disabled' if
-                                                    store.credit_balance <=0 else '' }}>Transfer to Wallet</button>
-                                            </form>
+                                            <div class="mt-3 d-flex gap-2">
+                                                <form action="{{ url_for('store_withdraw') }}" method="POST"
+                                                    class="d-inline">
+                                                    <input type="hidden" name="amount"
+                                                        value="{{ store.credit_balance }}">
+                                                    <button type="submit" class="btn btn-light btn-sm" {{ 'disabled' if
+                                                        store.credit_balance <=0 else '' }}>Transfer to Wallet</button>
+                                                </form>
+                                                <button type="button" class="btn btn-warning btn-sm text-dark"
+                                                    data-bs-toggle="modal" data-bs-target="#withdrawMomoModal"
+                                                    {{ 'disabled' if store.credit_balance <=0 else '' }}>
+                                                    Withdraw to MoMo
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -554,6 +562,53 @@
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                             <button type="submit" class="btn btn-primary" id="savePricingBtn">Add Pricing</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Withdraw to MoMo Modal -->
+    <div class="modal fade" id="withdrawMomoModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Withdraw to Mobile Money</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info small">
+                        <i class="bi bi-info-circle me-1"></i> Funds will be sent directly to your mobile wallet via
+                        Paystack. Service charges may apply.
+                    </div>
+                    <form action="{{ url_for('store_withdraw_momo') }}" method="POST">
+                        <div class="mb-3">
+                            <label class="form-label">Network</label>
+                            <select class="form-select" name="network" required>
+                                <option value="" selected disabled>Select Network</option>
+                                <option value="MTN">MTN</option>
+                                <option value="TELECEL">Telecel (Vodafone)</option>
+                                <option value="AIRTELTIGO">AirtelTigo</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Phone Number</label>
+                            <input type="tel" class="form-control" name="phone" value="{{ current_user.mobile }}"
+                                required placeholder="0xxxxxx">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Amount (GH₵)</label>
+                            <div class="input-group">
+                                <span class="input-group-text">GH₵</span>
+                                <input type="number" class="form-control" name="amount" min="1"
+                                    max="{{ store.credit_balance }}" step="0.01" required placeholder="0.00">
+                            </div>
+                            <div class="form-text">Available Credit: GH₵{{ "{:,.2f}".format(store.credit_balance) }}
+                            </div>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-warning text-dark fw-bold">Confirm Withdrawal</button>
                         </div>
                     </form>
                 </div>

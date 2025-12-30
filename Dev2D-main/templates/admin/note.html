@@ -1,36 +1,82 @@
 {% extends 'admin/base.html' %}
 
-{% block title %}Site Notice{% endblock %}
+{% block title %}Site Notice Management{% endblock %}
 {% block header_title %}Site Notice{% endblock %}
-{% block header_subtitle %}Broadcast a message to all users on the main website.{% endblock %}
+{% block header_subtitle %}Broadcast updates to all users.{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
-    <div class="col-md-8">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body p-4">
+    <div class="col-md-9 col-lg-7">
+
+        <!-- Premium Card -->
+        <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+            <div class="card-header bg-gradient-primary text-white p-4 border-0"
+                style="background: linear-gradient(135deg, #4b6cb7 0%, #182848 100%);">
+                <div class="d-flex align-items-center">
+                    <div class="bg-white bg-opacity-25 rounded-circle p-3 me-3">
+                        <i class="bi bi-megaphone-fill fs-3 text-white"></i>
+                    </div>
+                    <div>
+                        <h4 class="mb-1 fw-bold">Broadcast Message</h4>
+                        <p class="mb-0 small opacity-75">Keep your users informed with a global banner.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-body p-5 bg-white">
                 <form action="{{ url_for('admin_note') }}" method="POST">
+
                     <div class="mb-4">
-                        <label class="form-label fw-bold">Message Content</label>
-                        <textarea class="form-control" name="notice" rows="5"
-                            placeholder="Enter important updates, maintenance alerts, or news here...">{{ notice }}</textarea>
-                        <div class="form-text text-muted">
-                            <i class="bi bi-info-circle me-1"></i> Leave this field empty to hide the notice banner.
+                        <label class="form-label fw-bold text-uppercase text-muted small mb-2">Notice Message</label>
+                        <div class="input-group">
+                            <textarea class="form-control form-control-lg bg-light border-0 shadow-sm p-3" name="notice"
+                                rows="6" style="resize: none; font-size: 1rem; line-height: 1.6;"
+                                placeholder="Type your announcement here... (e.g., 'System maintenance scheduled for tonight at 2 AM.')">{{ notice }}</textarea>
+                        </div>
+                        <div class="d-flex align-items-start mt-3 text-muted small">
+                            <i class="bi bi-info-circle-fill text-primary me-2 mt-1"></i>
+                            <div>
+                                <strong>How it works:</strong> The text you enter here will appear as a prominent banner
+                                at the top of the user dashboard.
+                                <br>To <span class="text-danger fw-bold">remove</span> the banner, simply clear the text
+                                box and click "Publish".
+                            </div>
                         </div>
                     </div>
 
-                    <div class="d-grid">
-                        <button type="submit" class="btn btn-primary btn-lg">
-                            <i class="bi bi-megaphone me-2"></i>Update Site Notice
+                    <hr class="my-4 opacity-10">
+
+                    <div class="d-grid gap-2">
+                        <button type="submit"
+                            class="btn btn-dark btn-lg py-3 rounded-3 fw-bold transition-all shadow-sm">
+                            <i class="bi bi-send-fill me-2"></i> Publish Announcement
                         </button>
                     </div>
+
                 </form>
             </div>
         </div>
 
-        <div class="mt-4 text-center text-muted small">
-            <p>The notice will appear at the top of the dashboard and store pages for all users.</p>
-        </div>
     </div>
 </div>
+
+<style>
+    .rounded-4 {
+        border-radius: 1rem !important;
+    }
+
+    .transition-all {
+        transition: all 0.2s ease-in-out;
+    }
+
+    .btn-dark:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2) !important;
+    }
+
+    .form-control:focus {
+        box-shadow: 0 0 0 4px rgba(75, 108, 183, 0.1);
+        background-color: #fff !important;
+    }
+</style>
 {% endblock %}

@@ -72,19 +72,19 @@
         <table class="table table-hover align-middle">
             <thead class="table-light">
                 <tr>
-                    <th>Ref / ID</th>
-                    <th>User / Store</th>
+                    <th class="d-none d-md-table-cell">Ref / ID</th>
+                    <th>Transaction Details</th>
                     <th>Amount</th>
-                    <th>Type</th>
-                    <th>Status</th>
-                    <th>Date</th>
+                    <th class="d-none d-md-table-cell">Type</th>
+                    <th class="d-none d-md-table-cell">Status</th>
+                    <th class="d-none d-md-table-cell">Date</th>
                     <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
                 {% for txn in transactions.items %}
                 <tr>
-                    <td>
+                    <td class="d-none d-md-table-cell">
                         <div class="fw-bold text-dark">#{{ txn.id }}</div>
                         <div class="small text-muted">{{ txn.reference }}</div>
                     </td>
@@ -97,6 +97,18 @@
                             <i class="bi bi-person me-1"></i>Direct
                             {% endif %}
                         </div>
+                        <!-- Mobile Details -->
+                        <div class="d-md-none small mt-1">
+                            <span class="badge bg-light text-dark border me-1">{{ txn.type }}</span>
+                            <span class="text-muted">{{ txn.date.strftime('%b %d') }}</span>
+                            {% if txn.status == 'Success' %}
+                            <i class="bi bi-check-circle-fill text-success ms-1"></i>
+                            {% elif txn.status == 'Pending' %}
+                            <i class="bi bi-clock-fill text-warning ms-1"></i>
+                            {% else %}
+                            <i class="bi bi-x-circle-fill text-danger ms-1"></i>
+                            {% endif %}
+                        </div>
                     </td>
                     <td>
                         <span
@@ -105,10 +117,10 @@
                             GH₵ {{ "{:,.2f}".format(txn.amount | default(0)) }}
                         </span>
                     </td>
-                    <td>
+                    <td class="d-none d-md-table-cell">
                         <span class="badge bg-light text-dark border">{{ txn.type }}</span>
                     </td>
-                    <td>
+                    <td class="d-none d-md-table-cell">
                         {% if txn.status == 'Success' %}
                         <span class="badge bg-success-subtle text-success border border-success-subtle">
                             <i class="bi bi-check-circle me-1"></i>Success
@@ -123,7 +135,7 @@
                         </span>
                         {% endif %}
                     </td>
-                    <td>
+                    <td class="d-none d-md-table-cell">
                         <div class="small">{{ txn.date.strftime('%b %d, %Y') }}</div>
                         <div class="small text-muted">{{ txn.date.strftime('%H:%M %p') }}</div>
                     </td>

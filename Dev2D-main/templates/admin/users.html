@@ -17,10 +17,10 @@
         <table class="table table-hover align-middle">
             <thead class="table-light">
                 <tr>
-                    <th>ID</th>
+                    <th class="d-none d-md-table-cell">ID</th>
                     <th>User Details</th>
-                    <th>Mobile</th>
-                    <th>Role</th>
+                    <th class="d-none d-md-table-cell">Mobile</th>
+                    <th class="d-none d-md-table-cell">Role</th>
                     <th>Balance</th>
                     <th class="text-end">Actions</th>
                 </tr>
@@ -28,13 +28,25 @@
             <tbody>
                 {% for user in users.items %}
                 <tr>
-                    <td>#{{ user.id }}</td>
+                    <td class="d-none d-md-table-cell">#{{ user.id }}</td>
                     <td>
                         <div class="fw-bold">{{ user.first_name }} {{ user.last_name }}</div>
                         <div class="small text-muted">{{ user.email }}</div>
+                        <!-- Mobile Only Details -->
+                        <div class="d-md-none small mt-1">
+                            <i class="bi bi-phone me-1"></i>{{ user.mobile }}
+                            <span class="mx-1">|</span>
+                            {% if user.is_suspended %}
+                            <span class="text-danger">Suspended</span>
+                            {% elif user.is_admin %}
+                            <span class="text-warning">Admin</span>
+                            {% else %}
+                            <span class="text-info">Active</span>
+                            {% endif %}
+                        </div>
                     </td>
-                    <td>{{ user.mobile }}</td>
-                    <td>
+                    <td class="d-none d-md-table-cell">{{ user.mobile }}</td>
+                    <td class="d-none d-md-table-cell">
                         {% if user.is_suspended %}
                         <span class="badge bg-danger">Suspended</span>
                         {% elif user.is_admin %}
@@ -47,26 +59,44 @@
                         <span class="fw-bold text-success">GH₵ {{ "{:,.2f}".format(user.balance | default(0)) }}</span>
                     </td>
                     <td class="text-end">
-                        <a href="{{ url_for('admin_toggle_admin', user_id=user.id) }}"
-                            class="btn btn-sm {{ 'btn-warning' if user.is_admin else 'btn-outline-warning' }} me-1"
-                            title="Toggle Admin Role">
-                            <i class="bi bi-shield-lock"></i>
-                        </a>
-                        <a href="{{ url_for('admin_toggle_suspend', user_id=user.id) }}"
-                            class="btn btn-sm {{ 'btn-danger' if user.is_suspended else 'btn-outline-danger' }} me-1"
-                            title="{{ 'Unsuspend' if user.is_suspended else 'Suspend' }}">
-                            <i class="bi {{ 'bi-play-circle' if user.is_suspended else 'bi-pause-circle' }}"></i>
-                        </a>
-                        <button class="btn btn-sm btn-primary me-1" data-bs-toggle="modal"
-                            data-bs-target="#editBalanceModal{{ user.id }}">
-                            <i class="bi bi-pencil-square"></i>
-                        </button>
-                        <a href="{{ url_for('admin_delete_user', user_id=user.id) }}"
-                            class="btn btn-sm btn-outline-secondary"
-                            onclick="return confirm('Are you sure? This will delete the user and all their data permanently.')"
-                            title="Delete User">
-                            <i class="bi bi-trash"></i>
-                        </a>
+                        <div class="d-flex justify-content-end gap-1">
+                            <button class="btn btn-sm btn-primary" data-bs-toggle="modal"
+                                data-bs-target="#editBalanceModal{{ user.id }}">
+                                <i class="bi bi-pencil-square"></i>
+                            </button>
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-outline-secondary" type="button"
+                                    data-bs-toggle="dropdown">
+                                    <i class="bi bi-three-dots-vertical"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end shadow border-0">
+                                    <li>
+                                        <a class="dropdown-item"
+                                            href="{{ url_for('admin_toggle_admin', user_id=user.id) }}">
+                                            <i class="bi bi-shield-lock me-2 text-warning"></i>Toggle Admin
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item"
+                                            href="{{ url_for('admin_toggle_suspend', user_id=user.id) }}">
+                                            <i
+                                                class="bi {{ 'bi-play-circle' if user.is_suspended else 'bi-pause-circle' }} me-2 text-primary"></i>
+                                            {{ 'Unsuspend' if user.is_suspended else 'Suspend' }}
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <hr class="dropdown-divider">
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item text-danger"
+                                            href="{{ url_for('admin_delete_user', user_id=user.id) }}"
+                                            onclick="return confirm('Are you sure?')">
+                                            <i class="bi bi-trash me-2"></i>Delete User
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
                     </td>
                 </tr>
 

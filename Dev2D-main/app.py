@@ -30,6 +30,11 @@ app.config["SECRET_KEY"] = "super-secret-key-change-later"
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
+# Context Processor for Cache Busting
+@app.context_processor
+def inject_version():
+    return {'version': int(datetime.utcnow().timestamp())}
+
 db = SQLAlchemy(app)
 login_manager = LoginManager(app)
 login_manager.login_view = "login"

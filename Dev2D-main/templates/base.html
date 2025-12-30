@@ -24,11 +24,64 @@
     {% endwith %}
 
     <!-- Site Notice -->
+    <!-- Premium Site Notice -->
     {% if site_notice %}
-    <div class="alert alert-info mt-3 d-flex align-items-center shadow-sm">
-      <i class="bi bi-megaphone-fill me-3 fs-4"></i>
-      <div>
-        <strong>Notice:</strong> {{ site_notice }}
+    <style>
+      @keyframes slideInDown {
+        from {
+          transform: translateY(-20px);
+          opacity: 0;
+        }
+
+        to {
+          transform: translateY(0);
+          opacity: 1;
+        }
+      }
+
+      .notice-banner {
+        background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+        /* Premium Dark Teal Gradient */
+        color: white;
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+        animation: slideInDown 0.6s ease-out;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .notice-banner::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 60%);
+        transform: rotate(30deg);
+        pointer-events: none;
+      }
+
+      .notice-icon {
+        background: rgba(255, 255, 255, 0.1);
+        width: 50px;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        backdrop-filter: blur(5px);
+      }
+    </style>
+    <div class="alert notice-banner mt-4 mx-2 p-4 d-flex align-items-center gap-3">
+      <div class="notice-icon flex-shrink-0">
+        <i class="bi bi-megaphone-fill fs-4 text-warning"></i>
+      </div>
+      <div class="flex-grow-1">
+        <h6 class="fw-bold text-uppercase text-warning mb-1" style="letter-spacing: 1px; font-size: 0.8rem;">System
+          Announcement</h6>
+        <div class="fs-6">{{ site_notice }}</div>
       </div>
     </div>
     {% endif %}

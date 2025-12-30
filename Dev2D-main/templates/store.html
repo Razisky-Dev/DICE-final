@@ -610,13 +610,12 @@
     </div>
 
     <!-- Transfer to Wallet Modal -->
-    <!-- Transfer to Wallet Modal -->
     <div class="modal fade" id="transferWalletModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 overflow-hidden">
                 <div class="modal-header modal-header-commission p-4 border-0">
                     <div>
-                        <h5 class="modal-title fw-bold mb-1">Transfer to Main Wallet</h5>
+                        <h5 class="modal-title fw-bold mb-1">Transfer Store Credit to Wallet</h5>
                         <p class="mb-0 opacity-75 small">Move funds to your spending wallet</p>
                     </div>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
@@ -626,7 +625,7 @@
                     <div class="card border-0 shadow-sm mb-4">
                         <div class="card-body d-flex justify-content-between align-items-center">
                             <div>
-                                <div class="small text-muted fw-bold">AVAILABLE CREDIT</div>
+                                <div class="small text-muted fw-bold">Available Store Credit</div>
                                 <h3 class="mb-0 fw-bold text-dark">GH₵ {{ "{:,.2f}".format(store.credit_balance) }}</h3>
                             </div>
                             <div class="text-end">
@@ -638,15 +637,15 @@
 
                     <form action="{{ url_for('store_withdraw') }}" method="POST">
                         <div class="mb-4">
-                            <label class="form-label fw-bold">Amount to Transfer (GH₵)</label>
+                            <label class="form-label fw-bold">Transfer Amount</label>
                             <input type="number" class="form-control form-control-lg" name="amount" min="1"
                                 max="{{ store.credit_balance }}" step="0.01" placeholder="0.00" required>
                             <div class="form-text">Funds will be instantly available for purchases.</div>
                         </div>
                         <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-dark btn-lg">Transfer Funds</button>
+                            <button type="submit" class="btn btn-dark btn-lg">Transfer</button>
                             <button type="button" class="btn btn-link text-muted text-decoration-none"
-                                data-bs-dismiss="modal">Cancel Transfer</button>
+                                data-bs-dismiss="modal">Cancel</button>
                         </div>
                     </form>
                 </div>

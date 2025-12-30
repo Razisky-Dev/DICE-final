@@ -160,6 +160,10 @@
                 class="nav-link {% if request.endpoint == 'admin_transactions' %}active{% endif %}">
                 <i class="bi bi-receipt-cutoff"></i> <span>Transactions</span>
             </a>
+            <a href="{{ url_for('admin_note') }}"
+                class="nav-link {% if request.endpoint == 'admin_note' %}active{% endif %}">
+                <i class="bi bi-megaphone"></i> <span>Note</span>
+            </a>
             <a href="{{ url_for('admin_pricing') }}"
                 class="nav-link {% if request.endpoint == 'admin_pricing' %}active{% endif %}">
                 <i class="bi bi-tags-fill"></i> <span>Pricing</span>

@@ -35,7 +35,11 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 # Context Processor for Cache Busting
 @app.context_processor
 def inject_version():
-    return {'version': int(datetime.utcnow().timestamp())}
+    notice = SiteSetting.query.filter_by(key='site_notice').first()
+    return {
+        'version': int(datetime.utcnow().timestamp()),
+        'site_notice': notice.value if notice else ''
+    }
 
 db = SQLAlchemy(app)
 login_manager = LoginManager(app)
@@ -91,6 +95,14 @@ class DataPlan(db.Model):
     selling_price = db.Column(db.Float, nullable=False, default=0.0) # Site Price (Revenue)
     display_order = db.Column(db.Integer, default=0)
     status = db.Column(db.String(20), default='Active') # Active, Inactive
+
+# =====================
+# SITE SETTINGS MODEL
+# =====================
+class SiteSetting(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    key = db.Column(db.String(50), unique=True, nullable=False)
+    value = db.Column(db.Text)
 
 # =====================
 # CONSTANTS
@@ -1198,6 +1210,30 @@ def admin_export_transactions():
     output.headers["Content-Disposition"] = "attachment; filename=transactions_export.csv"
     output.headers["Content-type"] = "text/csv"
     return output
+@app.route("/admin/note", methods=["GET", "POST"])
+@login_required
+def admin_note():
+    if not current_user.is_admin:
+        flash("Access denied.", "error")
+        return redirect(url_for("dashboard"))
+        
+    notice_setting = SiteSetting.query.filter_by(key='site_notice').first()
+    
+    if request.method == "POST":
+        new_notice = request.form.get("notice")
+        
+        if not notice_setting:
+            notice_setting = SiteSetting(key='site_notice', value=new_notice)
+            db.session.add(notice_setting)
+        else:
+            notice_setting.value = new_notice
+            
+        db.session.commit()
+        flash("Site notice updated successfully.", "success")
+        return redirect(url_for("admin_note"))
+        
+    return render_template("admin/note.html", notice=notice_setting.value if notice_setting else "")
+
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()

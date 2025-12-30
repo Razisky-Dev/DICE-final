@@ -1,0 +1,36 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}Site Notice{% endblock %}
+{% block header_title %}Site Notice{% endblock %}
+{% block header_subtitle %}Broadcast a message to all users on the main website.{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <form action="{{ url_for('admin_note') }}" method="POST">
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Message Content</label>
+                        <textarea class="form-control" name="notice" rows="5"
+                            placeholder="Enter important updates, maintenance alerts, or news here...">{{ notice }}</textarea>
+                        <div class="form-text text-muted">
+                            <i class="bi bi-info-circle me-1"></i> Leave this field empty to hide the notice banner.
+                        </div>
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-megaphone me-2"></i>Update Site Notice
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="mt-4 text-center text-muted small">
+            <p>The notice will appear at the top of the dashboard and store pages for all users.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

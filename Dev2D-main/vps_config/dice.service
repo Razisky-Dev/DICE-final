@@ -8,7 +8,7 @@ User=root
 # Group=www-data
 WorkingDirectory=/var/www/dice_app
 Environment="PATH=/var/www/dice_app/venv/bin"
-ExecStart=/var/www/dice_app/venv/bin/gunicorn --workers 3 --bind unix:dice_app.sock -m 007 app:app
+ExecStart=/var/www/dice_app/venv/bin/gunicorn --workers 3 --bind 127.0.0.1:8000 app:app
 
 [Install]
 WantedBy=multi-user.target

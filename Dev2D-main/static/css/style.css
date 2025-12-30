@@ -7,13 +7,20 @@ body {
 }
 
 /* Auth / form containers */
-.container {
+.auth-container {
     max-width: 400px;
-    margin: 80px auto;
+    margin: 40px auto;
     background: white;
     padding: 25px;
     border-radius: 8px;
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+@media (max-width: 576px) {
+    .auth-container {
+        margin: 20px;
+        width: auto;
+    }
 }
 
 h2 {

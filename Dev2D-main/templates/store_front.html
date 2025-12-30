@@ -25,6 +25,18 @@
             text-align: center;
         }
 
+        @media (max-width: 576px) {
+            .store-container {
+                padding: 20px 15px;
+                /* Less padding on mobile */
+            }
+
+            .store-title {
+                font-size: 2rem;
+                /* Smaller title on mobile */
+            }
+        }
+
         .store-title {
             font-size: 3rem;
             font-weight: 800;
@@ -56,6 +68,19 @@
             background: white;
             color: #333;
             border: 1px solid #ccc;
+        }
+
+        /* Mobile optimization for Network Cards */
+        @media (max-width: 576px) {
+            .network-card {
+                height: 110px;
+                /* Shorter cards on mobile */
+                padding: 15px;
+            }
+
+            .network-logo-text {
+                font-size: 1.2rem;
+            }
         }
 
         .network-card {
@@ -140,6 +165,20 @@
             border-top: none;
         }
 
+        /* Mobile Bottom Sheet Modal style */
+        @media (max-width: 576px) {
+            .modal-dialog.modal-dialog-centered {
+                align-items: flex-end;
+                min-height: 100%;
+                margin: 0;
+            }
+
+            .modal-content {
+                border-bottom-left-radius: 0;
+                border-bottom-right-radius: 0;
+            }
+        }
+
         .form-control {
             border-radius: 10px;
             padding: 12px;
@@ -174,7 +213,7 @@
         </div>
 
         <!-- Network Selection -->
-        <div class="row g-3 mb-5 justify-content-center">
+        <div class="row g-2 g-md-3 mb-5 justify-content-center">
             <div class="col-6 col-md-3">
                 <div class="network-card bg-warning text-dark border-0" onclick="selectNetwork('MTN')">
                     <div class="network-logo-text">MTN</div>
@@ -196,7 +235,7 @@
         </div>
 
         <!-- Packages Display Area -->
-        <div id="packagesContainer" class="row g-3" style="display: none;">
+        <div id="packagesContainer" class="row g-2 g-md-3" style="display: none;">
             <h4 class="text-start mb-3 fw-bold text-dark" id="selectedNetworkTitle">Available Packages</h4>
             <!-- Packages will be injected here via JS -->
         </div>
@@ -414,7 +453,7 @@
                     const textClass = (network === 'MTN') ? 'text-dark' : 'text-white';
 
                     const html = `
-                        <div class="col-6 col-md-4">
+                        <div class="col-12 col-md-4">
                             <div class="package-card text-start h-100 border-0 shadow-sm">
                                 <span class="badge bg-light text-dark border mb-2">${p.network}</span>
                                 <h5 class="fw-bold mb-1">${p.package_name}</h5>

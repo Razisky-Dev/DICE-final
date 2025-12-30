@@ -4,6 +4,28 @@ body {
     font-family: "Segoe UI", Arial, sans-serif;
     background-color: #ccccff;
     /* Periwinkle */
+    -webkit-font-smoothing: antialiased;
+    /* Smoother text on iOS */
+}
+
+/* Global Responsive Adjustments */
+@media (max-width: 768px) {
+    body {
+        font-size: 14px;
+        /* Slightly smaller base font on mobile */
+    }
+
+    h1 {
+        font-size: 1.75rem;
+    }
+
+    h2 {
+        font-size: 1.5rem;
+    }
+
+    h3 {
+        font-size: 1.25rem;
+    }
 }
 
 /* Auth / form containers */
@@ -18,8 +40,10 @@ body {
 
 @media (max-width: 576px) {
     .auth-container {
-        margin: 20px;
-        width: auto;
+        margin: 20px 15px;
+        /* Add side margins to prevent sticking to edges */
+        padding: 20px;
+        /* Reduce padding slightly */
     }
 }
 
@@ -46,6 +70,8 @@ button:not(.nav-link):not(.btn) {
     border-radius: 5px;
     font-size: 16px;
     cursor: pointer;
+    min-height: 44px;
+    /* Touch target size for mobile */
 }
 
 button:not(.nav-link):hover {

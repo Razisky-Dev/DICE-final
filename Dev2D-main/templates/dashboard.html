@@ -66,10 +66,23 @@
         @media (max-width: 768px) {
             #sidebar-wrapper {
                 margin-left: -250px;
+                position: fixed;
+                /* Overlay on mobile */
+                z-index: 1000;
+                height: 100vh;
+                transition: all 0.3s;
+                top: 0;
+                left: 0;
+                /* meaningful for position fixed */
             }
 
             #wrapper.toggled #sidebar-wrapper {
                 margin-left: 0;
+            }
+
+            /* Overlay effect for content when sidebar is open can be added via JS or refined here */
+            #page-content-wrapper {
+                min-width: 100vw;
             }
         }
 

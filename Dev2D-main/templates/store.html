@@ -96,6 +96,48 @@
             transform: translateY(-2px);
             transition: 0.2s ease-in-out;
         }
+
+        /* Network Selection Cards */
+        .network-card {
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+            opacity: 0.8;
+            filter: grayscale(0.4);
+        }
+
+        .network-card:hover {
+            opacity: 1;
+            filter: grayscale(0);
+            transform: translateY(-2px);
+        }
+
+        .network-card.active {
+            border-color: #000;
+            opacity: 1;
+            filter: grayscale(0);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .network-mtn {
+            background-color: #ffcc00;
+            color: #000;
+        }
+
+        .network-telecel {
+            background-color: #e60000;
+            color: #fff;
+        }
+
+        .network-airteltigo {
+            background-color: #0033cc;
+            color: #fff;
+        }
+
+        .modal-header-commission {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: white;
+        }
     </style>
 </head>
 
@@ -201,16 +243,14 @@
                                         <h4>GH₵{{ "{:,.2f}".format(store.credit_balance) }}</h4>
                                         <div class="mt-3">
                                             <div class="mt-3 d-flex gap-2">
-                                                <form action="{{ url_for('store_withdraw') }}" method="POST"
-                                                    class="d-inline">
-                                                    <input type="hidden" name="amount"
-                                                        value="{{ store.credit_balance }}">
-                                                    <button type="submit" class="btn btn-light btn-sm" {{ 'disabled' if
-                                                        store.credit_balance <=0 else '' }}>Transfer to Wallet</button>
-                                                </form>
-                                                <button type="button" class="btn btn-warning btn-sm text-dark"
-                                                    data-bs-toggle="modal" data-bs-target="#withdrawMomoModal"
+                                                <button type="button" class="btn btn-light btn-sm"
+                                                    data-bs-toggle="modal" data-bs-target="#transferWalletModal"
                                                     {{ 'disabled' if store.credit_balance <=0 else '' }}>
+                                                    Transfer to Wallet
+                                                </button>
+                                                <button type="button" class="btn btn-warning btn-sm text-dark fw-bold"
+                                                    data-bs-toggle="modal" data-bs-target="#withdrawMomoModal"
+                                                    {{ 'disabled' if store.credit_balance < 10 else '' }}>
                                                     Withdraw
                                                 </button>
                                             </div>
@@ -569,46 +609,110 @@
         </div>
     </div>
 
-    <!-- Withdraw to MoMo Modal -->
-    <div class="modal fade" id="withdrawMomoModal" tabindex="-1">
-        <div class="modal-dialog">
+    <!-- Transfer to Wallet Modal -->
+    <div class="modal fade" id="transferWalletModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Withdraw to Mobile Money</h5>
+                <div class="modal-header border-0">
+                    <h5 class="modal-title fw-bold">Transfer to Main Wallet</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body">
-                    <div class="alert alert-info small">
-                        <i class="bi bi-info-circle me-1"></i> Funds will be sent directly to your mobile wallet via
-                        Paystack. Service charges may apply.
+                <div class="modal-body p-4">
+                    <div class="text-center mb-4">
+                        <div class="text-muted small uppercase">Available Store Credit</div>
+                        <h2 class="fw-bold text-success">GH₵ {{ "{:,.2f}".format(store.credit_balance) }}</h2>
                     </div>
-                    <form action="{{ url_for('store_withdraw_momo') }}" method="POST">
-                        <div class="mb-3">
-                            <label class="form-label">Network</label>
-                            <select class="form-select" name="network" required>
-                                <option value="" selected disabled>Select Network</option>
-                                <option value="MTN">MTN</option>
-                                <option value="TELECEL">Telecel (Vodafone)</option>
-                                <option value="AIRTELTIGO">AirtelTigo</option>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Phone Number</label>
-                            <input type="tel" class="form-control" name="phone" value="{{ current_user.mobile }}"
-                                required placeholder="0xxxxxx">
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Amount (GH₵)</label>
-                            <div class="input-group">
-                                <span class="input-group-text">GH₵</span>
-                                <input type="number" class="form-control" name="amount" min="1"
-                                    max="{{ store.credit_balance }}" step="0.01" required placeholder="0.00">
-                            </div>
-                            <div class="form-text">Available Credit: GH₵{{ "{:,.2f}".format(store.credit_balance) }}
+
+                    <form action="{{ url_for('store_withdraw') }}" method="POST">
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Amount to Transfer</label>
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text bg-light border-end-0">GH₵</span>
+                                <input type="number" class="form-control border-start-0 bg-light" name="amount" min="1"
+                                    max="{{ store.credit_balance }}" step="0.01" placeholder="0.00" required>
                             </div>
                         </div>
-                        <div class="d-grid">
-                            <button type="submit" class="btn btn-warning text-dark fw-bold">Confirm Withdrawal</button>
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">Transfer Funds</button>
+                            <button type="button" class="btn btn-light text-muted"
+                                data-bs-dismiss="modal">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Withdraw Commission (MoMo) Modal -->
+    <div class="modal fade" id="withdrawMomoModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 overflow-hidden">
+                <div class="modal-header modal-header-commission p-4 border-0">
+                    <div>
+                        <h5 class="modal-title fw-bold mb-1">Withdraw Commission</h5>
+                        <p class="mb-0 opacity-75 small">Secure transfer to Mobile Money</p>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4 bg-light">
+
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-body d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="small text-muted fw-bold">AVAILABLE COMMISSION</div>
+                                <h3 class="mb-0 fw-bold text-dark">GH₵ {{ "{:,.2f}".format(store.credit_balance) }}</h3>
+                            </div>
+                            <div class="text-end">
+                                <div class="badge bg-warning text-dark mb-1">Min. Withdrawal</div>
+                                <div class="small fw-bold">GH₵ 10.00</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <form action="{{ url_for('store_withdraw_momo') }}" method="POST" id="withdrawForm">
+                        <input type="hidden" name="network" id="selectedNetwork" required>
+
+                        <label class="form-label fw-bold small text-muted mb-3">SELECT NETWORK</label>
+                        <div class="row g-2 mb-4">
+                            <div class="col-4">
+                                <div class="card network-card network-mtn text-center py-3"
+                                    onclick="selectNetwork('MTN', this)">
+                                    <div class="fw-bold">MTN</div>
+                                    <div class="small" style="font-size: 0.7rem;">MOMO</div>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="card network-card network-telecel text-center py-3"
+                                    onclick="selectNetwork('TELECEL', this)">
+                                    <div class="fw-bold">Telecel</div>
+                                    <div class="small" style="font-size: 0.7rem;">Cash</div>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="card network-card network-airteltigo text-center py-3"
+                                    onclick="selectNetwork('AIRTELTIGO', this)">
+                                    <div class="fw-bold">AirtelTigo</div>
+                                    <div class="small" style="font-size: 0.7rem;">Money</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Phone Number</label>
+                            <input type="tel" class="form-control form-control-lg" name="phone"
+                                value="{{ current_user.mobile }}" required placeholder="0xxxxxx">
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Amount (GH₵)</label>
+                            <input type="number" class="form-control form-control-lg" name="amount" min="10"
+                                max="{{ store.credit_balance }}" step="0.01" required placeholder="0.00">
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-dark btn-lg">Withdraw Now</button>
+                            <button type="button" class="btn btn-link text-muted text-decoration-none"
+                                data-bs-dismiss="modal">Cancel Transaction</button>
                         </div>
                     </form>
                 </div>
@@ -726,6 +830,15 @@
                     row.style.display = 'none';
                 }
             });
+        }
+        function selectNetwork(network, element) {
+            // Update hidden input
+            document.getElementById('selectedNetwork').value = network;
+
+            // Visual feedback
+            const cards = document.querySelectorAll('.network-card');
+            cards.forEach(card => card.classList.remove('active'));
+            element.classList.add('active');
         }
     </script>
 </body>

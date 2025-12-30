@@ -566,6 +566,10 @@ def store_withdraw_momo():
     if amount > store.credit_balance:
         flash("Insufficient store credit.", "error")
         return redirect(url_for("store"))
+        
+    if amount < 10.00:
+        flash("Minimum withdrawal amount is GH₵ 10.00", "error")
+        return redirect(url_for("store"))
     
     PAYSTACK_SECRET_KEY = os.getenv("PAYSTACK_SECRET_KEY")
     # Fallback to config if env not set, though env is preferred

@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orders | RazilHub</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f5f7fa;
+        }
+
+        #sidebar-wrapper {
+            min-width: 250px;
+            max-width: 250px;
+        }
+
+        #sidebar-wrapper .list-group-item {
+            border: none;
+            padding: 20px 25px;
+            font-size: 1rem;
+            color: #333;
+        }
+
+        #sidebar-wrapper .list-group-item:hover {
+            background-color: #007bff;
+            color: white;
+        }
+
+        #page-content-wrapper {
+            width: 100%;
+        }
+
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar {
+            padding: 0.8rem 1rem;
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        #wrapper.toggled #sidebar-wrapper {
+            margin-left: -250px;
+        }
+
+        #sidebar-wrapper {
+            transition: margin 0.25s ease-out;
+        }
+
+        @media (max-width: 768px) {
+            #sidebar-wrapper {
+                margin-left: -250px;
+            }
+
+            #wrapper.toggled #sidebar-wrapper {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="d-flex" id="wrapper">
+
+        <!-- Sidebar -->
+        <div class="bg-light border-end" id="sidebar-wrapper">
+            <div class="sidebar-heading py-4 fs-4 fw-bold" style="padding-left: 25px;">RazilHub</div>
+            <div class="list-group list-group-flush">
+                <a href="{{ url_for('dashboard') }}"
+                    class="list-group-item list-group-item-action bg-light">Dashboard</a>
+                <a href="{{ url_for('orders') }}"
+                    class="list-group-item list-group-item-action bg-light active">Orders</a>
+                <a href="{{ url_for('wallet') }}" class="list-group-item list-group-item-action bg-light">Wallet</a>
+                <a href="{{ url_for('buy_data') }}" class="list-group-item list-group-item-action bg-light">Buy Data</a>
+                <a href="{{ url_for('store') }}" class="list-group-item list-group-item-action bg-light">Store</a>
+                <a href="{{ url_for('profile') }}" class="list-group-item list-group-item-action bg-light">Profile</a>
+                <a href="{{ url_for('logout') }}" class="list-group-item list-group-item-action bg-light">Logout</a>
+            </div>
+        </div>
+
+        <!-- Page Content -->
+        <div id="page-content-wrapper">
+
+            <!-- Navbar -->
+            <nav class="navbar navbar-expand-lg navbar-light border-bottom">
+                <div class="container-fluid">
+                    <button class="btn btn-primary" id="sidebarToggle">☰</button>
+                    <div class="ms-auto">
+                        Orders
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Orders Content -->
+            <div class="container-fluid mt-4">
+
+                <!-- Header -->
+                <div class="mb-4">
+                    <h3>Your Orders 📦</h3>
+                    <p class="text-muted">Track and manage your data bundle purchases</p>
+                </div>
+
+                <!-- Filters -->
+                <div class="card p-4 mb-4">
+                    <form action="{{ url_for('orders') }}" method="GET">
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <input type="text" class="form-control" name="txn_id"
+                                    placeholder="Search Transaction ID" value="{{ request.args.get('txn_id', '') }}">
+                            </div>
+                            <div class="col-md-3">
+                                <select class="form-select" name="status">
+                                    <option value="">Status</option>
+                                    <option value="Processing" {% if request.args.get('status')=='Processing'
+                                        %}selected{% endif %}>Processing</option>
+                                    <option value="Pending" {% if request.args.get('status')=='Pending' %}selected{%
+                                        endif %}>Pending</option>
+                                    <option value="Delivered" {% if request.args.get('status')=='Delivered' %}selected{%
+                                        endif %}>Delivered</option>
+                                    <option value="Failed" {% if request.args.get('status')=='Failed' %}selected{% endif
+                                        %}>Failed</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <select class="form-select" name="network">
+                                    <option value="">Network</option>
+                                    <option value="MTN" {% if request.args.get('network')=='MTN' %}selected{% endif %}>
+                                        MTN</option>
+                                    <option value="AIRTELTIGO" {% if request.args.get('network')=='AIRTELTIGO'
+                                        %}selected{% endif %}>AIRTELTIGO</option>
+                                    <option value="TELECEL" {% if request.args.get('network')=='TELECEL' %}selected{%
+                                        endif %}>TELECEL</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <button type="submit" class="btn btn-primary w-100">Filter</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Orders Table -->
+                <div class="card p-4">
+                    <h5 class="mb-3">Order History</h5>
+
+                    <div class="table-responsive">
+                        <table class="table table-bordered align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Transaction ID</th>
+                                    <th>Network</th>
+                                    <th>Package</th>
+                                    <th>Amount (GH₵)</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if orders %}
+                                {% for order in orders %}
+                                <tr>
+                                    <td>{{ order.transaction_id }}</td>
+                                    <td>
+                                        {% if order.network == 'MTN' %}
+                                        <span class="badge bg-warning text-dark">MTN</span>
+                                        {% elif order.network == 'TELECEL' %}
+                                        <span class="badge bg-danger">TELECEL</span>
+                                        {% else %}
+                                        <span class="badge bg-primary">AIRTELTIGO</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ order.package }}</td>
+                                    <td>{{ "{:,.2f}".format(order.amount) }}</td>
+                                    <td>
+                                        {% if order.status == 'Delivered' %}
+                                        <span class="badge bg-success">Delivered</span>
+                                        {% elif order.status == 'Processing' %}
+                                        <span class="badge bg-info text-dark">Processing</span>
+                                        {% elif order.status == 'Pending' %}
+                                        <span class="badge bg-warning text-dark">Pending</span>
+                                        {% else %}
+                                        <span class="badge bg-danger">Failed</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ order.date.strftime('%Y-%m-%d %H:%M') }}</td>
+                                </tr>
+                                {% endfor %}
+                                {% else %}
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted">
+                                        No orders found
+                                    </td>
+                                </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar Toggle Script -->
+    <script>
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const wrapper = document.getElementById('wrapper');
+        sidebarToggle.addEventListener('click', () => {
+            wrapper.classList.toggle('toggled');
+        });
+    </script>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+
+</html>

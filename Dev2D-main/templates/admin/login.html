@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login | RazilHub</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+
+    <style>
+        body {
+            background-color: #1a1a2e;
+            /* Dark theme for admin */
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-card {
+            background-color: white;
+            border-radius: 15px;
+            padding: 40px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .brand-text {
+            color: #1a1a2e;
+            font-weight: 800;
+            font-size: 2rem;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="login-card">
+        <div class="brand-text">
+            RazilHub <span class="badge bg-danger fs-6 align-top">ADMIN</span>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category if category != 'error' else 'danger' }} mb-3" role="alert">
+            {{ message }}
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        <form action="{{ url_for('admin_login') }}" method="POST">
+            <div class="mb-3">
+                <label class="form-label fw-bold">Email Address</label>
+                <input type="email" class="form-control form-control-lg" name="email" required
+                    placeholder="admin@dice.com">
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label fw-bold">Password</label>
+                <input type="password" class="form-control form-control-lg" name="password" required
+                    placeholder="••••••••">
+            </div>
+
+            <div class="d-grid">
+                <button type="submit" class="btn btn-dark btn-lg fw-bold">Login to Dashboard</button>
+            </div>
+        </form>
+
+        <div class="text-center mt-4">
+            <a href="{{ url_for('login') }}" class="text-muted text-decoration-none small">Go to User Login</a>
+        </div>
+    </div>
+
+</body>
+
+</html>

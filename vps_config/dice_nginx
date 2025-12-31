@@ -8,7 +8,7 @@ server {
     }
 
     location /static {
-        alias /var/www/dice_app/static;
+        alias /root/dice/static;
         expires 30d;
     }
 }

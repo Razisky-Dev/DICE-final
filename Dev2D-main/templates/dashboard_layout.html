@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Dashboard | RazilHub{% endblock %}</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+
+    <div class="d-flex" id="wrapper">
+
+        <!-- Sidebar -->
+        <div class="border-end shadow bg-gradient-sidebar" id="sidebar-wrapper">
+            <div class="sidebar-heading border-bottom border-white border-opacity-10">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-box-seam-fill fs-4 text-warning"></i>
+                    <span>RazilHub</span>
+                </div>
+            </div>
+            <div class="list-group list-group-flush py-3">
+                {% if current_user.is_admin %}
+                <a href="{{ url_for('admin_dashboard') }}"
+                    class="list-group-item list-group-item-action text-warning fw-bold mb-2">
+                    <i class="bi bi-shield-lock-fill me-3"></i> Admin Panel
+                </a>
+                {% endif %}
+
+                <a href="{{ url_for('dashboard') }}"
+                    class="list-group-item list-group-item-action {% if request.endpoint == 'dashboard' %}active{% endif %}">
+                    <i class="bi bi-speedometer2 me-3 fs-5"></i> Dashboard
+                </a>
+                <a href="{{ url_for('orders') }}"
+                    class="list-group-item list-group-item-action {% if request.endpoint == 'orders' %}active{% endif %}">
+                    <i class="bi bi-receipt me-3 fs-5"></i> Orders
+                </a>
+                <a href="{{ url_for('wallet') }}"
+                    class="list-group-item list-group-item-action {% if request.endpoint == 'wallet' %}active{% endif %}">
+                    <i class="bi bi-wallet2 me-3 fs-5"></i> Wallet
+                </a>
+                <a href="{{ url_for('buy_data') }}"
+                    class="list-group-item list-group-item-action {% if request.endpoint == 'buy_data' %}active{% endif %}">
+                    <i class="bi bi-wifi me-3 fs-5"></i> Buy Data
+                </a>
+                <a href="{{ url_for('store') }}"
+                    class="list-group-item list-group-item-action {% if request.endpoint == 'store' or 'store' in request.endpoint %}active{% endif %}">
+                    <i class="bi bi-shop me-3 fs-5"></i> Store
+                </a>
+                <a href="{{ url_for('profile') }}"
+                    class="list-group-item list-group-item-action {% if request.endpoint == 'profile' %}active{% endif %}">
+                    <i class="bi bi-person-circle me-3 fs-5"></i> Profile
+                </a>
+                <a href="{{ url_for('support') }}"
+                    class="list-group-item list-group-item-action {% if request.endpoint == 'support' %}active{% endif %}">
+                    <i class="bi bi-headset me-3 fs-5"></i> Support
+                </a>
+
+
+                <div class="mt-auto pt-4 px-3">
+                    <a href="{{ url_for('logout') }}"
+                        class="btn btn-outline-danger w-100 d-flex align-items-center justify-content-center gap-2">
+                        <i class="bi bi-box-arrow-right"></i> Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page Content -->
+        <div id="page-content-wrapper">
+
+            <!-- Navbar -->
+            <nav class="navbar navbar-expand-lg navbar-light border-bottom">
+                <div class="container-fluid">
+                    <button class="btn btn-primary shadow-sm border-0 d-flex align-items-center justify-content-center"
+                        id="sidebarToggle"
+                        style="width: 45px; height: 45px; background: linear-gradient(45deg, #1e90ff, #00bfff);">
+                        <i class="bi bi-list fs-3 text-white"></i>
+                    </button>
+                    <div class="ms-auto d-flex align-items-center gap-3">
+                        <!-- Notifications -->
+                        <div class="dropdown">
+                            <button class="btn btn-light position-relative rounded-circle p-2 shadow-sm" type="button"
+                                id="notificationDropdown" data-bs-toggle="dropdown" aria-expanded="false"
+                                style="width: 40px; height: 40px;">
+                                <i class="bi bi-bell-fill text-secondary"></i>
+
+                                {% set show_badge = False %}
+                                {% if site_notice %}
+                                {% if not current_user.last_read_notice_timestamp or (site_notice_timestamp and
+                                current_user.last_read_notice_timestamp < site_notice_timestamp) %} {% set
+                                    show_badge=True %} {% endif %} {% endif %} {% if show_badge %} <span
+                                    id="notificationBadge"
+                                    class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle">
+                                    <span class="visually-hidden">New alerts</span>
+                                    </span>
+                                    {% endif %}
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end p-3 shadow-lg border-0 rounded-4"
+                                style="min-width: 300px; max-width: 350px;">
+                                <li>
+                                    <h6 class="dropdown-header text-uppercase fw-bold small text-muted mb-2">
+                                        Notifications
+                                    </h6>
+                                </li>
+                                {% if site_notice %}
+                                <li>
+                                    <div class="alert alert-light border-start border-warning border-4 mb-0 rounded-3">
+                                        <div class="d-flex align-items-center gap-2 mb-1">
+                                            <i class="bi bi-megaphone-fill text-warning"></i>
+                                            <span class="fw-bold small text-uppercase">Announcement</span>
+                                        </div>
+                                        <p class="mb-0 small text-muted">{{ site_notice }}</p>
+                                    </div>
+                                </li>
+                                {% else %}
+                                <li>
+                                    <div class="text-center py-4 opacity-50">
+                                        <i class="bi bi-bell-slash fs-1 d-block mb-2"></i>
+                                        <p class="mb-0 small fw-medium">No new notifications</p>
+                                    </div>
+                                </li>
+                                {% endif %}
+                            </ul>
+                        </div>
+
+                        <!-- User Name -->
+                        <span>Welcome, <strong>{{ current_user.username }}</strong></span>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Main Content Block -->
+            <div class="container-fluid mt-4">
+
+                <!-- Flash Messages -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                {% for category, message in messages %}
+                <div class="alert alert-{{ category if category != 'error' else 'danger' }} alert-dismissible fade show"
+                    role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {% endfor %}
+                {% endif %}
+                {% endwith %}
+
+                {% block content %}{% endblock %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar Toggle Script -->
+    <script>
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const wrapper = document.getElementById('wrapper');
+        sidebarToggle.addEventListener('click', () => {
+            wrapper.classList.toggle('toggled');
+        });
+    </script>
+
+    <!-- Notification Read Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var dropdownElement = document.getElementById('notificationDropdown');
+            if (dropdownElement) {
+                dropdownElement.addEventListener('show.bs.dropdown', function () {
+                    var badge = document.getElementById('notificationBadge');
+                    if (badge) {
+                        // Optimistically hide badge
+                        badge.style.display = 'none';
+
+                        // Send request to server
+                        fetch('/api/read_notification', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        }).then(response => {
+                            if (!response.ok) {
+                                console.error('Failed to mark notification as read');
+                            }
+                        }).catch(error => {
+                            console.error('Error:', error);
+                        });
+                    }
+                });
+            }
+        });
+    </script>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    {% block extra_js %}{% endblock %}
+
+</body>
+
+</html>

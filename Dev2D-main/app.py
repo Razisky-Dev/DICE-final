@@ -36,9 +36,19 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 @app.context_processor
 def inject_version():
     notice = SiteSetting.query.filter_by(key='site_notice').first()
+    notice_ts = SiteSetting.query.filter_by(key='site_notice_timestamp').first()
+    
+    timestamp = None
+    if notice_ts and notice_ts.value:
+         try:
+             timestamp = datetime.fromisoformat(notice_ts.value)
+         except:
+             pass
+
     return {
         'version': int(datetime.utcnow().timestamp()),
-        'site_notice': notice.value if notice else ''
+        'site_notice': notice.value if notice else '',
+        'site_notice_timestamp': timestamp
     }
 
 db = SQLAlchemy(app)
@@ -68,8 +78,8 @@ class User(UserMixin, db.Model):
     password = db.Column(db.String(200))
     balance = db.Column(db.Float, default=0.0)
     is_admin = db.Column(db.Boolean, default=False)
-    is_suspended = db.Column(db.Boolean, default=False) # New field for suspension
-
+    is_suspended = db.Column(db.Boolean, default=False)
+    last_read_notice_timestamp = db.Column(db.DateTime)
 # =====================
 # TRANSACTION MODEL
 # =====================
@@ -316,6 +326,21 @@ def dashboard():
         current_plan=current_plan,
         recent_activity=recent_activity
     )
+
+@app.route("/buy-data")
+@login_required
+def buy_data():
+    data_bundles = {
+        "MTN": [
+            {"size": "1 GB", "price": "GH₵4.60", "expiry": "No-Expiry"},
+            {"size": "2 GB", "price": "GH₵9.60", "expiry": "No-Expiry"},
+            {"size": "3 GB", "price": "GH₵14.00", "expiry": "No-Expiry"},
+            {"size": "4 GB", "price": "GH₵18.50", "expiry": "No-Expiry"},
+        ],
+        "TELECEL": [],
+        "AIRTELTIGO": []
+    }
+    return render_template("buy_data.html", data_bundles=data_bundles)
 
 @app.route("/orders")
 @login_required
@@ -971,15 +996,7 @@ def admin_stores():
     stores = Store.query.order_by(Store.id.desc()).paginate(page=page, per_page=per_page)
     return render_template('admin/stores.html', stores=stores)
 
-@app.route("/buy_data")
-@login_required
-def buy_data():
-    plans = DataPlan.query.filter_by(status='Active').order_by(DataPlan.display_order).all()
-    data_bundles = {
-        "MTN": [],
-        "TELECEL": [],
-        "AIRTELTIGO": []
-    }
+
 # @app.route("/buy_data")
 # ... replaced by DB driven route ...
 
@@ -1210,6 +1227,13 @@ def admin_export_transactions():
     output.headers["Content-Disposition"] = "attachment; filename=transactions_export.csv"
     output.headers["Content-type"] = "text/csv"
     return output
+@app.route("/api/read_notification", methods=["POST"])
+@login_required
+def mark_notification_read():
+    current_user.last_read_notice_timestamp = datetime.utcnow()
+    db.session.commit()
+    return jsonify({"status": "success"})
+
 @app.route("/admin/note", methods=["GET", "POST"])
 @login_required
 def admin_note():
@@ -1227,6 +1251,15 @@ def admin_note():
             db.session.add(notice_setting)
         else:
             notice_setting.value = new_notice
+            
+        # Update Timestamp
+        ts_setting = SiteSetting.query.filter_by(key='site_notice_timestamp').first()
+        now_iso = datetime.utcnow().isoformat()
+        if not ts_setting:
+             ts_setting = SiteSetting(key='site_notice_timestamp', value=now_iso)
+             db.session.add(ts_setting)
+        else:
+             ts_setting.value = now_iso
             
         db.session.commit()
         flash("Site notice updated successfully.", "success")
@@ -1246,4 +1279,13 @@ def support():
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()
+        # Migration check for last_read_notice_timestamp
+        from sqlalchemy import inspect, text
+        inspector = inspect(db.engine)
+        columns = [c['name'] for c in inspector.get_columns('user')]
+        if 'last_read_notice_timestamp' not in columns:
+            print("Migrating: Adding last_read_notice_timestamp to User table")
+            with db.engine.connect() as conn:
+                conn.execute(text("ALTER TABLE user ADD COLUMN last_read_notice_timestamp DATETIME"))
+                conn.commit()
     app.run(debug=True, host='0.0.0.0')

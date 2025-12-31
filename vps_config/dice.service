@@ -4,9 +4,9 @@ After=network.target
 
 [Service]
 User=root
-WorkingDirectory=/root/dice
-Environment="PATH=/root/dice/venv/bin:/usr/local/bin:/usr/bin:/bin"
-ExecStart=/root/dice/venv/bin/gunicorn --workers 3 --bind 127.0.0.1:8000 -m 007 app:app
+WorkingDirectory=/var/www/dice
+Environment="PATH=/var/www/dice/venv/bin:/usr/local/bin:/usr/bin:/bin"
+ExecStart=/var/www/dice/venv/bin/gunicorn --workers 3 --bind 127.0.0.1:8000 -m 007 app:app
 Restart=always
 
 [Install]

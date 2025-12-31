@@ -116,3 +116,31 @@ button:not(.nav-link):hover {
 .network-tabs .nav-link:hover {
     opacity: 0.9;
 }
+
+/* Sidebar Gradient */
+.bg-gradient-sidebar {
+    background: linear-gradient(180deg, #1a237e 0%, #0d47a1 100%);
+    color: white;
+}
+
+#sidebar-wrapper .list-group-item {
+    background-color: transparent;
+    color: rgba(255, 255, 255, 0.8);
+    border: none;
+    transition: all 0.2s;
+}
+
+#sidebar-wrapper .list-group-item:hover,
+#sidebar-wrapper .list-group-item.active {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #ffd700;
+    /* Gold accent */
+    border-left: 4px solid #ffd700;
+}
+
+#sidebar-wrapper .sidebar-heading {
+    padding: 1.5rem;
+    font-size: 1.25rem;
+    font-weight: bold;
+    color: white;
+}

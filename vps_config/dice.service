@@ -4,9 +4,10 @@ After=network.target
 
 [Service]
 User=root
-WorkingDirectory=/var/www/dice_app/Dev2D-main
-Environment="PATH=/var/www/dice_app/venv/bin"
+WorkingDirectory=/var/www/dice_app
+Environment="PATH=/var/www/dice_app/venv/bin:/usr/local/bin:/usr/bin:/bin"
 ExecStart=/var/www/dice_app/venv/bin/gunicorn --workers 3 --bind 127.0.0.1:8000 -m 007 app:app
+Restart=always
 
 [Install]
 WantedBy=multi-user.target

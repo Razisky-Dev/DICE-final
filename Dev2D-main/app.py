@@ -3,8 +3,6 @@ from flask_sqlalchemy import SQLAlchemy
 import csv
 import io
 import re
-import os
-import requests
 from flask_mail import Mail, Message
 from itsdangerous import URLSafeTimedSerializer
 from flask_login import (
@@ -31,25 +29,6 @@ app = Flask(__name__)
 app.config["SECRET_KEY"] = "super-secret-key-change-later"
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-
-# Context Processor for Cache Busting
-@app.context_processor
-def inject_version():
-    notice = SiteSetting.query.filter_by(key='site_notice').first()
-    notice_ts = SiteSetting.query.filter_by(key='site_notice_timestamp').first()
-    
-    timestamp = None
-    if notice_ts and notice_ts.value:
-         try:
-             timestamp = datetime.fromisoformat(notice_ts.value)
-         except:
-             pass
-
-    return {
-        'version': int(datetime.utcnow().timestamp()),
-        'site_notice': notice.value if notice else '',
-        'site_notice_timestamp': timestamp
-    }
 
 db = SQLAlchemy(app)
 login_manager = LoginManager(app)
@@ -78,8 +57,8 @@ class User(UserMixin, db.Model):
     password = db.Column(db.String(200))
     balance = db.Column(db.Float, default=0.0)
     is_admin = db.Column(db.Boolean, default=False)
-    is_suspended = db.Column(db.Boolean, default=False)
-    last_read_notice_timestamp = db.Column(db.DateTime)
+    is_suspended = db.Column(db.Boolean, default=False) # New field for suspension
+
 # =====================
 # TRANSACTION MODEL
 # =====================
@@ -105,14 +84,6 @@ class DataPlan(db.Model):
     selling_price = db.Column(db.Float, nullable=False, default=0.0) # Site Price (Revenue)
     display_order = db.Column(db.Integer, default=0)
     status = db.Column(db.String(20), default='Active') # Active, Inactive
-
-# =====================
-# SITE SETTINGS MODEL
-# =====================
-class SiteSetting(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    key = db.Column(db.String(50), unique=True, nullable=False)
-    value = db.Column(db.Text)
 
 # =====================
 # CONSTANTS
@@ -326,21 +297,6 @@ def dashboard():
         current_plan=current_plan,
         recent_activity=recent_activity
     )
-
-@app.route("/buy-data")
-@login_required
-def buy_data():
-    data_bundles = {
-        "MTN": [
-            {"size": "1 GB", "price": "GH₵4.60", "expiry": "No-Expiry"},
-            {"size": "2 GB", "price": "GH₵9.60", "expiry": "No-Expiry"},
-            {"size": "3 GB", "price": "GH₵14.00", "expiry": "No-Expiry"},
-            {"size": "4 GB", "price": "GH₵18.50", "expiry": "No-Expiry"},
-        ],
-        "TELECEL": [],
-        "AIRTELTIGO": []
-    }
-    return render_template("buy_data.html", data_bundles=data_bundles)
 
 @app.route("/orders")
 @login_required
@@ -570,140 +526,11 @@ def store_withdraw():
             status="Success"
         )
         db.session.add(txn)
-        
-        # Log to Store Orders History
-        new_order = StoreOrder(
-            store_id=store.id,
-            phone=current_user.mobile or "N/A",  # Or "Wallet Transfer"
-            email=current_user.email,
-            network="System",
-            package="Transfer to Wallet",
-            price=amount,
-            commission=0,
-            status="Success"
-        )
-        db.session.add(new_order)
-        
         db.session.commit()
         flash(f"Transferred GH₵{amount} from store to main wallet.", "success")
     else:
         flash("Insufficient store credit.", "error")
         
-    return redirect(url_for("store"))
-
-@app.route("/store/withdraw/momo", methods=["POST"])
-@login_required
-def store_withdraw_momo():
-    amount = float(request.form.get("amount"))
-    network = request.form.get("network")
-    phone = request.form.get("phone")
-    store = current_user.store
-
-    # 1. Validation
-    if amount > store.credit_balance:
-        flash("Insufficient store credit.", "error")
-        return redirect(url_for("store"))
-        
-    if amount < 10.00:
-        flash("Minimum withdrawal amount is GH₵ 10.00", "error")
-        return redirect(url_for("store"))
-    
-    PAYSTACK_SECRET_KEY = os.getenv("PAYSTACK_SECRET_KEY")
-    # Fallback to config if env not set, though env is preferred
-    if not PAYSTACK_SECRET_KEY:
-         PAYSTACK_SECRET_KEY = app.config.get("PAYSTACK_SECRET_KEY")
-
-    if not PAYSTACK_SECRET_KEY:
-        flash("System error: Payment gateway not configured. Please contact admin.", "error")
-        return redirect(url_for("store"))
-
-    # Map Network to Paystack Bank Code
-    # MTN -> 'MTN', Telecel -> 'VOD', AirtelTigo -> 'ATL'
-    bank_code_map = {
-        'MTN': 'MTN',
-        'TELECEL': 'VOD',
-        'AIRTELTIGO': 'ATL'
-    }
-    bank_code = bank_code_map.get(network)
-    
-    if not bank_code:
-        flash("Invalid Network selected.", "error")
-        return redirect(url_for("store"))
-
-    try:
-        headers = {
-            "Authorization": f"Bearer {PAYSTACK_SECRET_KEY}",
-            "Content-Type": "application/json"
-        }
-
-        # 2. Create Transfer Recipient
-        recipient_url = "https://api.paystack.co/transferrecipient"
-        recipient_data = {
-            "type": "mobile_money",
-            "name": f"{current_user.first_name} {current_user.last_name}",
-            "account_number": phone,
-            "bank_code": bank_code,
-            "currency": "GHS"
-        }
-        
-        rec_response = requests.post(recipient_url, json=recipient_data, headers=headers)
-        rec_json = rec_response.json()
-
-        if not rec_json.get('status'):
-            flash(f"Error creating recipient: {rec_json.get('message')}", "error")
-            return redirect(url_for("store"))
-        
-        recipient_code = rec_json['data']['recipient_code']
-
-        # 3. Initiate Transfer
-        transfer_url = "https://api.paystack.co/transfer"
-        transfer_data = {
-            "source": "balance", 
-            "reason": "Store Withdrawal", 
-            "amount": int(amount * 100), # Amount in pesewas
-            "recipient": recipient_code
-        }
-        
-        transfer_res = requests.post(transfer_url, json=transfer_data, headers=headers)
-        transfer_json = transfer_res.json()
-
-        if transfer_json.get('status'):
-            # Success - Update DB
-            store.credit_balance -= amount
-            store.total_withdrawn += amount
-            
-            txn = Transaction(
-                user_id=current_user.id,
-                reference=f"ST-MOMO-{int(datetime.utcnow().timestamp())}",
-                type="Store Withdrawal (MoMo)",
-                amount=amount,
-                status="Pending" # Paystack transfers are async
-            )
-            db.session.add(txn)
-
-            # Log to Store Orders History
-            new_order = StoreOrder(
-                store_id=store.id,
-                phone=phone,
-                email=current_user.email,
-                network=network,
-                package="Withdraw to MoMo",
-                price=amount,
-                commission=0,
-                status="Pending" # Pending
-            )
-            db.session.add(new_order)
-
-            db.session.commit()
-            
-            flash(f"Withdrawal of GH₵{amount} to {phone} ({network}) initiated successfully.", "success")
-        else:
-            flash(f"Transfer failed: {transfer_json.get('message')}", "error")
-
-    except Exception as e:
-        flash(f"An error occurred: {str(e)}", "error")
-        print(f"Paystack Error: {e}")
-
     return redirect(url_for("store"))
 
 @app.route("/store/<slug>")
@@ -996,7 +823,15 @@ def admin_stores():
     stores = Store.query.order_by(Store.id.desc()).paginate(page=page, per_page=per_page)
     return render_template('admin/stores.html', stores=stores)
 
-
+@app.route("/buy_data")
+@login_required
+def buy_data():
+    plans = DataPlan.query.filter_by(status='Active').order_by(DataPlan.display_order).all()
+    data_bundles = {
+        "MTN": [],
+        "TELECEL": [],
+        "AIRTELTIGO": []
+    }
 # @app.route("/buy_data")
 # ... replaced by DB driven route ...
 
@@ -1007,50 +842,7 @@ def admin_stores():
 def admin_transactions():
     page = request.args.get('page', 1, type=int)
     per_page = 20
-    
-    # Filter Parameters
-    search_query = request.args.get('search', '').strip()
-    txn_type = request.args.get('type', '')
-    status = request.args.get('status', '')
-    date_from = request.args.get('date_from', '')
-    date_to = request.args.get('date_to', '')
-
-    query = Transaction.query
-
-    # Apply Filters
-    if search_query:
-        query = query.join(Transaction.user).filter(
-            db.or_(
-                Transaction.reference.ilike(f'%{search_query}%'),
-                User.username.ilike(f'%{search_query}%'),
-                User.email.ilike(f'%{search_query}%')
-            )
-        )
-    
-    if txn_type:
-        query = query.filter(Transaction.type == txn_type)
-    
-    if status:
-        query = query.filter(Transaction.status == status)
-
-    if date_from:
-        try:
-            start_date = datetime.strptime(date_from, '%Y-%m-%d')
-            query = query.filter(Transaction.date >= start_date)
-        except ValueError:
-            pass # Ignore invalid date format
-            
-    if date_to:
-        try:
-            end_date = datetime.strptime(date_to, '%Y-%m-%d')
-             # Add one day to include the end date fully (up to 23:59:59 effectively if checking equality, but here we just do < next day usually, or just use date)
-             # Simpler: just match date part. But field is DateTime.
-            end_date = datetime.strptime(date_to, '%Y-%m-%d') + timedelta(days=1)
-            query = query.filter(Transaction.date < end_date)
-        except ValueError:
-            pass
-
-    transactions = query.order_by(Transaction.date.desc()).paginate(page=page, per_page=per_page)
+    transactions = Transaction.query.order_by(Transaction.date.desc()).paginate(page=page, per_page=per_page)
     
     # PROFIT BREAKDOWN CALCULATION
     # Fetch all plans for cost lookup
@@ -1227,65 +1019,7 @@ def admin_export_transactions():
     output.headers["Content-Disposition"] = "attachment; filename=transactions_export.csv"
     output.headers["Content-type"] = "text/csv"
     return output
-@app.route("/api/read_notification", methods=["POST"])
-@login_required
-def mark_notification_read():
-    current_user.last_read_notice_timestamp = datetime.utcnow()
-    db.session.commit()
-    return jsonify({"status": "success"})
-
-@app.route("/admin/note", methods=["GET", "POST"])
-@login_required
-def admin_note():
-    if not current_user.is_admin:
-        flash("Access denied.", "error")
-        return redirect(url_for("dashboard"))
-        
-    notice_setting = SiteSetting.query.filter_by(key='site_notice').first()
-    
-    if request.method == "POST":
-        new_notice = request.form.get("notice")
-        
-        if not notice_setting:
-            notice_setting = SiteSetting(key='site_notice', value=new_notice)
-            db.session.add(notice_setting)
-        else:
-            notice_setting.value = new_notice
-            
-        # Update Timestamp
-        ts_setting = SiteSetting.query.filter_by(key='site_notice_timestamp').first()
-        now_iso = datetime.utcnow().isoformat()
-        if not ts_setting:
-             ts_setting = SiteSetting(key='site_notice_timestamp', value=now_iso)
-             db.session.add(ts_setting)
-        else:
-             ts_setting.value = now_iso
-            
-        db.session.commit()
-        flash("Site notice updated successfully.", "success")
-        return redirect(url_for("admin_note"))
-        
-    return render_template("admin/note.html", notice=notice_setting.value if notice_setting else "")
-
-@app.route("/support")
-@login_required
-def support():
-    # Fetch support details from the user's store settings (or default system settings)
-    # Since the request is "customer and agent have live chat with the admin", we use the admin's contact info.
-    # For now, we'll hardcode a default admin WhatsApp or use the store's support number if available.
-    # Ideally, this should come from a SystemSetting, but for now we'll pass context.
-    return render_template("support.html")
-
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()
-        # Migration check for last_read_notice_timestamp
-        from sqlalchemy import inspect, text
-        inspector = inspect(db.engine)
-        columns = [c['name'] for c in inspector.get_columns('user')]
-        if 'last_read_notice_timestamp' not in columns:
-            print("Migrating: Adding last_read_notice_timestamp to User table")
-            with db.engine.connect() as conn:
-                conn.execute(text("ALTER TABLE user ADD COLUMN last_read_notice_timestamp DATETIME"))
-                conn.commit()
-    app.run(debug=True, host='0.0.0.0')
+    app.run(debug=True)

@@ -7,79 +7,10 @@
 {% block content %}
 <div class="table-card">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h5 class="fw-bold mb-0">Total Transactions: {{ transactions.total }}</h5>
-            <p class="text-muted small mb-0">Manage and track all system activities</p>
-        </div>
-        <div class="d-flex gap-2">
-            <button class="btn btn-sm btn-outline-primary" type="button" data-bs-toggle="collapse"
-                data-bs-target="#filterCollapse" aria-expanded="false" aria-controls="filterCollapse">
-                <i class="bi bi-funnel me-1"></i>Filter
-            </button>
-            <a href="{{ url_for('admin_export_transactions', **request.args) }}" class="btn btn-sm btn-success">
-                <i class="bi bi-file-earmark-spreadsheet me-2"></i>Export CSV
-            </a>
-        </div>
-    </div>
-
-    <!-- Filter Section (Collapsible) -->
-    <div class="collapse mb-4" id="filterCollapse">
-        <div class="card border-0 shadow-sm card-body bg-light">
-            <form action="{{ url_for('admin_transactions') }}" method="GET">
-                <div class="row g-3">
-                    <div class="col-md-3">
-                        <label class="form-label small fw-bold text-muted">Search</label>
-                        <input type="text" name="search" class="form-control form-control-sm"
-                            placeholder="Ref, Username, Email..." value="{{ request.args.get('search', '') }}">
-                    </div>
-                    <div class="col-6 col-md-2">
-                        <label class="form-label small fw-bold text-muted">Type</label>
-                        <select name="type" class="form-select form-select-sm">
-                            <option value="">All Types</option>
-                            <option value="Deposit" {% if request.args.get('type')=='Deposit' %}selected{% endif %}>
-                                Deposit</option>
-                            <option value="Withdrawal" {% if request.args.get('type')=='Withdrawal' %}selected{% endif
-                                %}>Withdrawal</option>
-                            <option value="Data Purchase" {% if request.args.get('type')=='Data Purchase' %}selected{%
-                                endif %}>Data Purchase</option>
-                            <option value="Store Credit Transfer" {% if
-                                request.args.get('type')=='Store Credit Transfer' %}selected{% endif %}>Transfer
-                            </option>
-                        </select>
-                    </div>
-                    <div class="col-6 col-md-2">
-                        <label class="form-label small fw-bold text-muted">Status</label>
-                        <select name="status" class="form-select form-select-sm">
-                            <option value="">All Statuses</option>
-                            <option value="Success" {% if request.args.get('status')=='Success' %}selected{% endif %}>
-                                Success</option>
-                            <option value="Pending" {% if request.args.get('status')=='Pending' %}selected{% endif %}>
-                                Pending</option>
-                            <option value="Failed" {% if request.args.get('status')=='Failed' %}selected{% endif %}>
-                                Failed</option>
-                        </select>
-                    </div>
-                    <div class="col-6 col-md-2">
-                        <label class="form-label small fw-bold text-muted">From</label>
-                        <input type="date" name="date_from" class="form-control form-control-sm"
-                            value="{{ request.args.get('date_from', '') }}">
-                    </div>
-                    <div class="col-6 col-md-2">
-                        <label class="form-label small fw-bold text-muted">To</label>
-                        <input type="date" name="date_to" class="form-control form-control-sm"
-                            value="{{ request.args.get('date_to', '') }}">
-                    </div>
-                    <div class="col-md-1 d-flex align-items-end">
-                        <div class="d-flex gap-1 w-100">
-                            <button type="submit" class="btn btn-sm btn-primary w-100"><i
-                                    class="bi bi-search"></i></button>
-                            <a href="{{ url_for('admin_transactions') }}" class="btn btn-sm btn-outline-secondary"
-                                title="Reset"><i class="bi bi-x-lg"></i></a>
-                        </div>
-                    </div>
-                </div>
-            </form>
-        </div>
+        <h5 class="fw-bold mb-0">Total Transactions: {{ transactions.total }}</h5>
+        <a href="{{ url_for('admin_export_transactions') }}" class="btn btn-sm btn-success">
+            <i class="bi bi-file-earmark-spreadsheet me-2"></i>Export CSV
+        </a>
     </div>
 
     <!-- Profit Breakdown -->
@@ -141,19 +72,19 @@
         <table class="table table-hover align-middle">
             <thead class="table-light">
                 <tr>
-                    <th class="d-none d-md-table-cell">Ref / ID</th>
-                    <th>Transaction Details</th>
+                    <th>Ref / ID</th>
+                    <th>User / Store</th>
                     <th>Amount</th>
-                    <th class="d-none d-md-table-cell">Type</th>
-                    <th class="d-none d-md-table-cell">Status</th>
-                    <th class="d-none d-md-table-cell">Date</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                    <th>Date</th>
                     <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
                 {% for txn in transactions.items %}
                 <tr>
-                    <td class="d-none d-md-table-cell">
+                    <td>
                         <div class="fw-bold text-dark">#{{ txn.id }}</div>
                         <div class="small text-muted">{{ txn.reference }}</div>
                     </td>
@@ -166,31 +97,6 @@
                             <i class="bi bi-person me-1"></i>Direct
                             {% endif %}
                         </div>
-                        <!-- Mobile Details -->
-                        <div class="d-md-none mt-1">
-                            <div class="d-flex align-items-center gap-2 mb-1">
-                                <span class="badge bg-light text-secondary border fw-normal">{{ txn.type }}</span>
-                                <span class="small text-muted">{{ txn.date.strftime('%b %d') }}</span>
-                            </div>
-                            <div>
-                                {% if txn.status == 'Success' %}
-                                <span
-                                    class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2">
-                                    <i class="bi bi-check-circle me-1"></i>Success
-                                </span>
-                                {% elif txn.status == 'Pending' %}
-                                <span
-                                    class="badge bg-warning-subtle text-warning border border-warning-subtle rounded-pill px-2">
-                                    <i class="bi bi-clock me-1"></i>Pending
-                                </span>
-                                {% else %}
-                                <span
-                                    class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-2">
-                                    <i class="bi bi-x-circle me-1"></i>{{ txn.status }}
-                                </span>
-                                {% endif %}
-                            </div>
-                        </div>
                     </td>
                     <td>
                         <span
@@ -199,10 +105,10 @@
                             GH₵ {{ "{:,.2f}".format(txn.amount | default(0)) }}
                         </span>
                     </td>
-                    <td class="d-none d-md-table-cell">
+                    <td>
                         <span class="badge bg-light text-dark border">{{ txn.type }}</span>
                     </td>
-                    <td class="d-none d-md-table-cell">
+                    <td>
                         {% if txn.status == 'Success' %}
                         <span class="badge bg-success-subtle text-success border border-success-subtle">
                             <i class="bi bi-check-circle me-1"></i>Success
@@ -217,45 +123,24 @@
                         </span>
                         {% endif %}
                     </td>
-                    <td class="d-none d-md-table-cell">
+                    <td>
                         <div class="small">{{ txn.date.strftime('%b %d, %Y') }}</div>
                         <div class="small text-muted">{{ txn.date.strftime('%H:%M %p') }}</div>
                     </td>
                     <td>
-                    <td>
-                        <!-- Mobile: View Button Only -->
-                        <div class="d-md-none">
-                            <button class="btn btn-sm btn-light border" data-bs-toggle="modal"
-                                data-bs-target="#txnModal{{ txn.id }}">
-                                <i class="bi bi-eye"></i>
-                            </button>
+                        {% if txn.type == 'Withdrawal' and txn.status == 'Pending' %}
+                        <div class="btn-group">
+                            <a href="{{ url_for('admin_manage_withdrawal', txn_id=txn.id, action='approve') }}"
+                                class="btn btn-sm btn-success" title="Approve">
+                                <i class="bi bi-check-lg"></i>
+                            </a>
+                            <a href="{{ url_for('admin_manage_withdrawal', txn_id=txn.id, action='reject') }}"
+                                class="btn btn-sm btn-danger" title="Reject"
+                                onclick="return confirm('Reject withdrawal and refund user?')">
+                                <i class="bi bi-x-lg"></i>
+                            </a>
                         </div>
-
-                        <!-- Desktop: Actions -->
-                        <div class="d-none d-md-block">
-                            {% if txn.type == 'Withdrawal' and txn.status == 'Pending' %}
-                            <div class="btn-group">
-                                <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal"
-                                    data-bs-target="#txnModal{{ txn.id }}">
-                                    <i class="bi bi-eye"></i>
-                                </button>
-                                <a href="{{ url_for('admin_manage_withdrawal', txn_id=txn.id, action='approve') }}"
-                                    class="btn btn-sm btn-success" title="Approve">
-                                    <i class="bi bi-check-lg"></i>
-                                </a>
-                                <a href="{{ url_for('admin_manage_withdrawal', txn_id=txn.id, action='reject') }}"
-                                    class="btn btn-sm btn-danger" title="Reject"
-                                    onclick="return confirm('Reject withdrawal and refund user?')">
-                                    <i class="bi bi-x-lg"></i>
-                                </a>
-                            </div>
-                            {% else %}
-                            <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal"
-                                data-bs-target="#txnModal{{ txn.id }}">
-                                <i class="bi bi-eye me-1"></i>View
-                            </button>
-                            {% endif %}
-                        </div>
+                        {% endif %}
                     </td>
                 </tr>
                 {% endfor %}
@@ -284,73 +169,4 @@
         </ul>
     </nav>
 </div>
-
-<!-- Modals Section (Moved outside table to prevent backdrop/z-index issues) -->
-{% for txn in transactions.items %}
-<div class="modal fade" id="txnModal{{ txn.id }}" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title fw-bold">Transaction Details</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div class="text-center mb-4">
-                    <div
-                        class="display-6 fw-bold {% if txn.type == 'Deposit' or txn.type == 'Store Credit Transfer' %}text-success{% else %}text-danger{% endif %}">
-                        {% if txn.type == 'Deposit' or txn.type == 'Store Credit Transfer' %}+{% else %}-{% endif %}
-                        GH₵ {{ "{:,.2f}".format(txn.amount | default(0)) }}
-                    </div>
-                    <div class="badge bg-light text-dark border mt-2">{{ txn.type }}</div>
-                </div>
-
-                <ul class="list-group list-group-flush">
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        <span class="text-muted small">Status</span>
-                        {% if txn.status == 'Success' %}
-                        <span class="badge bg-success-subtle text-success border border-success-subtle">Success</span>
-                        {% elif txn.status == 'Pending' %}
-                        <span class="badge bg-warning-subtle text-warning border border-warning-subtle">Pending</span>
-                        {% else %}
-                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle">{{ txn.status
-                            }}</span>
-                        {% endif %}
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        <span class="text-muted small">Reference</span>
-                        <span class="font-monospace small">{{ txn.reference }}</span>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        <span class="text-muted small">Date</span>
-                        <span>{{ txn.date.strftime('%b %d, %Y %H:%M') }}</span>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        <span class="text-muted small">User</span>
-                        <span class="fw-bold">{{ txn.user.username }}</span>
-                    </li>
-                    {% if txn.user.store %}
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        <span class="text-muted small">Store</span>
-                        <span>{{ txn.user.store.name }}</span>
-                    </li>
-                    {% endif %}
-                </ul>
-
-                {% if txn.type == 'Withdrawal' and txn.status == 'Pending' %}
-                <div class="d-grid gap-2 mt-4">
-                    <a href="{{ url_for('admin_manage_withdrawal', txn_id=txn.id, action='approve') }}"
-                        class="btn btn-success">
-                        Approve Withdrawal
-                    </a>
-                    <a href="{{ url_for('admin_manage_withdrawal', txn_id=txn.id, action='reject') }}"
-                        class="btn btn-outline-danger" onclick="return confirm('Reject withdrawal and refund user?')">
-                        Reject Withdrawal
-                    </a>
-                </div>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-</div>
-{% endfor %}
 {% endblock %}

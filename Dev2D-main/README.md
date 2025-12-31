@@ -1,2 +1,2 @@
-# DICE Project
-Digital Content & Service Platform
+# Dev2D
+dicess project

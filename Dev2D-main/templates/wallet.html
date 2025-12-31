@@ -1,148 +1,279 @@
-{% extends 'dashboard_layout.html' %}
+<!DOCTYPE html>
+<html lang="en">
 
-{% block title %}Wallet | RazilHub{% endblock %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wallet | RazilHub</title>
 
-{% block content %}
-<!-- Header -->
-<div class="mb-4">
-    <h3>Your Wallet 💳</h3>
-    <p class="text-muted">Manage your funds and view transactions</p>
-</div>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
-<!-- Wallet Summary Cards -->
-<div class="row g-4 mb-4">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 
-    <div class="col-md-3">
-        <div class="card text-white bg-primary h-100">
-            <div class="card-body">
-                <h6>Wallet Balance</h6>
-                <h4>GH₵{{ "{:,.2f}".format(balance) }}</h4>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f5f7fa;
+        }
+
+        #sidebar-wrapper {
+            min-width: 250px;
+            max-width: 250px;
+        }
+
+        #sidebar-wrapper .list-group-item {
+            border: none;
+            padding: 20px 25px;
+            font-size: 1rem;
+            color: #333;
+        }
+
+        #sidebar-wrapper .list-group-item:hover {
+            background-color: #007bff;
+            color: white;
+        }
+
+        #page-content-wrapper {
+            width: 100%;
+        }
+
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar {
+            padding: 0.8rem 1rem;
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        #wrapper.toggled #sidebar-wrapper {
+            margin-left: -250px;
+        }
+
+        #sidebar-wrapper {
+            transition: margin 0.25s ease-out;
+        }
+
+        @media (max-width: 768px) {
+            #sidebar-wrapper {
+                margin-left: -250px;
+            }
+
+            #wrapper.toggled #sidebar-wrapper {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="d-flex" id="wrapper">
+
+        <!-- Sidebar -->
+        <div class="bg-light border-end" id="sidebar-wrapper">
+            <div class="sidebar-heading py-4 fs-4 fw-bold" style="padding-left: 25px;">RazilHub</div>
+            <div class="list-group list-group-flush">
+                <a href="{{ url_for('dashboard') }}"
+                    class="list-group-item list-group-item-action bg-light">Dashboard</a>
+                <a href="{{ url_for('orders') }}" class="list-group-item list-group-item-action bg-light">Orders</a>
+                <a href="{{ url_for('wallet') }}"
+                    class="list-group-item list-group-item-action bg-light active">Wallet</a>
+                <a href="{{ url_for('buy_data') }}" class="list-group-item list-group-item-action bg-light">Buy Data</a>
+                <a href="{{ url_for('store') }}" class="list-group-item list-group-item-action bg-light">Store</a>
+                <a href="{{ url_for('profile') }}" class="list-group-item list-group-item-action bg-light">Profile</a>
+                <a href="{{ url_for('logout') }}" class="list-group-item list-group-item-action bg-light">Logout</a>
             </div>
         </div>
-    </div>
 
-    <div class="col-md-3">
-        <div class="card text-white bg-success h-100">
-            <div class="card-body">
-                <h6>Total Deposits</h6>
-                <h4>GH₵{{ "{:,.2f}".format(transactions | selectattr('type', 'equalto', 'Deposit') |
-                    sum(attribute='amount')) }}</h4>
-            </div>
-        </div>
-    </div>
+        <!-- Page Content -->
+        <div id="page-content-wrapper">
 
-    <div class="col-md-3">
-        <div class="card text-white bg-warning h-100">
-            <div class="card-body">
-                <h6>Daily Sales</h6>
-                <h4>GH₵{{ "{:,.2f}".format(daily_sales) }}</h4>
-                <small class="text-dark">Today's Revenue</small>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-md-3">
-        <div class="card text-white bg-dark h-100">
-            <div class="card-body">
-                <h6>Monthly Sales</h6>
-                <h4>GH₵{{ "{:,.2f}".format(monthly_sales) }}</h4>
-                <small class="text-white-50">This Month</small>
-            </div>
-        </div>
-    </div>
-
-</div>
-
-
-<!-- Wallet Actions (Deposit & Withdraw) -->
-<div class="row g-4 mb-4">
-    <!-- Deposit Form -->
-    <div class="col-md-6">
-        <div class="card h-100">
-            <div class="card-body">
-                <h5 class="card-title text-success">Deposit Funds 📥</h5>
-                <p class="text-muted small">Top up your wallet securely via Paystack.</p>
-
-                <form method="POST" action="{{ url_for('deposit') }}">
-                    <div class="mb-3">
-                        <label class="form-label">Amount (GH₵)</label>
-                        <input type="number" name="amount" class="form-control" placeholder="e.g. 50.00" min="1"
-                            step="0.01" required>
+            <!-- Navbar -->
+            <nav class="navbar navbar-expand-lg navbar-light border-bottom">
+                <div class="container-fluid">
+                    <button class="btn btn-primary" id="sidebarToggle">☰</button>
+                    <div class="ms-auto">
+                        Wallet Overview
                     </div>
-                    <button type="submit" class="btn btn-success w-100">Proceed to Payment</button>
-                </form>
-            </div>
-        </div>
-    </div>
+                </div>
+            </nav>
 
-    <!-- Withdraw Form -->
-    <div class="col-md-6">
-        <div class="card h-100">
-            <div class="card-body">
-                <h5 class="card-title text-danger">Withdraw Funds 📤</h5>
-                <p class="text-muted small">Request a withdrawal to your mobile money.</p>
-                <form method="POST" action="{{ url_for('withdraw') }}">
-                    <div class="mb-3">
-                        <label class="form-label">Amount (GH₵)</label>
-                        <input type="number" name="amount" class="form-control" placeholder="e.g. 20.00" min="1"
-                            step="0.01" required>
+            <!-- Wallet Content -->
+            <div class="container-fluid mt-4">
+
+                <!-- Header -->
+                <div class="mb-4">
+                    <h3>Your Wallet 💳</h3>
+                    <p class="text-muted">Manage your funds and view transactions</p>
+                    <!-- Flash Messages -->
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                    {% for category, message in messages %}
+                    <div class="alert alert-{{ category if category != 'error' else 'danger' }}">{{ message }}</div>
+                    {% endfor %}
+                    {% endif %}
+                    {% endwith %}
+                </div>
+
+                <!-- Wallet Summary Cards -->
+                <div class="row g-4 mb-4">
+
+                    <div class="col-md-3">
+                        <div class="card text-white bg-primary h-100">
+                            <div class="card-body">
+                                <h6>Wallet Balance</h6>
+                                <h4>GH₵{{ "{:,.2f}".format(balance) }}</h4>
+                            </div>
+                        </div>
                     </div>
-                    <button type="submit" class="btn btn-danger w-100">Request Withdrawal</button>
-                </form>
+
+                    <div class="col-md-3">
+                        <div class="card text-white bg-success h-100">
+                            <div class="card-body">
+                                <h6>Total Deposits</h6>
+                                <!-- Calculate total deposits if needed, or placeholder -->
+                                <h4>GH₵{{ "{:,.2f}".format(transactions | selectattr('type', 'equalto', 'Deposit') |
+                                    sum(attribute='amount')) }}</h4>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="card text-white bg-warning h-100">
+                            <div class="card-body">
+                                <h6>Daily Sales</h6>
+                                <h4>GH₵{{ "{:,.2f}".format(daily_sales) }}</h4>
+                                <small class="text-dark">Today's Revenue</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="card text-white bg-dark h-100">
+                            <div class="card-body">
+                                <h6>Monthly Sales</h6>
+                                <h4>GH₵{{ "{:,.2f}".format(monthly_sales) }}</h4>
+                                <small class="text-white-50">This Month</small>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+
+                <!-- Wallet Actions (Deposit & Withdraw) -->
+                <div class="row g-4 mb-4">
+                    <!-- Deposit Form -->
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h5 class="card-title text-success">Deposit Funds 📥</h5>
+                                <p class="text-muted small">Top up your wallet securely via Paystack.</p>
+
+                                <form method="POST" action="{{ url_for('deposit') }}">
+                                    <div class="mb-3">
+                                        <label class="form-label">Amount (GH₵)</label>
+                                        <input type="number" name="amount" class="form-control" placeholder="e.g. 50.00"
+                                            min="1" step="0.01" required>
+                                    </div>
+                                    <button type="submit" class="btn btn-success w-100">Proceed to Payment</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Withdraw Form -->
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h5 class="card-title text-danger">Withdraw Funds 📤</h5>
+                                <p class="text-muted small">Request a withdrawal to your mobile money.</p>
+                                <form method="POST" action="{{ url_for('withdraw') }}">
+                                    <div class="mb-3">
+                                        <label class="form-label">Amount (GH₵)</label>
+                                        <input type="number" name="amount" class="form-control" placeholder="e.g. 20.00"
+                                            min="1" step="0.01" required>
+                                    </div>
+                                    <button type="submit" class="btn btn-danger w-100">Request Withdrawal</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Transaction History -->
+                <div class="card p-4">
+                    <h5 class="mb-3">Transaction History</h5>
+
+                    <div class="table-responsive">
+                        <table class="table table-bordered align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Ref ID</th>
+                                    <th>Type</th>
+                                    <th>Amount (GH₵)</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if transactions %}
+                                {% for txn in transactions %}
+                                <tr>
+                                    <td><small>{{ txn.reference }}</small></td>
+                                    <td>
+                                        {% if txn.type == 'Deposit' %}
+                                        <span class="badge bg-success">Deposit</span>
+                                        {% else %}
+                                        <span class="badge bg-danger">Withdrawal</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ "{:,.2f}".format(txn.amount) }}</td>
+                                    <td>
+                                        {% if txn.status == 'Success' %}
+                                        <span class="badge bg-success">Success</span>
+                                        {% elif txn.status == 'Pending' %}
+                                        <span class="badge bg-warning text-dark">Pending</span>
+                                        {% else %}
+                                        <span class="badge bg-danger">Failed</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ txn.date.strftime('%Y-%m-%d %H:%M') }}</td>
+                                </tr>
+                                {% endfor %}
+                                {% else %}
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted">
+                                        No transactions yet
+                                    </td>
+                                </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>
-</div>
 
-<!-- Transaction History -->
-<div class="card p-4">
-    <h5 class="mb-3">Transaction History</h5>
+    <!-- Sidebar Toggle Script -->
+    <script>
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const wrapper = document.getElementById('wrapper');
+        sidebarToggle.addEventListener('click', () => {
+            wrapper.classList.toggle('toggled');
+        });
+    </script>
 
-    <div class="table-responsive">
-        <table class="table table-bordered align-middle">
-            <thead class="table-light">
-                <tr>
-                    <th>Ref ID</th>
-                    <th>Type</th>
-                    <th>Amount (GH₵)</th>
-                    <th>Status</th>
-                    <th>Date</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% if transactions %}
-                {% for txn in transactions %}
-                <tr>
-                    <td><small>{{ txn.reference }}</small></td>
-                    <td>
-                        {% if txn.type == 'Deposit' %}
-                        <span class="badge bg-success">Deposit</span>
-                        {% else %}
-                        <span class="badge bg-danger">Withdrawal</span>
-                        {% endif %}
-                    </td>
-                    <td>{{ "{:,.2f}".format(txn.amount) }}</td>
-                    <td>
-                        {% if txn.status == 'Success' %}
-                        <span class="badge bg-success">Success</span>
-                        {% elif txn.status == 'Pending' %}
-                        <span class="badge bg-warning text-dark">Pending</span>
-                        {% else %}
-                        <span class="badge bg-danger">Failed</span>
-                        {% endif %}
-                    </td>
-                    <td>{{ txn.date.strftime('%Y-%m-%d %H:%M') }}</td>
-                </tr>
-                {% endfor %}
-                {% else %}
-                <tr>
-                    <td colspan="5" class="text-center text-muted">
-                        No transactions yet
-                    </td>
-                </tr>
-                {% endif %}
-            </tbody>
-        </table>
-    </div>
-</div>
-{% endblock %}
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+
+</html>

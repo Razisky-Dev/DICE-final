@@ -27,8 +27,9 @@
                         <thead class="bg-light text-muted">
                             <tr>
                                 <th class="ps-4">Plan Size</th>
-                                <th>Pricing (Cost / Sell)</th>
-                                <th class="d-none d-md-table-cell">Profit</th>
+                                <th>Depot Price (Cost)</th>
+                                <th>Site Price (Selling)</th>
+                                <th>Profit</th>
                                 <th>Action</th>
                             </tr>
                         </thead>
@@ -38,24 +39,21 @@
                                 <input type="hidden" name="plan_id" value="{{ plan.id }}">
                                 <tr>
                                     <td class="ps-4 fw-bold">{{ plan.plan_size }}</td>
-
-                                    <!-- Combined Pricing Column -->
                                     <td>
-                                        <div class="d-flex flex-column flex-md-row gap-2">
-                                            <div class="input-group input-group-sm" style="max-width: 140px;">
-                                                <span class="input-group-text">Cost</span>
-                                                <input type="number" step="0.01" name="cost_price" class="form-control"
-                                                    value="{{ plan.cost_price }}" required>
-                                            </div>
-                                            <div class="input-group input-group-sm" style="max-width: 140px;">
-                                                <span class="input-group-text">Sell</span>
-                                                <input type="number" step="0.01" name="selling_price"
-                                                    class="form-control" value="{{ plan.selling_price }}" required>
-                                            </div>
+                                        <div class="input-group input-group-sm" style="max-width: 120px;">
+                                            <span class="input-group-text">GH₵</span>
+                                            <input type="number" step="0.01" name="cost_price" class="form-control"
+                                                value="{{ plan.cost_price }}" required>
                                         </div>
                                     </td>
-
-                                    <td class="d-none d-md-table-cell">
+                                    <td>
+                                        <div class="input-group input-group-sm" style="max-width: 120px;">
+                                            <span class="input-group-text">GH₵</span>
+                                            <input type="number" step="0.01" name="selling_price" class="form-control"
+                                                value="{{ plan.selling_price }}" required>
+                                        </div>
+                                    </td>
+                                    <td>
                                         <span
                                             class="badge bg-success bg-opacity-10 text-success border border-success-subtle">
                                             + GH₵ {{ "{:,.2f}".format(plan.selling_price - plan.cost_price) }}
@@ -71,7 +69,8 @@
                     </table>
                 </div>
             </div>
-            {% endfor %}
         </div>
+        {% endfor %}
     </div>
-    {% endblock %}
+</div>
+{% endblock %}

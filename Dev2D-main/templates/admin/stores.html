@@ -14,11 +14,11 @@
         <table class="table table-hover align-middle">
             <thead class="table-light">
                 <tr>
-                    <th>Store Details</th>
-                    <th class="d-none d-md-table-cell">Owner</th>
-                    <th class="text-end">Performance</th>
-                    <th class="d-none d-md-table-cell">Credit Balance</th>
-                    <th class="d-none d-md-table-cell">Status</th>
+                    <th>Store Name</th>
+                    <th>Owner</th>
+                    <th>Total Sales</th>
+                    <th>Credit Balance</th>
+                    <th>Status</th>
                     <th class="text-end">Actions</th>
                 </tr>
             </thead>
@@ -28,28 +28,12 @@
                     <td>
                         <div class="fw-bold text-primary">{{ store.name }}</div>
                         <div class="small text-muted">/store/{{ store.slug }}</div>
-                        <!-- Mobile Details -->
-                        <div class="d-md-none small mt-1">
-                            <span class="text-muted"><i class="bi bi-person me-1"></i>{{ store.user.username }}</span>
-                            <span class="mx-1">|</span>
-                            {% if store.total_sales > 0 %}
-                            <span class="text-success">Active</span>
-                            {% else %}
-                            <span class="text-secondary">No Sales</span>
-                            {% endif %}
-                        </div>
                     </td>
-                    <td class="d-none d-md-table-cell">{{ store.user.username }}</td>
-                    <td class="text-end">
-                        <div class="fw-bold">GH₵ {{ "{:,.2f}".format(store.total_sales | default(0)) }}</div>
-                        <div class="d-md-none small text-success">
-                            Credit: GH₵ {{ "{:,.2f}".format(store.credit_balance | default(0)) }}
-                        </div>
+                    <td>{{ store.user.username }}</td>
+                    <td><span class="fw-bold">GH₵ {{ "{:,.2f}".format(store.total_sales | default(0)) }}</span></td>
+                    <td><span class="text-success">GH₵ {{ "{:,.2f}".format(store.credit_balance | default(0)) }}</span>
                     </td>
-                    <td class="d-none d-md-table-cell"><span class="text-success">GH₵ {{
-                            "{:,.2f}".format(store.credit_balance | default(0)) }}</span>
-                    </td>
-                    <td class="d-none d-md-table-cell">
+                    <td>
                         {% if store.total_sales > 0 %}
                         <span class="badge bg-success-subtle text-success border border-success-subtle">Active</span>
                         {% else %}
@@ -58,18 +42,42 @@
                         {% endif %}
                     </td>
                     <td class="text-end">
-                        <div class="d-flex justify-content-end gap-1">
-                            <a href="{{ url_for('public_store', slug=store.slug) }}" class="btn btn-sm btn-outline-info"
-                                target="_blank" title="View Store">
-                                <i class="bi bi-eye"></i>
-                            </a>
-                            <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal"
-                                data-bs-target="#deleteStoreModal{{ store.id }}">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </div>
+                        <a href="{{ url_for('public_store', slug=store.slug) }}"
+                            class="btn btn-sm btn-outline-info me-1" target="_blank" title="View Store">
+                            <i class="bi bi-eye"></i>
+                        </a>
+                        <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal"
+                            data-bs-target="#deleteStoreModal{{ store.id }}">
+                            <i class="bi bi-trash"></i>
+                        </button>
                     </td>
                 </tr>
+
+                <!-- Delete Store Modal -->
+                <div class="modal fade" id="deleteStoreModal{{ store.id }}" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header border-0">
+                                <h5 class="modal-title fw-bold text-danger">Confirm Deletion</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body text-center p-4">
+                                <div class="display-1 text-danger mb-3">
+                                    <i class="bi bi-exclamation-triangle-fill"></i>
+                                </div>
+                                <p>Are you sure you want to delete <strong>{{ store.name }}</strong>?</p>
+                                <p class="small text-muted">This action will remove the store page and all its custom
+                                    pricing settings. This cannot be undone.</p>
+                            </div>
+                            <div class="modal-footer border-0 justify-content-center">
+                                <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">Cancel</button>
+                                <a href="{{ url_for('admin_delete_store', store_id=store.id) }}"
+                                    class="btn btn-danger px-4">Delete Store</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 {% endfor %}
             </tbody>
         </table>
@@ -96,31 +104,4 @@
         </ul>
     </nav>
 </div>
-
-<!-- Delete Store Modals (Moved outside table) -->
-{% for store in stores.items %}
-<div class="modal fade" id="deleteStoreModal{{ store.id }}" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header border-0">
-                <h5 class="modal-title fw-bold text-danger">Confirm Deletion</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body text-center p-4">
-                <div class="display-1 text-danger mb-3">
-                    <i class="bi bi-exclamation-triangle-fill"></i>
-                </div>
-                <p>Are you sure you want to delete <strong>{{ store.name }}</strong>?</p>
-                <p class="small text-muted">This action will remove the store page and all its custom
-                    pricing settings. This cannot be undone.</p>
-            </div>
-            <div class="modal-footer border-0 justify-content-center">
-                <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">Cancel</button>
-                <a href="{{ url_for('admin_delete_store', store_id=store.id) }}" class="btn btn-danger px-4">Delete
-                    Store</a>
-            </div>
-        </div>
-    </div>
-</div>
-{% endfor %}
 {% endblock %}

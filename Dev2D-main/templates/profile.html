@@ -1,129 +1,244 @@
-{% extends 'dashboard_layout.html' %}
+<!DOCTYPE html>
+<html lang="en">
 
-{% block title %}Profile | RazilHub{% endblock %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile | RazilHub</title>
 
-{% block extra_css %}
-<style>
-    .badge-agent {
-        background-color: #1a1a2e;
-        color: white;
-        padding: 8px 15px;
-        border-radius: 20px;
-    }
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
-    .badge-customer {
-        background-color: #6c757d;
-        color: white;
-        padding: 8px 15px;
-        border-radius: 20px;
-    }
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 
-    .card-header {
-        background-color: white;
-        border-bottom: 1px solid #eee;
-        padding: 1.5rem;
-    }
-</style>
-{% endblock %}
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f5f7fa;
+        }
 
-{% block content %}
-<div class="row g-4 justify-content-center">
+        #sidebar-wrapper {
+            min-width: 250px;
+            max-width: 250px;
+        }
 
-    <!-- Account Info Column -->
-    <div class="col-lg-5">
-        <div class="card h-100">
-            <div class="card-header">
-                <h5 class="card-title fw-bold mb-0">Account Information</h5>
+        #sidebar-wrapper .list-group-item {
+            border: none;
+            padding: 20px 25px;
+            font-size: 1rem;
+            color: #333;
+        }
+
+        #sidebar-wrapper .list-group-item:hover {
+            background-color: #007bff;
+            color: white;
+        }
+
+        #page-content-wrapper {
+            width: 100%;
+        }
+
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border: none;
+        }
+
+        .card-header {
+            background-color: white;
+            border-bottom: 1px solid #eee;
+            padding: 1.5rem;
+        }
+
+        .navbar {
+            padding: 0.8rem 1rem;
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .badge-agent {
+            background-color: #1a1a2e;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+        }
+
+        .badge-customer {
+            background-color: #6c757d;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="d-flex" id="wrapper">
+
+        <!-- Sidebar -->
+        <div class="bg-light border-end" id="sidebar-wrapper">
+            <div class="sidebar-heading py-4 fs-4 fw-bold" style="padding-left: 25px;">
+                RazilHub
             </div>
-            <div class="card-body p-4">
-                <div class="text-center mb-4">
-                    <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
-                        style="width: 100px; height: 100px;">
-                        <h1 class="m-0 text-muted fw-bold">{{ current_user.first_name[0] }}{{
-                            current_user.last_name[0] }}</h1>
+            <div class="list-group list-group-flush">
+                <a href="{{ url_for('dashboard') }}"
+                    class="list-group-item list-group-item-action bg-light">Dashboard</a>
+                <a href="{{ url_for('orders') }}" class="list-group-item list-group-item-action bg-light">Orders</a>
+                <a href="{{ url_for('wallet') }}" class="list-group-item list-group-item-action bg-light">Wallet</a>
+                <a href="{{ url_for('buy_data') }}" class="list-group-item list-group-item-action bg-light">Buy Data</a>
+                <a href="{{ url_for('store') }}" class="list-group-item list-group-item-action bg-light">Store</a>
+                <a href="{{ url_for('profile') }}"
+                    class="list-group-item list-group-item-action bg-light active">Profile</a>
+                <a href="{{ url_for('logout') }}" class="list-group-item list-group-item-action bg-light">Logout</a>
+            </div>
+        </div>
+
+        <!-- Page Content -->
+        <div id="page-content-wrapper">
+
+            <!-- Navbar -->
+            <nav class="navbar navbar-expand-lg navbar-light border-bottom">
+                <div class="container-fluid">
+                    <button class="btn btn-primary" id="sidebarToggle">☰</button>
+                    <div class="ms-auto">
+                        My Profile
                     </div>
-                    <h4 class="fw-bold">{{ current_user.first_name }} {{ current_user.last_name }}</h4>
-                    <p class="text-muted">{{ current_user.email }}</p>
-
-                    {% if current_user.store %}
-                    <span class="badge-agent">
-                        <i class="bi bi-shop me-1"></i> Agent
-                    </span>
-                    {% else %}
-                    <span class="badge-customer">
-                        <i class="bi bi-person me-1"></i> Customer
-                    </span>
-                    {% endif %}
                 </div>
+            </nav>
 
-                <hr class="text-muted opacity-25 my-4">
+            <!-- Store Content -->
+            <div class="container-fluid mt-5 px-4">
 
-                <div class="mb-3">
-                    <label class="form-label text-uppercase small text-muted fw-bold">Username</label>
-                    <input type="text" class="form-control" value="@{{ current_user.username }}" readonly>
+                <!-- Flash Messages -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                {% for category, message in messages %}
+                <div class="alert alert-{{ category if category != 'error' else 'danger' }} alert-dismissible fade show"
+                    role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
+                {% endfor %}
+                {% endif %}
+                {% endwith %}
 
-                <div class="mb-3">
-                    <label class="form-label text-uppercase small text-muted fw-bold">Phone
-                        Number</label>
-                    <input type="text" class="form-control" value="{{ current_user.mobile }}" readonly>
-                </div>
+                <div class="row g-4 justify-content-center">
 
-                <div class="mb-3">
-                    <label class="form-label text-uppercase small text-muted fw-bold">Account
-                        Status</label>
-                    <div class="d-flex align-items-center">
-                        <div class="bg-success rounded-circle me-2" style="width: 10px; height: 10px;">
+                    <!-- Account Info Column -->
+                    <div class="col-lg-5">
+                        <div class="card h-100">
+                            <div class="card-header">
+                                <h5 class="card-title fw-bold mb-0">Account Information</h5>
+                            </div>
+                            <div class="card-body p-4">
+                                <div class="text-center mb-4">
+                                    <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
+                                        style="width: 100px; height: 100px;">
+                                        <h1 class="m-0 text-muted fw-bold">{{ current_user.first_name[0] }}{{
+                                            current_user.last_name[0] }}</h1>
+                                    </div>
+                                    <h4 class="fw-bold">{{ current_user.first_name }} {{ current_user.last_name }}</h4>
+                                    <p class="text-muted">{{ current_user.email }}</p>
+
+                                    {% if current_user.store %}
+                                    <span class="badge-agent">
+                                        <i class="bi bi-shop me-1"></i> Agent
+                                    </span>
+                                    {% else %}
+                                    <span class="badge-customer">
+                                        <i class="bi bi-person me-1"></i> Customer
+                                    </span>
+                                    {% endif %}
+                                </div>
+
+                                <hr class="text-muted opacity-25 my-4">
+
+                                <div class="mb-3">
+                                    <label class="form-label text-uppercase small text-muted fw-bold">Username</label>
+                                    <input type="text" class="form-control" value="@{{ current_user.username }}"
+                                        readonly>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label text-uppercase small text-muted fw-bold">Phone
+                                        Number</label>
+                                    <input type="text" class="form-control" value="{{ current_user.mobile }}" readonly>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label text-uppercase small text-muted fw-bold">Account
+                                        Status</label>
+                                    <div class="d-flex align-items-center">
+                                        <div class="bg-success rounded-circle me-2" style="width: 10px; height: 10px;">
+                                        </div>
+                                        <span class="fw-bold text-success">Active</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <span class="fw-bold text-success">Active</span>
                     </div>
+
+                    <!-- Security Column -->
+                    <div class="col-lg-6">
+                        <div class="card h-100">
+                            <div class="card-header">
+                                <h5 class="card-title fw-bold mb-0">Security Settings</h5>
+                            </div>
+                            <div class="card-body p-4">
+                                <p class="text-muted mb-4">Manage your password to keep your account secure.</p>
+
+                                <form action="{{ url_for('security_update') }}" method="POST">
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">Current Password</label>
+                                        <input type="password" class="form-control" name="current_password" required
+                                            placeholder="••••••••">
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">New Password</label>
+                                        <input type="password" class="form-control" name="new_password" required
+                                            placeholder="••••••••">
+                                    </div>
+
+                                    <div class="mb-4">
+                                        <label class="form-label fw-bold">Confirm New Password</label>
+                                        <input type="password" class="form-control" name="confirm_password" required
+                                            placeholder="••••••••">
+                                    </div>
+
+                                    <div class="alert alert-light border small">
+                                        <h6 class="fw-bold mb-2">Password Requirements:</h6>
+                                        <ul class="mb-0 ps-3 text-muted">
+                                            <li>Minimum 6 characters long</li>
+                                            <li>Different from your current password</li>
+                                        </ul>
+                                    </div>
+
+                                    <div class="d-grid mt-4">
+                                        <button type="submit" class="btn btn-dark py-2">Change Password</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
-            </div>
-        </div>
-    </div>
 
-    <!-- Security Column -->
-    <div class="col-lg-6">
-        <div class="card h-100">
-            <div class="card-header">
-                <h5 class="card-title fw-bold mb-0">Security Settings</h5>
-            </div>
-            <div class="card-body p-4">
-                <p class="text-muted mb-4">Manage your password to keep your account secure.</p>
+            </div> <!-- end container-fluid -->
+        </div> <!-- end page-content-wrapper -->
+    </div> <!-- end wrapper -->
 
-                <form action="{{ url_for('security_update') }}" method="POST">
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Current Password</label>
-                        <input type="password" class="form-control" name="current_password" required
-                            placeholder="••••••••">
-                    </div>
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const wrapper = document.getElementById('wrapper');
+        sidebarToggle.addEventListener('click', () => {
+            wrapper.classList.toggle('toggled');
+        });
+    </script>
+</body>
 
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">New Password</label>
-                        <input type="password" class="form-control" name="new_password" required placeholder="••••••••">
-                    </div>
-
-                    <div class="mb-4">
-                        <label class="form-label fw-bold">Confirm New Password</label>
-                        <input type="password" class="form-control" name="confirm_password" required
-                            placeholder="••••••••">
-                    </div>
-
-                    <div class="alert alert-light border small">
-                        <h6 class="fw-bold mb-2">Password Requirements:</h6>
-                        <ul class="mb-0 ps-3 text-muted">
-                            <li>Minimum 6 characters long</li>
-                            <li>Different from your current password</li>
-                        </ul>
-                    </div>
-
-                    <div class="d-grid mt-4">
-                        <button type="submit" class="btn btn-dark py-2">Change Password</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-</div>
-{% endblock %}
+</html>

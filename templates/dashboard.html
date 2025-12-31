@@ -1,252 +1,137 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends 'dashboard_layout.html' %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard | RazilHub</title>
+{% block content %}
 
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<!-- Greeting -->
+<div class="mb-4">
+    <h3>Hello, {{ current_user.first_name or current_user.username }} 👋</h3>
+    <p class="text-muted">Welcome back to your dashboard</p>
+</div>
 
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-
-    <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            background-color: #f5f7fa;
-        }
-
-        /* Sidebar */
-        #sidebar-wrapper {
-            min-width: 250px;
-            max-width: 250px;
-        }
-
-        #sidebar-wrapper .list-group-item {
-            border: none;
-            padding: 20px 25px;
-            font-size: 1rem;
-            color: #333;
-        }
-
-        #sidebar-wrapper .list-group-item:hover {
-            background-color: #007bff;
-            color: white;
-        }
-
-        /* Page Content */
-        #page-content-wrapper {
-            width: 100%;
-        }
-
-        /* Cards */
-        .card {
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        /* Navbar */
-        .navbar {
-            padding: 0.8rem 1rem;
-            background-color: #fff;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        /* Sidebar toggle */
-        #wrapper.toggled #sidebar-wrapper {
-            margin-left: -250px;
-        }
-
-        #sidebar-wrapper {
-            transition: margin 0.25s ease-out;
-        }
-
-        @media (max-width: 768px) {
-            #sidebar-wrapper {
-                margin-left: -250px;
-            }
-
-            #wrapper.toggled #sidebar-wrapper {
-                margin-left: 0;
-            }
-        }
-
-        .nav-pills .nav-link {
-            border-radius: 20px;
-            padding: 8px 20px;
-        }
-
-        .card:hover {
-            transform: translateY(-2px);
-            transition: 0.2s ease-in-out;
-        }
-    </style>
-</head>
-
-<body>
-
-    <div class="d-flex" id="wrapper">
-
-        <!-- Sidebar -->
-        <div class="bg-light border-end" id="sidebar-wrapper">
-            <div class="sidebar-heading py-4 fs-4 fw-bold" style="padding-left: 25px;">
-                RazilHub
+<!-- Wallet Summary -->
+<div class="row g-4 mb-5">
+    <div class="col-md-4">
+        <div class="card text-white bg-primary h-100 shadow-sm border-0">
+            <div class="card-body">
+                <h5 class="card-title opacity-75">Wallet Balance</h5>
+                <p class="card-text display-6 fw-bold mb-4">
+                    GH₵{{ "{:,.2f}".format(balance) }}
+                </p>
+                <div class="d-flex gap-2">
+                    <a href="{{ url_for('wallet') }}" class="btn btn-light btn-sm fw-bold px-3 rounded-pill">Manage
+                        Wallet</a>
+                </div>
             </div>
-            <div class="list-group list-group-flush">
-                {% if current_user.is_admin %}
-                <a href="{{ url_for('admin_dashboard') }}"
-                    class="list-group-item list-group-item-action bg-dark text-white fw-bold">
-                    <i class="bi bi-shield-lock-fill me-2"></i> Admin Panel
-                </a>
-                {% endif %}
-                <a href="{{ url_for('dashboard') }}"
-                    class="list-group-item list-group-item-action bg-light">Dashboard</a>
-                <a href="{{ url_for('orders') }}" class="list-group-item list-group-item-action bg-light">Orders</a>
-                <a href="{{ url_for('wallet') }}" class="list-group-item list-group-item-action bg-light">Wallet</a>
-                <a href="{{ url_for('buy_data') }}" class="list-group-item list-group-item-action bg-light">Buy Data</a>
-                <a href="{{ url_for('store') }}" class="list-group-item list-group-item-action bg-light">Store</a>
-                <a href="{{ url_for('profile') }}" class="list-group-item list-group-item-action bg-light">Profile</a>
-                <a href="{{ url_for('logout') }}" class="list-group-item list-group-item-action bg-light">Logout</a>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card text-white bg-success h-100 shadow-sm border-0">
+            <div class="card-body">
+                <h5 class="card-title opacity-75">Total Orders</h5>
+                <p class="card-text display-6 fw-bold">0</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card text-white bg-warning h-100 shadow-sm border-0">
+            <div class="card-body">
+                <h5 class="card-title opacity-75">Recent Activity</h5>
+                <p class="card-text">No recent transactions</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Available Bundles Display (View Only) -->
+<div class="mb-5">
+    <div class="d-flex align-items-center mb-4">
+        <h4 class="fw-bold section-title mb-0">Our Packages</h4>
+        <span class="badge bg-light text-muted ms-2 border rounded-pill">View Only</span>
+    </div>
+
+    <!-- Network Tabs -->
+    <ul class="nav nav-pills mb-4 network-tabs gap-2" role="tablist">
+        <li class="nav-item">
+            <button class="nav-link active mtn-tab px-4" data-bs-toggle="pill" data-bs-target="#view-mtn">MTN</button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link telecel-tab px-4" data-bs-toggle="pill"
+                data-bs-target="#view-telecel">TELECEL</button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link airteltigo-tab px-4" data-bs-toggle="pill"
+                data-bs-target="#view-airteltigo">AIRTELTIGO</button>
+        </li>
+    </ul>
+
+    <div class="tab-content">
+        <!-- MTN View -->
+        <div class="tab-pane fade show active" id="view-mtn">
+            <div class="row g-3">
+                {% for plan in data_bundles["MTN"] %}
+                <div class="col-6 col-md-4 col-lg-3">
+                    <div class="card border-0 shadow-sm h-100" style="background: #fff8e1;">
+                        <div class="card-body text-center p-4">
+                            <div class="mb-3">
+                                <span class="badge bg-warning text-dark rounded-pill">MTN</span>
+                            </div>
+                            <h4 class="mb-1 fw-bold">{{ plan.size }}</h4>
+                            <h5 class="text-warning fw-bold mb-0">{{ plan.price }}</h5>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
             </div>
         </div>
 
-        <!-- Page Content -->
-        <div id="page-content-wrapper">
+        <!-- Telecel View -->
+        <div class="tab-pane fade" id="view-telecel">
+            <div class="text-center py-5 bg-light rounded-4">
+                <i class="bi bi-wifi-off fs-1 text-muted opacity-50 mb-2 d-block"></i>
+                <span class="text-muted">No Telecel packages available</span>
+            </div>
+        </div>
 
-            <!-- Navbar -->
-            <nav class="navbar navbar-expand-lg navbar-light border-bottom">
-                <div class="container-fluid">
-                    <button class="btn btn-primary" id="sidebarToggle">☰</button>
-                    <div class="ms-auto">
-                        Welcome, <strong>{{ current_user.username }}</strong>
-                    </div>
-                </div>
-            </nav>
+        <!-- AirtelTigo View -->
+        <div class="tab-pane fade" id="view-airteltigo">
+            <div class="text-center py-5 bg-light rounded-4">
+                <i class="bi bi-wifi-off fs-1 text-muted opacity-50 mb-2 d-block"></i>
+                <span class="text-muted">No AirtelTigo packages available</span>
+            </div>
+        </div>
+    </div>
+</div>
 
-            <!-- Dashboard Content -->
-            <div class="container-fluid mt-4">
+<style>
+    .network-tabs .nav-link {
+        border-radius: 20px;
+        color: #6c757d;
+        background: white;
+        border: 1px solid #dee2e6;
+        transition: all 0.2s;
+    }
 
-                <!-- Greeting -->
-                <div class="mb-4">
-                    <h3>Hello, {{ current_user.first_name or current_user.username }} 👋</h3>
-                    <p class="text-muted">Welcome back to your dashboard</p>
-                </div>
+    .mtn-tab.active {
+        background-color: #ffcc00 !important;
+        color: black !important;
+        border-color: #ffcc00;
+    }
 
-                <!-- Wallet Summary -->
-                <div class="row g-4 mb-4">
-                    <div class="col-md-4">
-                        <div class="card text-white bg-primary h-100">
-                            <div class="card-body">
-                                <h5 class="card-title">Wallet Balance</h5>
-                                <p class="card-text display-6">
-                                    GH₵{{ "{:,.2f}".format(balance) }}
-                                </p>
-                                <div class="d-flex gap-2 mt-3">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+    .telecel-tab.active {
+        background-color: #e60000 !important;
+        color: white !important;
+        border-color: #e60000;
+    }
 
-                    <div class="col-md-4">
-                        <div class="card text-white bg-success h-100">
-                            <div class="card-body">
-                                <h5 class="card-title">Total Orders</h5>
-                                <p class="card-text display-6">0</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-md-4">
-                        <div class="card text-white bg-warning h-100">
-                            <div class="card-body">
-                                <h5 class="card-title">Recent Activity</h5>
-                                <p class="card-text">No recent transactions</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Buy Data Section -->
-                <div class="card p-4">
-                    <h5 class="mb-3">Buy Data</h5>
-
-                    <!-- Network Tabs -->
-                    <ul class="nav nav-pills mb-4 network-tabs">
-                        <li class="nav-item">
-                            <button class="nav-link active mtn-tab" data-bs-toggle="pill" data-bs-target="#mtn">
-                                MTN
-                            </button>
-                        </li>
-
-                        <li class="nav-item">
-                            <button class="nav-link telecel-tab" data-bs-toggle="pill" data-bs-target="#telecel">
-                                TELECEL
-                            </button>
-                        </li>
-                        <li class="nav-item">
-                            <button class="nav-link airteltigo-tab" data-bs-toggle="pill" data-bs-target="#airteltigo">
-                                AIRTELTIGO
-                            </button>
-                        </li>
-                    </ul>
+    .airteltigo-tab.active {
+        background-color: #0033cc !important;
+        color: white !important;
+        border-color: #0033cc;
+    }
+</style>
 
 
-                    <!-- Tab Content -->
-                    <div class="tab-content">
 
-                        <!-- MTN -->
-                        <div class="tab-pane fade show active" id="mtn">
-                            <div class="row g-3">
-                                {% for plan in data_bundles["MTN"] %}
-                                <div class="col-md-3">
-                                    <div class="card border-warning h-100">
-                                        <div class="card-body text-center">
-                                            <h6 class="text-warning fw-bold">MTN</h6>
-                                            <p class="fs-5 mb-1">{{ plan.size }}</p>
-                                            <p class="fw-bold">{{ plan.price }}</p>
-                                            <button class="btn btn-warning btn-sm w-100">Buy</button>
-                                        </div>
-                                    </div>
-                                </div>
-                                {% endfor %}
-                            </div>
-                        </div>
-
-                        <!-- TELECEL -->
-                        <div class="tab-pane fade" id="telecel">
-                            <div class="text-center text-muted">
-                                No Telecel plans available
-                            </div>
-                        </div>
-
-                        <!-- AIRTELTIGO -->
-                        <div class="tab-pane fade" id="airteltigo">
-                            <div class="text-center text-muted">
-                                No AirtelTigo plans available
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
-
-            </div> <!-- end container-fluid -->
-        </div> <!-- end page-content-wrapper -->
-    </div> <!-- end wrapper -->
-
-    <!-- Sidebar Toggle Script -->
-    <script>
-        const sidebarToggle = document.getElementById('sidebarToggle');
-        const wrapper = document.getElementById('wrapper');
-        sidebarToggle.addEventListener('click', () => {
-            wrapper.classList.toggle('toggled');
-        });
-    </script>
-
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-</body>
-
-</html>
+{% endblock %}

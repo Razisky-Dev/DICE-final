@@ -1,2 +1,2 @@
-# DICE
-updates
+# Dev2D
+dicess project

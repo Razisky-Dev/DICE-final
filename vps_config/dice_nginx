@@ -8,7 +8,7 @@ server {
     }
 
     location /static {
-        alias /var/www/dice_app/Dev2D-main/static;
+        alias /var/www/dice_app/static;
         expires 30d;
     }
 }

@@ -80,6 +80,9 @@
 
         .network-card.active {
             border-color: #000;
+            background-color: #f8f9fa;
+            transform: scale(1.02);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
         }
 
         .network-logo-text {
@@ -151,6 +154,98 @@
             box-shadow: none;
             border-color: #FFC107;
         }
+
+        /* --- Premium Package Cards --- */
+        .package-card {
+            border: none;
+            border-radius: 16px;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            background: white;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        .package-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+        }
+
+        /* Network Specific Gradients */
+        .package-card.mtn {
+            background: linear-gradient(135deg, #fff9db 0%, #fff 100%);
+            border-left: 5px solid #ffcc00;
+        }
+
+        .package-card.telecel {
+            background: linear-gradient(135deg, #ffebee 0%, #fff 100%);
+            border-left: 5px solid #e60000;
+        }
+
+        .package-card.airteltigo {
+            background: linear-gradient(135deg, #e3f2fd 0%, #fff 100%);
+            border-left: 5px solid #0033cc;
+        }
+
+        /* Card Content Styling */
+        .package-card .size-badge {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #333;
+            line-height: 1;
+        }
+
+        .package-card .meta-text {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            opacity: 0.7;
+        }
+
+        .package-card .price-tag {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .package-card .btn-buy {
+            width: 100%;
+            border-radius: 12px;
+            padding: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: 0.3s;
+        }
+
+        /* Responsive Improvements */
+        @media (max-width: 576px) {
+            .store-title {
+                font-size: 2rem;
+                /* Smaller title on mobile */
+            }
+
+            .store-container {
+                padding: 20px 15px;
+            }
+
+            .package-card {
+                padding: 1.25rem !important;
+                /* Reduce padding to save space */
+            }
+
+            .package-card .size-badge {
+                font-size: 1.75rem;
+                /* Slightly smaller text */
+            }
+
+            .action-btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
     </style>
 </head>
 
@@ -176,19 +271,19 @@
         <!-- Network Selection -->
         <div class="row g-3 mb-5 justify-content-center">
             <div class="col-6 col-md-3">
-                <div class="network-card bg-warning text-dark border-0" onclick="selectNetwork('MTN')">
+                <div class="network-card bg-warning text-dark border-0" onclick="selectNetwork('MTN', this)">
                     <div class="network-logo-text">MTN</div>
                     <small class="mt-2 fw-bold opacity-75">Data Bundles</small>
                 </div>
             </div>
             <div class="col-6 col-md-3">
-                <div class="network-card bg-danger text-white border-0" onclick="selectNetwork('TELECEL')">
+                <div class="network-card bg-danger text-white border-0" onclick="selectNetwork('TELECEL', this)">
                     <div class="network-logo-text">telecel</div>
                     <small class="mt-2 fw-bold opacity-75">Data Packages</small>
                 </div>
             </div>
             <div class="col-6 col-md-3">
-                <div class="network-card bg-primary text-white border-0" onclick="selectNetwork('AIRTELTIGO')">
+                <div class="network-card bg-primary text-white border-0" onclick="selectNetwork('AIRTELTIGO', this)">
                     <div class="network-logo-text" style="font-family: serif; font-style: italic;">at</div>
                     <small class="mt-2 fw-bold opacity-75">BigTime</small>
                 </div>
@@ -196,8 +291,9 @@
         </div>
 
         <!-- Packages Display Area -->
+        <h4 class="text-start mb-3 fw-bold text-dark" id="selectedNetworkTitle" style="display: none;">Available
+            Packages</h4>
         <div id="packagesContainer" class="row g-3" style="display: none;">
-            <h4 class="text-start mb-3 fw-bold text-dark" id="selectedNetworkTitle">Available Packages</h4>
             <!-- Packages will be injected here via JS -->
         </div>
 
@@ -219,6 +315,7 @@
                     </div>
 
                     <form action="{{ url_for('initiate_payment') }}" method="POST" id="checkoutForm">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <input type="hidden" name="store_id" value="{{ store.id }}">
                         <input type="hidden" name="pricing_id" id="modalPricingId">
 
@@ -385,10 +482,16 @@
             renderTransactions(filtered);
         }
 
-        function selectNetwork(network) {
+        function selectNetwork(network, element) {
             // Update UI for network selection
             document.querySelectorAll('.network-card').forEach(c => c.classList.remove('active'));
-            event.currentTarget.classList.add('active');
+            // Use passed element instead of event.currentTarget
+            if (element) {
+                element.classList.add('active');
+            } else if (event && event.currentTarget) {
+                // Fallback for potentially old cached versions or other calls
+                event.currentTarget.classList.add('active');
+            }
 
             const container = document.getElementById('packagesContainer');
             const title = document.getElementById('selectedNetworkTitle');
@@ -397,7 +500,9 @@
             container.innerHTML = ''; // Clear current
 
             // Filter packages
-            const networkPackages = packages.filter(p => p.network === network && p.status === 'Active');
+            // Backend already filters 'Active', so we just filter by network
+            // FIXED: Case insensitive matching
+            const networkPackages = packages.filter(p => p.network.toUpperCase() === network.toUpperCase());
 
             // Determine button color class based on network
             let btnClass = 'btn-dark'; // fallback
@@ -406,23 +511,42 @@
             else if (network === 'AIRTELTIGO') btnClass = 'btn-primary';
 
             if (networkPackages.length === 0) {
-                container.innerHTML = `<div class="col-12"><div class="alert alert-light border">No active packages found for ${network}</div></div>`;
+                container.innerHTML = `
+                    <div class="col-12 text-center py-5">
+                        <div class="mb-3 text-secondary">
+                            <i class="bi bi-inbox-fill" style="font-size: 4rem;"></i>
+                        </div>
+                        <h4 class="fw-bold text-dark">No Packages Available</h4>
+                        <p class="text-muted">We are currently restocking ${network} bundles.</p>
+                        <button class="btn btn-outline-dark btn-sm rounded-pill mt-2" onclick="location.reload()">Refresh Page</button>
+                    </div>
+                `;
             } else {
                 networkPackages.forEach(p => {
                     const price = parseFloat(p.selling_price).toFixed(2);
                     // Use text-white for telecel/at for better contrast, standard for yellow
                     const textClass = (network === 'MTN') ? 'text-dark' : 'text-white';
 
+                    // Determine card class based on network
+                    let cardClass = 'package-card';
+                    if (network === 'MTN') cardClass += ' mtn';
+                    else if (network === 'TELECEL') cardClass += ' telecel';
+                    else if (network === 'AIRTELTIGO') cardClass += ' airteltigo';
+
                     const html = `
-                        <div class="col-6 col-md-4">
-                            <div class="package-card text-start h-100 border-0 shadow-sm">
-                                <span class="badge bg-light text-dark border mb-2">${p.network}</span>
-                                <h5 class="fw-bold mb-1">${p.package_name}</h5>
-                                <div class="d-flex justify-content-between align-items-center mt-3">
-                                    <span class="price-badge bg-light text-dark border">GH₵ ${price}</span>
-                                    <button class="btn ${btnClass} ${textClass} btn-sm rounded-pill px-4 fw-bold shadow-sm"
+                        <div class="col-6 col-md-4 col-lg-3">
+                            <div class="${cardClass} p-4 h-100 d-flex flex-column text-center">
+                                <div class="meta-text mb-2 text-muted">${p.network}</div>
+                                <div class="size-badge mb-1">${p.package_name}</div>
+                                <div class="small text-muted mb-3">Non Expiry</div>
+                                
+                                <div class="mt-auto">
+                                    <div class="price-tag mb-3">
+                                        <small style="font-size: 0.6em">GH₵</small>${price}
+                                    </div>
+                                    <button class="btn ${btnClass} ${textClass} btn-buy shadow-sm"
                                         onclick="openCheckout('${p.id}', '${p.network}', '${p.package_name}', '${price}')">
-                                        Buy
+                                        BUY NOW
                                     </button>
                                 </div>
                             </div>
@@ -432,6 +556,8 @@
                 });
             }
 
+            // Ensure container and title are visible
+            title.style.display = 'block';
             container.style.display = 'flex';
         }
 

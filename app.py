@@ -17,6 +17,12 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, timedelta
 from functools import wraps
 from sqlalchemy import func
+import os
+import threading
+from dotenv import load_dotenv
+from flask_wtf.csrf import CSRFProtect
+
+load_dotenv()
 
 failed_logins = {}  # key = email, value = count
 MAX_ATTEMPTS = 4
@@ -26,20 +32,21 @@ app = Flask(__name__)
 # =====================
 # CONFIG
 # =====================
-app.config["SECRET_KEY"] = "super-secret-key-change-later"
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database.db"
+app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "fallback-secret-key")
+app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("SQLALCHEMY_DATABASE_URI", "sqlite:///database.db")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db = SQLAlchemy(app)
+csrf = CSRFProtect(app)
 login_manager = LoginManager(app)
 login_manager.login_view = "login"
 
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USERNAME'] = 'your_email@gmail.com'
-app.config['MAIL_PASSWORD'] = 'your_app_password'
-app.config['MAIL_DEFAULT_SENDER'] = 'your_email@gmail.com'
+app.config['MAIL_USERNAME'] = os.getenv("MAIL_USERNAME")
+app.config['MAIL_PASSWORD'] = os.getenv("MAIL_PASSWORD")
+app.config['MAIL_DEFAULT_SENDER'] = os.getenv("MAIL_USERNAME")
 
 mail = Mail(app)
 serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
@@ -86,19 +93,57 @@ class DataPlan(db.Model):
     status = db.Column(db.String(20), default='Active') # Active, Inactive
 
 # =====================
+# SYSTEM SETTINGS MODEL
+# =====================
+class SiteSetting(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    key = db.Column(db.String(50), unique=True, nullable=False)
+    value = db.Column(db.Text)
+
+# Context Processor to make site_notice available globally
+@app.context_processor
+def inject_site_notice():
+    notice_setting = SiteSetting.query.filter_by(key='site_notice').first()
+    return dict(site_notice=notice_setting.value if notice_setting else None)
+
+@app.context_processor
+def inject_admin_stats():
+    # Only useful if user is admin, but safe to check generally or just return 0
+    if current_user.is_authenticated and current_user.is_admin:
+        pending_txns = Transaction.query.filter(
+            Transaction.status == 'Pending',
+            Transaction.type.in_(['Withdrawal', 'Store Withdrawal (MoMo)'])
+        ).order_by(Transaction.date.desc()).all()
+        
+        return dict(
+            pending_withdrawals_count=len(pending_txns),
+            pending_notifications=pending_txns
+        )
+    return dict(pending_withdrawals_count=0, pending_notifications=[])
+
+def send_async_email(app, msg):
+    with app.app_context():
+        try:
+            mail.send(msg)
+        except Exception as e:
+            print(f"Failed to send email: {e}")
+
+def send_notification_email(subject, body):
+    # Send to the configured MAIL_USERNAME (Admin)
+    msg = Message(subject, recipients=[app.config['MAIL_USERNAME']])
+    msg.body = body
+    
+    # Run in thread
+    t = threading.Thread(target=send_async_email, args=(app._get_current_object(), msg))
+    t.start()
+
+
+# =====================
 # CONSTANTS
 # =====================
 # Base "Dealer" Prices
-DEALER_PACKAGES = {
-    "MTN": [
-        {"package": "1 GB", "price": 4.60},
-        {"package": "2 GB", "price": 9.60},
-        {"package": "3 GB", "price": 14.00},
-        {"package": "4 GB", "price": 18.50},
-    ],
-    "TELECEL": [],
-    "AIRTELTIGO": []
-}
+# Base "Dealer" Prices
+# DEALER_PACKAGES was removed as we now use dynamic DataPlan pricing from the database.
 
 # =====================
 # STORE MODELS
@@ -275,16 +320,24 @@ def logout():
 @app.route("/dashboard")
 @login_required
 def dashboard():
+    # Dynamic Data Bundles (Same logic as buy_data)
+    plans = DataPlan.query.filter_by(status='Active').order_by(DataPlan.display_order).all()
     data_bundles = {
-        "MTN": [
-            {"size": "1 GB", "price": "GH₵4.60", "expiry": "No-Expiry"},
-            {"size": "2 GB", "price": "GH₵9.60", "expiry": "No-Expiry"},
-            {"size": "3 GB", "price": "GH₵14.00", "expiry": "No-Expiry"},
-            {"size": "4 GB", "price": "GH₵18.50", "expiry": "No-Expiry"},
-        ],
+        "MTN": [],
         "TELECEL": [],
         "AIRTELTIGO": []
     }
+    
+    for plan in plans:
+        # Standardize structure for the template
+        # Matching template use: plan.size, plan.price
+        # DB Fields: plan.plan_size, plan.selling_price
+        if plan.network in data_bundles:
+            data_bundles[plan.network].append({
+                "size": plan.plan_size,
+                "price": f"GH₵{plan.selling_price:.2f}",
+                "expiry": "No-Expiry" # Default for now
+            })
 
     balance = current_user.balance
     current_plan = "No Active Plan"
@@ -357,7 +410,14 @@ def wallet():
 @app.route("/deposit", methods=["POST"])
 @login_required
 def deposit():
-    amount = float(request.form.get("amount"))
+    try:
+        amount = float(request.form.get("amount"))
+        if amount <= 0:
+            raise ValueError("Amount must be positive")
+    except (ValueError, TypeError):
+        flash("Invalid amount entered.", "error")
+        return redirect(url_for('wallet'))
+
     reference = f"DEP-{int(datetime.utcnow().timestamp())}" # Mock reference
 
     # Mock Paystack Redirect
@@ -382,7 +442,13 @@ def deposit():
 @app.route("/withdraw", methods=["POST"])
 @login_required
 def withdraw():
-    amount = float(request.form.get("amount"))
+    try:
+        amount = float(request.form.get("amount"))
+        if amount <= 0:
+            raise ValueError("Amount must be positive")
+    except (ValueError, TypeError):
+        flash("Invalid amount entered.", "error")
+        return redirect(url_for('wallet'))
     
     if amount > current_user.balance:
         flash("Insufficient balance", "error")
@@ -425,7 +491,29 @@ def store():
     store_orders = StoreOrder.query.filter_by(store_id=my_store.id).order_by(StoreOrder.date.desc()).all()
     store_pricing = StorePricing.query.filter_by(store_id=my_store.id).all()
     
-    return render_template("store.html", store=my_store, orders=store_orders, pricing_list=store_pricing, dealer_packages=DEALER_PACKAGES)
+    # Fetch Withdrawals
+    withdrawals = Transaction.query.filter_by(user_id=current_user.id).filter(
+        Transaction.type.in_(['Store Credit Transfer', 'Store Withdrawal (MoMo)'])
+    ).order_by(Transaction.date.desc()).all()
+    
+    # NEW: Fetch Dynamic Dealer Packages from DB (instead of hardcoded DEALER_PACKAGES)
+    # This ensures Admin updates are reflected here
+    active_plans = DataPlan.query.filter_by(status='Active').order_by(DataPlan.display_order).all()
+    dynamic_dealer_packages = {
+        "MTN": [],
+        "TELECEL": [],
+        "AIRTELTIGO": []
+    }
+    
+    for plan in active_plans:
+        # Structure must match what frontend JS expects: {package: "Name", price: 12.3}
+        if plan.network in dynamic_dealer_packages:
+            dynamic_dealer_packages[plan.network].append({
+                "package": plan.plan_size,
+                "price": plan.cost_price 
+            })
+    
+    return render_template("store.html", store=my_store, orders=store_orders, pricing_list=store_pricing, dealer_packages=dynamic_dealer_packages, withdrawals=withdrawals)
 
 @app.route("/store/add_pricing", methods=["POST"])
 @login_required
@@ -433,18 +521,31 @@ def add_pricing():
     store = current_user.store
     network = request.form.get("network")
     package_name = request.form.get("package_name")
-    dealer_price = float(request.form.get("dealer_price"))
     selling_price = float(request.form.get("selling_price"))
     
-    # Validation: Selling Price cannot be less than Dealer Price
-    if selling_price < dealer_price:
-        flash("Selling Price cannot be lower than the Dealer Price.", "error")
+    # 1. Lookup Official Dealer Price (Cost)
+    # We ignore the 'dealer_price' from the form to prevent manipulation
+    # FIXED: Lookup from DataPlan DB instead of hardcoded DEALER_PACKAGES
+    official_price = None
+    
+    plan_record = DataPlan.query.filter_by(network=network, plan_size=package_name, status='Active').first()
+    
+    if plan_record:
+        official_price = plan_record.cost_price
+    
+    if official_price is None:
+        flash("Invalid package selected or package is no longer active.", "error")
+        return redirect(url_for("store"))
+
+    # 2. Validate Selling Price
+    if selling_price < official_price:
+        flash(f"Selling Price cannot be lower than the Dealer Price (GH₵{official_price:.2f}).", "error")
         return redirect(url_for("store"))
         
-    # Check if package already exists for this store
+    # 3. Save/Update with Official Price
     existing = StorePricing.query.filter_by(store_id=store.id, network=network, package_name=package_name).first()
     if existing:
-        existing.dealer_price = dealer_price
+        existing.dealer_price = official_price # Always update to latest official cost
         existing.selling_price = selling_price
         flash(f"Updated pricing for {network} {package_name}.", "success")
     else:
@@ -452,7 +553,7 @@ def add_pricing():
             store_id=store.id,
             network=network,
             package_name=package_name,
-            dealer_price=dealer_price,
+            dealer_price=official_price, # Use official price
             selling_price=selling_price
         )
         db.session.add(new_pricing)
@@ -477,6 +578,20 @@ def toggle_pricing(id):
     
     db.session.commit()
     flash(f"Toggled status for {pricing.package_name}", "success")
+    return redirect(url_for("store"))
+
+@app.route("/store/delete_pricing/<int:id>")
+@login_required
+def delete_pricing(id):
+    pricing = StorePricing.query.get_or_404(id)
+    # Security check
+    if pricing.store_id != current_user.store.id:
+        flash("Unauthorized", "error")
+        return redirect(url_for("store"))
+        
+    db.session.delete(pricing)
+    db.session.commit()
+    flash(f"Deleted pricing rule for {pricing.package_name}", "success")
     return redirect(url_for("store"))
 
 @app.route("/store/update", methods=["POST"])
@@ -508,7 +623,14 @@ def update_store_settings():
 @app.route("/store/withdraw", methods=["POST"])
 @login_required
 def store_withdraw():
-    amount = float(request.form.get("amount"))
+    try:
+        amount = float(request.form.get("amount"))
+        if amount <= 0:
+            raise ValueError
+    except (ValueError, TypeError):
+        flash("Invalid amount.", "error")
+        return redirect(url_for("store"))
+        
     store = current_user.store
     
     if amount <= store.credit_balance:
@@ -531,6 +653,48 @@ def store_withdraw():
     else:
         flash("Insufficient store credit.", "error")
         
+    return redirect(url_for("store"))
+
+@app.route("/store/withdraw_momo", methods=["POST"])
+@login_required
+def store_withdraw_momo():
+    try:
+        amount = float(request.form.get("amount"))
+        if amount <= 0:
+            raise ValueError
+    except (ValueError, TypeError):
+        flash("Invalid amount.", "error")
+        return redirect(url_for("store"))
+
+    phone = request.form.get("phone")
+    network = request.form.get("network")
+    store = current_user.store
+    
+    # Validation
+    if amount < 10:
+        flash("Minimum withdrawal amount is GH₵10.00", "error")
+        return redirect(url_for("store"))
+        
+    if amount > store.credit_balance:
+        flash("Insufficient store credit.", "error")
+        return redirect(url_for("store"))
+
+    # Deduct Logic
+    store.credit_balance -= amount
+    store.total_withdrawn += amount
+    
+    # Transaction Record
+    txn = Transaction(
+        user_id=current_user.id,
+        reference=f"ST-MOMO-{int(datetime.utcnow().timestamp())}",
+        type="Store Withdrawal (MoMo)",
+        amount=amount,
+        status="Pending" 
+    )
+    db.session.add(txn)
+    db.session.commit()
+    
+    flash(f"Withdrawal request of GH₵{amount} to {network} {phone} submitted.", "success")
     return redirect(url_for("store"))
 
 @app.route("/store/<slug>")
@@ -611,6 +775,11 @@ def initiate_payment():
     
     flash(f"Payment successful! You purchased {pricing.network} {pricing.package_name}.", "success")
     return redirect(url_for('public_store', slug=store.slug))
+
+@app.route("/support")
+@login_required
+def support():
+    return render_template("support.html")
 
 @app.route("/profile")
 @login_required
@@ -711,33 +880,44 @@ def admin_dashboard():
         daily_store_sales = db.session.query(func.sum(StoreOrder.price)).filter(func.date(StoreOrder.date) == day).scalar() or 0.0
         sales_data.append(daily_direct + daily_store_sales)
 
-    # 4. Profit Calculation (NEW)
-    all_plans = DataPlan.query.all()
-    cost_map = {(p.network, p.plan_size): p.cost_price for p in all_plans}
+    # 4. Profit Calculation (Optimized)
+    # Using SQL Aggregation instead of Python Loop
+    # Profit = (Selling Price - Cost Price)
+    # Since cost is dynamic per order's plan, and plan costs might change, strictly speaking we should have stored 'cost' at time of order.
+    # However, assuming we use current DataPlan costs (as per original code logic):
     
     profit_stats = {
         "MTN": {"sales": 0.0, "profit": 0.0},
         "TELECEL": {"sales": 0.0, "profit": 0.0},
         "AIRTELTIGO": {"sales": 0.0, "profit": 0.0}
     }
+
+    # Fetch all plans to memory for fast lookup (small table)
+    all_plans = DataPlan.query.all()
+    cost_map = {(p.network, p.plan_size): p.cost_price for p in all_plans}
+
+    # Direct Orders Analysis
+    # We still fetch orders, but we can do it slightly smarter or stick to Python for complexity if SQL is too hard to map dynamic costs without a join.
+    # Given the original code did Python looping, and cost depends on (network, package) lookup, 
+    # fully pure SQL would require joining DataPlan on two columns which can be messy if strings don't match perfectly.
+    # We will keep the Python loop but ensure we ONLY fetch necessary columns to reduce memory.
     
-    # Direct Orders Profit
-    # Optimization: Loading all orders might be heavy for a dashboard. 
-    # For now, we will do it to be accurate as requested.
-    all_direct_orders = Order.query.filter(Order.status.in_(['Delivered', 'Success', 'Processing'])).all()
-    for o in all_direct_orders:
-        if o.network in profit_stats:
-            cost = cost_map.get((o.network, o.package), 0.0)
-            profit_stats[o.network]["sales"] += o.amount
-            profit_stats[o.network]["profit"] += (o.amount - cost)
-            
-    # Store Orders Profit
-    all_store_orders = StoreOrder.query.filter(StoreOrder.status.in_(['Delivered', 'Success'])).all()
-    for so in all_store_orders:
-         if so.network in profit_stats:
-            cost = cost_map.get((so.network, so.package), 0.0)
-            profit_stats[so.network]["sales"] += so.price
-            profit_stats[so.network]["profit"] += (so.price - cost)
+    direct_orders = db.session.query(Order.network, Order.package, Order.amount).filter(Order.status.in_(['Delivered', 'Success', 'Processing'])).all()
+    
+    for net, pkg, amt in direct_orders:
+        if net in profit_stats:
+            cost = cost_map.get((net, pkg), 0.0)
+            profit_stats[net]["sales"] += amt
+            profit_stats[net]["profit"] += (amt - cost)
+
+    # Store Orders Analysis
+    store_orders = db.session.query(StoreOrder.network, StoreOrder.package, StoreOrder.price).filter(StoreOrder.status.in_(['Delivered', 'Success'])).all()
+    
+    for net, pkg, price in store_orders:
+        if net in profit_stats:
+            cost = cost_map.get((net, pkg), 0.0)
+            profit_stats[net]["sales"] += price
+            profit_stats[net]["profit"] += (price - cost)
 
     # 5. Sales by Network (Pie Chart Data)
     network_sales = db.session.query(StoreOrder.network, func.sum(StoreOrder.price)).group_by(StoreOrder.network).all()
@@ -832,6 +1012,12 @@ def buy_data():
         "TELECEL": [],
         "AIRTELTIGO": []
     }
+    
+    for plan in plans:
+        if plan.network in data_bundles:
+            data_bundles[plan.network].append(plan)
+            
+    return render_template("buy_data.html", data_bundles=data_bundles, balance=current_user.balance)
 # @app.route("/buy_data")
 # ... replaced by DB driven route ...
 
@@ -884,7 +1070,11 @@ def admin_transactions():
 @admin_required
 def admin_update_balance(user_id):
     user = User.query.get_or_404(user_id)
-    amount = float(request.form.get('amount'))
+    try:
+        amount = float(request.form.get('amount'))
+    except (ValueError, TypeError):
+        flash("Invalid amount.", "error")
+        return redirect(url_for('admin_users'))
     user.balance = amount
     db.session.commit()
     flash(f"Balance for {user.username} updated to GH₵{amount:,.2f}", "success")
@@ -917,13 +1107,9 @@ def admin_toggle_suspend(user_id):
     flash(f"User {user.username} has been {status}.", "success")
     return redirect(url_for('admin_users'))
 
-@app.route('/admin/user/<int:user_id>/delete')
-@admin_required
+@app.route("/admin/delete_user/<int:user_id>")
+@login_required
 def admin_delete_user(user_id):
-    if user_id == current_user.id:
-        flash("You cannot delete yourself.", "error")
-        return redirect(url_for('admin_users'))
-        
     user = User.query.get_or_404(user_id)
     
     # Optional: Delete related data or just the user cascading?
@@ -954,7 +1140,8 @@ def admin_delete_user(user_id):
 def admin_manage_withdrawal(txn_id, action):
     txn = Transaction.query.get_or_404(txn_id)
     
-    if txn.type != "Withdrawal" or txn.status != "Pending":
+    valid_types = ["Withdrawal", "Store Withdrawal (MoMo)"]
+    if txn.type not in valid_types or txn.status != "Pending":
         flash("Invalid transaction for approval.", "error")
         return redirect(url_for('admin_transactions'))
         
@@ -1019,6 +1206,96 @@ def admin_export_transactions():
     output.headers["Content-Disposition"] = "attachment; filename=transactions_export.csv"
     output.headers["Content-type"] = "text/csv"
     return output
+
+@app.route('/admin/wallet', methods=['GET', 'POST'])
+@admin_required
+def admin_manage_wallet():
+    user = None
+    if request.method == 'POST':
+        action = request.form.get('action')
+        
+        if action == 'search':
+            email = request.form.get('email')
+            user = User.query.filter_by(email=email).first()
+            if not user:
+                flash(f"No user found with email {email}", "error")
+        
+        elif action in ['credit', 'debit']:
+            email = request.form.get('email')
+            try:
+                amount = float(request.form.get('amount'))
+                if amount < 0: raise ValueError
+            except (ValueError, TypeError):
+                flash("Invalid amount.", "error")
+                return redirect(url_for('admin_manage_wallet'))
+            
+            note = request.form.get('note') or "Admin Adjustment"
+            
+            user = User.query.filter_by(email=email).first()
+            if not user:
+                flash("User not found.", "error")
+                return redirect(url_for('admin_manage_wallet'))
+                
+            if action == 'credit':
+                # Atomic Update
+                user.balance = User.balance + amount
+                # Log Transaction
+                txn = Transaction(
+                    user_id=user.id,
+                    reference=f"ADM-CR-{int(datetime.utcnow().timestamp())}",
+                    type="Admin Credit",
+                    amount=amount,
+                    status="Success"
+                )
+                db.session.add(txn)
+                flash(f"Credited GH₵{amount:,.2f} to {user.username}.", "success")
+                
+            elif action == 'debit':
+                if user.balance < amount:
+                    flash(f"Insufficient balance. User has GH₵{user.balance:,.2f}", "error")
+                else:
+                    # Atomic Update
+                    user.balance = User.balance - amount
+                    # Log Transaction
+                    txn = Transaction(
+                        user_id=user.id,
+                        reference=f"ADM-DB-{int(datetime.utcnow().timestamp())}",
+                        type="Admin Debit",
+                        amount=amount,
+                        status="Success"
+                    )
+                    db.session.add(txn)
+                    flash(f"Debited GH₵{amount:,.2f} from {user.username}.", "success")
+            
+            db.session.commit()
+            # Reload user to show updated state if needed, or just stay on page
+            user = User.query.filter_by(email=email).first()
+
+    return render_template('admin/manage_wallet.html', user=user)
+
+@app.route('/admin/notice', methods=['GET', 'POST'])
+@admin_required
+def admin_notice():
+    if request.method == 'POST':
+        notice_text = request.form.get('notice')
+        
+        # Check if setting exists
+        setting = SiteSetting.query.filter_by(key='site_notice').first()
+        if not setting:
+            setting = SiteSetting(key='site_notice')
+            db.session.add(setting)
+            
+        setting.value = notice_text
+        db.session.commit()
+        
+        flash("Site notice updated.", "success")
+        return redirect(url_for('admin_notice'))
+        
+    # GET
+    setting = SiteSetting.query.filter_by(key='site_notice').first()
+    notice = setting.value if setting else ""
+    
+    return render_template('admin/notice.html', notice=notice)
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()

@@ -2,83 +2,112 @@
 
 {% block content %}
 
-<!-- Greeting -->
-<div class="mb-4">
-    <h3>Hello, {{ current_user.first_name or current_user.username }} 👋</h3>
-    <p class="text-muted">Welcome back to your dashboard</p>
+<!-- Greeting Section -->
+<div class="d-flex align-items-end justify-content-between mb-4">
+    <div>
+        <h2 class="fw-bold text-dark mb-1">Dashboard</h2>
+        <p class="text-muted mb-0">Welcome back, {{ current_user.first_name or current_user.username }}!</p>
+    </div>
+    <div class="d-none d-md-block">
+        <span class="text-muted small">{{ now_date }}</span>
+    </div>
 </div>
 
-<!-- Wallet Summary -->
+<!-- Stats Indicators -->
 <div class="row g-4 mb-5">
+    <!-- Wallet Card -->
     <div class="col-md-4">
-        <div class="card text-white bg-primary h-100 shadow-sm border-0">
-            <div class="card-body">
-                <h5 class="card-title opacity-75">Wallet Balance</h5>
-                <p class="card-text display-6 fw-bold mb-4">
-                    GH₵{{ "{:,.2f}".format(balance) }}
-                </p>
-                <div class="d-flex gap-2">
-                    <a href="{{ url_for('wallet') }}" class="btn btn-light btn-sm fw-bold px-3 rounded-pill">Manage
-                        Wallet</a>
+        <div class="card stat-card bg-gradient-primary text-white h-100 border-0">
+            <div class="card-body p-4 position-relative">
+                <div class="d-flex justify-content-between align-items-start mb-4">
+                    <div class="p-2 bg-white bg-opacity-25 rounded-3">
+                        <i class="bi bi-wallet2 fs-4 text-white"></i>
+                    </div>
+                    <span class="badge bg-white text-primary rounded-pill px-3 py-2">Primary Wallet</span>
                 </div>
+                <h6 class="card-subtitle text-white text-opacity-75 mb-1">Available Balance</h6>
+                <h2 class="display-6 fw-bold mb-4">GH₵{{ "{:,.2f}".format(balance) }}</h2>
+
+                <a href="{{ url_for('wallet') }}" class="btn btn-light text-primary fw-bold w-100 rounded-pill">
+                    <i class="bi bi-wallet2 me-2"></i> Manage Wallet
+                </a>
             </div>
         </div>
     </div>
 
+    <!-- Total Orders -->
     <div class="col-md-4">
-        <div class="card text-white bg-success h-100 shadow-sm border-0">
-            <div class="card-body">
-                <h5 class="card-title opacity-75">Total Orders</h5>
-                <p class="card-text display-6 fw-bold">0</p>
+        <div class="card stat-card bg-gradient-success text-white h-100 border-0">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-start mb-4">
+                    <div class="p-2 bg-white bg-opacity-25 rounded-3">
+                        <i class="bi bi-bag-check-fill fs-4 text-white"></i>
+                    </div>
+                </div>
+                <h6 class="card-subtitle text-white text-opacity-75 mb-1">Total Orders</h6>
+                <h2 class="display-6 fw-bold text-white mb-0">0</h2>
             </div>
         </div>
     </div>
 
+    <!-- Recent Activity Placeholder -->
     <div class="col-md-4">
-        <div class="card text-white bg-warning h-100 shadow-sm border-0">
-            <div class="card-body">
-                <h5 class="card-title opacity-75">Recent Activity</h5>
-                <p class="card-text">No recent transactions</p>
+        <div class="card stat-card bg-gradient-warning text-white h-100 border-0">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-start mb-4">
+                    <div class="p-2 bg-white bg-opacity-25 rounded-3">
+                        <i class="bi bi-clock-history fs-4 text-white"></i>
+                    </div>
+                </div>
+                <h6 class="card-subtitle text-white text-opacity-75 mb-1">Recent Activity</h6>
+                <p class="text-white text-opacity-75 small mb-0">No recent transactions</p>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Available Bundles Display (View Only) -->
-<div class="mb-5">
-    <div class="d-flex align-items-center mb-4">
-        <h4 class="fw-bold section-title mb-0">Our Packages</h4>
-        <span class="badge bg-light text-muted ms-2 border rounded-pill">View Only</span>
+<!-- Available Bundles Section -->
+<div class="card border-0 bg-white shadow-sm p-4 rounded-4">
+    <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-4 gap-3">
+        <div>
+            <h4 class="fw-bold text-dark mb-1 d-flex align-items-center gap-2">
+                Our Packages
+                <span class="badge bg-light text-dark border fw-normal"
+                    style="font-size: 0.5em; vertical-align: middle;">View Only</span>
+            </h4>
+            <p class="text-muted small mb-0">View our current data bundle rates</p>
+        </div>
+
+        <!-- Network Tabs -->
+        <ul class="nav nav-pills network-tabs bg-light rounded-pill p-1 d-inline-flex" role="tablist">
+            <li class="nav-item">
+                <button class="nav-link active mtn-tab" data-bs-toggle="pill" data-bs-target="#view-mtn">MTN</button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link telecel-tab" data-bs-toggle="pill"
+                    data-bs-target="#view-telecel">TELECEL</button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link airteltigo-tab" data-bs-toggle="pill"
+                    data-bs-target="#view-airteltigo">AIRTELTIGO</button>
+            </li>
+        </ul>
     </div>
 
-    <!-- Network Tabs -->
-    <ul class="nav nav-pills mb-4 network-tabs gap-2" role="tablist">
-        <li class="nav-item">
-            <button class="nav-link active mtn-tab px-4" data-bs-toggle="pill" data-bs-target="#view-mtn">MTN</button>
-        </li>
-        <li class="nav-item">
-            <button class="nav-link telecel-tab px-4" data-bs-toggle="pill"
-                data-bs-target="#view-telecel">TELECEL</button>
-        </li>
-        <li class="nav-item">
-            <button class="nav-link airteltigo-tab px-4" data-bs-toggle="pill"
-                data-bs-target="#view-airteltigo">AIRTELTIGO</button>
-        </li>
-    </ul>
-
-    <div class="tab-content">
+    <div class="tab-content mt-2">
         <!-- MTN View -->
         <div class="tab-pane fade show active" id="view-mtn">
             <div class="row g-3">
                 {% for plan in data_bundles["MTN"] %}
                 <div class="col-6 col-md-4 col-lg-3">
-                    <div class="card border-0 shadow-sm h-100" style="background: #fff8e1;">
-                        <div class="card-body text-center p-4">
-                            <div class="mb-3">
-                                <span class="badge bg-warning text-dark rounded-pill">MTN</span>
-                            </div>
-                            <h4 class="mb-1 fw-bold">{{ plan.size }}</h4>
-                            <h5 class="text-warning fw-bold mb-0">{{ plan.price }}</h5>
+                    <div class="package-card mtn p-3 h-100 d-flex flex-column text-center">
+                        <span class="badge bg-warning text-dark rounded-pill px-3">Non Expiry Bundle</span>
+                        <h3 class="fw-bold text-dark mb-1">{{ plan.size }}</h3>
+                        <h5 class="price-tag mb-0">
+                            <span class="price-currency">GHS</span> {{ plan.price }}
+                        </h5>
+                        <div class="mt-3 pt-3 border-top border-light mt-auto">
+                            <small class="text-muted">High Speed 4G+</small>
                         </div>
                     </div>
                 </div>
@@ -88,50 +117,60 @@
 
         <!-- Telecel View -->
         <div class="tab-pane fade" id="view-telecel">
-            <div class="text-center py-5 bg-light rounded-4">
-                <i class="bi bi-wifi-off fs-1 text-muted opacity-50 mb-2 d-block"></i>
-                <span class="text-muted">No Telecel packages available</span>
+            <div class="row g-3">
+                {% for plan in data_bundles["TELECEL"] %}
+                <div class="col-6 col-md-4 col-lg-3">
+                    <div class="package-card telecel p-3 h-100 d-flex flex-column text-center">
+                        <span class="badge bg-danger text-white rounded-pill px-3">Non Expiry Bundle</span>
+                        <h3 class="fw-bold text-dark mb-1">{{ plan.size }}</h3>
+                        <h5 class="price-tag mb-0">
+                            <span class="price-currency"></span> {{ plan.price }}
+                        </h5>
+                        <div class="mt-3 pt-3 border-top border-light mt-auto">
+                            <small class="text-muted">High Speed 4G+</small>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="col-12">
+                    <div class="text-center py-5 bg-light rounded-4 border border-dashed">
+                        <i class="bi bi-wifi-off fs-1 text-muted opacity-50 mb-3 d-block"></i>
+                        <h6 class="text-muted fw-bold">No Telecel packages available</h6>
+                        <p class="small text-muted mb-0">Check back later for updates</p>
+                    </div>
+                </div>
+                {% endfor %}
             </div>
         </div>
 
         <!-- AirtelTigo View -->
         <div class="tab-pane fade" id="view-airteltigo">
-            <div class="text-center py-5 bg-light rounded-4">
-                <i class="bi bi-wifi-off fs-1 text-muted opacity-50 mb-2 d-block"></i>
-                <span class="text-muted">No AirtelTigo packages available</span>
+            <div class="row g-3">
+                {% for plan in data_bundles["AIRTELTIGO"] %}
+                <div class="col-6 col-md-4 col-lg-3">
+                    <div class="package-card airteltigo p-3 h-100 d-flex flex-column text-center">
+                        <span class="badge bg-primary text-white rounded-pill px-3">BigTime</span>
+                        <h3 class="fw-bold text-dark mb-1">{{ plan.size }}</h3>
+                        <h5 class="price-tag mb-0">
+                            <span class="price-currency"></span> {{ plan.price }}
+                        </h5>
+                        <div class="mt-3 pt-3 border-top border-light mt-auto">
+                            <small class="text-muted">High Speed 4G+</small>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="col-12">
+                    <div class="text-center py-5 bg-light rounded-4 border border-dashed">
+                        <i class="bi bi-wifi-off fs-1 text-muted opacity-50 mb-3 d-block"></i>
+                        <h6 class="text-muted fw-bold">No AirtelTigo packages available</h6>
+                        <p class="small text-muted mb-0">Check back later for updates</p>
+                    </div>
+                </div>
+                {% endfor %}
             </div>
         </div>
     </div>
 </div>
-
-<style>
-    .network-tabs .nav-link {
-        border-radius: 20px;
-        color: #6c757d;
-        background: white;
-        border: 1px solid #dee2e6;
-        transition: all 0.2s;
-    }
-
-    .mtn-tab.active {
-        background-color: #ffcc00 !important;
-        color: black !important;
-        border-color: #ffcc00;
-    }
-
-    .telecel-tab.active {
-        background-color: #e60000 !important;
-        color: white !important;
-        border-color: #e60000;
-    }
-
-    .airteltigo-tab.active {
-        background-color: #0033cc !important;
-        color: white !important;
-        border-color: #0033cc;
-    }
-</style>
-
-
 
 {% endblock %}

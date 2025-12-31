@@ -9,3 +9,5 @@ pymysql
 gunicorn
 requests
 cryptography
+Flask-WTF
+python-dotenv

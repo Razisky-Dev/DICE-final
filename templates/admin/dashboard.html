@@ -8,37 +8,40 @@
 <div class="row g-4 mb-4">
     <!-- Total Wallet Balance -->
     <div class="col-md-3">
-        <div class="stat-card h-100 bg-primary text-white border-0 shadow-sm">
+        <div class="stat-card h-100 border-0 shadow-sm position-relative overflow-hidden text-white"
+            style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
             <div class="d-flex align-items-center mb-3">
-                <div class="stat-icon bg-white bg-opacity-25 text-white me-3 mb-0 rounded-circle p-3 d-flex align-items-center justify-content-center"
+                <div class="bg-white bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center me-3"
                     style="width: 50px; height: 50px;">
-                    <i class="bi bi-wallet2 fs-4"></i>
+                    <i class="bi bi-wallet2 fs-4 text-white"></i>
                 </div>
                 <div>
-                    <h6 class="text-white-50 text-uppercase fw-bold small mb-1">Total Wallet Balance</h6>
-                    <h3 class="fw-bold mb-0">GH₵ {{ "{:,.2f}".format(total_wallet_balance | default(0)) }}</h3>
+                    <h6 class="text-white-50 text-uppercase fw-bold small mb-1">User Balances</h6>
+                    <h3 class="fw-bold mb-0 text-white">GH₵ {{ "{:,.2f}".format(total_wallet_balance | default(0)) }}
+                    </h3>
                 </div>
             </div>
-            <div class="small text-white-50">
-                <i class="bi bi-person-badge"></i> User Balances
+            <div class="small text-white fw-bold opacity-75">
+                <i class="bi bi-piggy-bank"></i> Total Float
             </div>
         </div>
     </div>
 
     <!-- Total Users -->
     <div class="col-md-3">
-        <div class="stat-card h-100 bg-warning text-dark border-0 shadow-sm">
+        <div class="stat-card h-100 border-0 shadow-sm position-relative overflow-hidden text-white"
+            style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
             <div class="d-flex align-items-center mb-3">
-                <div class="stat-icon bg-white bg-opacity-25 text-dark me-3 mb-0 rounded-circle p-3 d-flex align-items-center justify-content-center"
+                <div class="bg-white bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center me-3"
                     style="width: 50px; height: 50px;">
-                    <i class="bi bi-people-fill fs-4"></i>
+                    <i class="bi bi-people-fill fs-4 text-white"></i>
                 </div>
                 <div>
-                    <h6 class="text-dark text-opacity-75 text-uppercase fw-bold small mb-1">Total Users</h6>
-                    <h3 class="fw-bold mb-0">{{ total_users | default(0) }}</h3>
+                    <h6 class="text-white-50 text-uppercase fw-bold small mb-1">Total Users</h6>
+                    <h3 class="fw-bold mb-0 text-white">{{ total_users | default(0) }}</h3>
                 </div>
             </div>
-            <div class="small text-dark text-opacity-75">
+            <div class="small text-white fw-bold opacity-75">
                 <i class="bi bi-check-circle"></i> Active Accounts
             </div>
         </div>
@@ -46,18 +49,19 @@
 
     <!-- Total Orders -->
     <div class="col-md-3">
-        <div class="stat-card h-100 bg-info text-white border-0 shadow-sm">
+        <div class="stat-card h-100 border-0 shadow-sm position-relative overflow-hidden text-white"
+            style="background: linear-gradient(135deg, #ff9966 0%, #ff5e62 100%);">
             <div class="d-flex align-items-center mb-3">
-                <div class="stat-icon bg-white bg-opacity-25 text-white me-3 mb-0 rounded-circle p-3 d-flex align-items-center justify-content-center"
+                <div class="bg-white bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center me-3"
                     style="width: 50px; height: 50px;">
-                    <i class="bi bi-cart-check fs-4"></i>
+                    <i class="bi bi-cart-check fs-4 text-white"></i>
                 </div>
                 <div>
                     <h6 class="text-white-50 text-uppercase fw-bold small mb-1">Total Orders</h6>
-                    <h3 class="fw-bold mb-0">{{ total_orders | default(0) }}</h3>
+                    <h3 class="fw-bold mb-0 text-white">{{ total_orders | default(0) }}</h3>
                 </div>
             </div>
-            <div class="small text-white-50">
+            <div class="small text-white fw-bold opacity-75">
                 <i class="bi bi-activity"></i> All Time
             </div>
         </div>
@@ -65,18 +69,21 @@
 
     <!-- This Month's Sales -->
     <div class="col-md-3">
-        <div class="stat-card h-100 bg-success text-white border-0 shadow-sm">
+        <div class="stat-card h-100 border-0 shadow-sm position-relative overflow-hidden text-white"
+            style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
             <div class="d-flex align-items-center mb-3">
-                <div class="stat-icon bg-white bg-opacity-25 text-white me-3 mb-0 rounded-circle p-3 d-flex align-items-center justify-content-center"
+                <div class="bg-white bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center me-3"
                     style="width: 50px; height: 50px;">
-                    <i class="bi bi-calendar-check fs-4"></i>
+                    <i class="bi bi-calendar-check fs-4 text-white"></i>
                 </div>
                 <div>
-                    <h6 class="text-white-50 text-uppercase fw-bold small mb-1">This Month's Sales</h6>
-                    <h3 class="fw-bold mb-0">GH₵ {{ "{:,.2f}".format(this_month_sales | default(0)) }}</h3>
+                    <h6 class="text-white-50 text-uppercase fw-bold small mb-1">Monthly GMV</h6>
+                    <h3 class="fw-bold mb-0 text-white">GH₵ {{ "{:,.2f}".format(this_month_sales | default(0)) }}</h3>
                 </div>
             </div>
-            <small class="text-white-50">Current Period</small>
+            <div class="small text-white fw-bold opacity-75">
+                <i class="bi bi-graph-up"></i> Current Month
+            </div>
         </div>
     </div>
 </div>
@@ -84,22 +91,22 @@
 <!-- Profit Profitability Section -->
 <div class="row g-4 mb-4">
     <div class="col-12">
-        <h5 class="fw-bold text-muted mb-3">Profitability Overview</h5>
+        <h5 class="fw-bold text-dark mb-3">Profitability Overview</h5>
     </div>
     <!-- MTN -->
     <div class="col-md-4">
-        <div class="card border-warning border-start border-4 shadow-sm h-100">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center mb-2">
+        <div class="stat-card border-warning border-start border-4 shadow-sm h-100 bg-white">
+            <div class="card-body p-0">
+                <div class="d-flex justify-content-between align-items-center mb-3">
                     <h6 class="text-uppercase text-warning fw-bold small mb-0">MTN Data</h6>
-                    <i class="bi bi-graph-up-arrow text-warning"></i>
+                    <i class="bi bi-graph-up-arrow text-warning fs-5"></i>
                 </div>
                 <div class="d-flex justify-content-between mb-2">
                     <span class="text-muted small">Total Sales:</span>
-                    <span class="fw-bold">GH₵ {{ "{:,.2f}".format(profit_stats['MTN']['sales']) }}</span>
+                    <span class="fw-bold text-dark">GH₵ {{ "{:,.2f}".format(profit_stats['MTN']['sales']) }}</span>
                 </div>
-                <div class="d-flex justify-content-between">
-                    <span class="text-muted small">Net Profit:</span>
+                <div class="d-flex justify-content-between rounded bg-success bg-opacity-10 p-2">
+                    <span class="text-success small fw-bold">Net Profit:</span>
                     <span class="fw-bold text-success">+ GH₵ {{ "{:,.2f}".format(profit_stats['MTN']['profit'])
                         }}</span>
                 </div>
@@ -108,18 +115,18 @@
     </div>
     <!-- TELECEL -->
     <div class="col-md-4">
-        <div class="card border-danger border-start border-4 shadow-sm h-100">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center mb-2">
+        <div class="stat-card border-danger border-start border-4 shadow-sm h-100 bg-white">
+            <div class="card-body p-0">
+                <div class="d-flex justify-content-between align-items-center mb-3">
                     <h6 class="text-uppercase text-danger fw-bold small mb-0">Telecel Data</h6>
-                    <i class="bi bi-graph-up-arrow text-danger"></i>
+                    <i class="bi bi-graph-up-arrow text-danger fs-5"></i>
                 </div>
                 <div class="d-flex justify-content-between mb-2">
                     <span class="text-muted small">Total Sales:</span>
-                    <span class="fw-bold">GH₵ {{ "{:,.2f}".format(profit_stats['TELECEL']['sales']) }}</span>
+                    <span class="fw-bold text-dark">GH₵ {{ "{:,.2f}".format(profit_stats['TELECEL']['sales']) }}</span>
                 </div>
-                <div class="d-flex justify-content-between">
-                    <span class="text-muted small">Net Profit:</span>
+                <div class="d-flex justify-content-between rounded bg-success bg-opacity-10 p-2">
+                    <span class="text-success small fw-bold">Net Profit:</span>
                     <span class="fw-bold text-success">+ GH₵ {{ "{:,.2f}".format(profit_stats['TELECEL']['profit'])
                         }}</span>
                 </div>
@@ -128,18 +135,19 @@
     </div>
     <!-- AIRTELTIGO -->
     <div class="col-md-4">
-        <div class="card border-primary border-start border-4 shadow-sm h-100">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center mb-2">
+        <div class="stat-card border-primary border-start border-4 shadow-sm h-100 bg-white">
+            <div class="card-body p-0">
+                <div class="d-flex justify-content-between align-items-center mb-3">
                     <h6 class="text-uppercase text-primary fw-bold small mb-0">AirtelTigo Data</h6>
-                    <i class="bi bi-graph-up-arrow text-primary"></i>
+                    <i class="bi bi-graph-up-arrow text-primary fs-5"></i>
                 </div>
                 <div class="d-flex justify-content-between mb-2">
                     <span class="text-muted small">Total Sales:</span>
-                    <span class="fw-bold">GH₵ {{ "{:,.2f}".format(profit_stats['AIRTELTIGO']['sales']) }}</span>
+                    <span class="fw-bold text-dark">GH₵ {{ "{:,.2f}".format(profit_stats['AIRTELTIGO']['sales'])
+                        }}</span>
                 </div>
-                <div class="d-flex justify-content-between">
-                    <span class="text-muted small">Net Profit:</span>
+                <div class="d-flex justify-content-between rounded bg-success bg-opacity-10 p-2">
+                    <span class="text-success small fw-bold">Net Profit:</span>
                     <span class="fw-bold text-success">+ GH₵ {{ "{:,.2f}".format(profit_stats['AIRTELTIGO']['profit'])
                         }}</span>
                 </div>
@@ -151,9 +159,9 @@
 <!-- Chart & Quick Actions -->
 <div class="row g-4 mb-4">
     <div class="col-lg-8">
-        <div class="stat-card h-100 border-0 shadow-sm">
+        <div class="stat-card h-100 border-0 shadow-sm bg-white">
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h5 class="fw-bold mb-0">Sales Trends</h5>
+                <h5 class="fw-bold mb-0 text-dark">Sales Trends</h5>
                 <span class="badge bg-light text-dark">Last 7 Days</span>
             </div>
             <canvas id="salesChart" height="100"></canvas>
@@ -161,8 +169,8 @@
     </div>
     <!-- Network Pie Chart -->
     <div class="col-lg-4">
-        <div class="stat-card h-100 border-0 shadow-sm">
-            <h5 class="fw-bold mb-4">Sales by Network</h5>
+        <div class="stat-card h-100 border-0 shadow-sm bg-white">
+            <h5 class="fw-bold mb-4 text-dark">Sales by Network</h5>
             <div class="position-relative" style="height: 200px;">
                 <canvas id="networkChart"></canvas>
             </div>
@@ -175,7 +183,8 @@
 
 <div class="row g-4 mb-4">
     <div class="col-lg-12">
-        <div class="stat-card h-100 border-0 shadow-sm bg-dark text-white p-4">
+        <div class="stat-card h-100 border-0 shadow-sm bg-gradient-dark text-white p-4"
+            style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h5 class="fw-bold mb-0 text-white">Quick Actions</h5>
             </div>
@@ -184,7 +193,9 @@
                     <a href="{{ url_for('admin_users') }}"
                         class="btn btn-outline-light w-100 text-start border-opacity-25 hover-bg-light p-3 h-100">
                         <div class="d-flex align-items-center">
-                            <i class="bi bi-person-plus me-3 fs-4"></i>
+                            <div class="rounded-circle bg-white bg-opacity-10 p-3 me-3">
+                                <i class="bi bi-person-plus fs-4"></i>
+                            </div>
                             <div>
                                 <div class="fw-bold">Manage Users</div>
                                 <small class="text-white-50">View & edit balances</small>
@@ -196,7 +207,9 @@
                     <a href="{{ url_for('admin_stores') }}"
                         class="btn btn-outline-light w-100 text-start border-opacity-25 p-3 h-100">
                         <div class="d-flex align-items-center">
-                            <i class="bi bi-shop me-3 fs-4"></i>
+                            <div class="rounded-circle bg-white bg-opacity-10 p-3 me-3">
+                                <i class="bi bi-shop fs-4"></i>
+                            </div>
                             <div>
                                 <div class="fw-bold">Review Stores</div>
                                 <small class="text-white-50">Check performance</small>
@@ -208,7 +221,9 @@
                     <a href="{{ url_for('admin_transactions') }}"
                         class="btn btn-outline-light w-100 text-start border-opacity-25 p-3 h-100">
                         <div class="d-flex align-items-center">
-                            <i class="bi bi-cash-stack me-3 fs-4"></i>
+                            <div class="rounded-circle bg-white bg-opacity-10 p-3 me-3">
+                                <i class="bi bi-cash-stack fs-4"></i>
+                            </div>
                             <div>
                                 <div class="fw-bold">Audit Transactions</div>
                                 <small class="text-white-50">Verify payments</small>
@@ -224,18 +239,19 @@
 <div class="row g-4">
     <!-- Recent Users -->
     <div class="col-lg-6">
-        <div class="table-card h-100 border-0 shadow-sm">
+        <div class="stat-card h-100 border-0 shadow-sm bg-white">
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <h5 class="fw-bold mb-0">Recent Registrations</h5>
-                <a href="{{ url_for('admin_users') }}" class="btn btn-sm btn-light text-primary fw-bold">View All</a>
+                <h5 class="fw-bold mb-0 text-dark">Recent Registrations</h5>
+                <a href="{{ url_for('admin_users') }}"
+                    class="btn btn-sm btn-light text-primary fw-bold rounded-pill px-3">View All</a>
             </div>
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
                     <thead class="bg-light text-muted">
                         <tr>
-                            <th class="ps-3 border-0 rounded-start">Name</th>
-                            <th class="border-0">Email</th>
-                            <th class="pe-3 border-0 rounded-end">Status</th>
+                            <th class="ps-3 border-0 rounded-start text-uppercase small fw-bold">Name</th>
+                            <th class="border-0 text-uppercase small fw-bold">Email</th>
+                            <th class="pe-3 border-0 rounded-end text-uppercase small fw-bold">Status</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -276,18 +292,19 @@
 
     <!-- Recent Stores -->
     <div class="col-lg-6">
-        <div class="table-card h-100 border-0 shadow-sm">
+        <div class="stat-card h-100 border-0 shadow-sm bg-white">
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <h5 class="fw-bold mb-0">Newest Stores</h5>
-                <a href="{{ url_for('admin_stores') }}" class="btn btn-sm btn-light text-primary fw-bold">View All</a>
+                <h5 class="fw-bold mb-0 text-dark">Newest Stores</h5>
+                <a href="{{ url_for('admin_stores') }}"
+                    class="btn btn-sm btn-light text-primary fw-bold rounded-pill px-3">View All</a>
             </div>
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
                     <thead class="bg-light text-muted">
                         <tr>
-                            <th class="ps-3 border-0 rounded-start">Store Name</th>
-                            <th class="border-0">Owner</th>
-                            <th class="pe-3 border-0 rounded-end">Sales (GMV)</th>
+                            <th class="ps-3 border-0 rounded-start text-uppercase small fw-bold">Store Name</th>
+                            <th class="border-0 text-uppercase small fw-bold">Owner</th>
+                            <th class="pe-3 border-0 rounded-end text-uppercase small fw-bold">Sales (GMV)</th>
                         </tr>
                     </thead>
                     <tbody>

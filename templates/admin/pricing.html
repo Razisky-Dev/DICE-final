@@ -36,6 +36,7 @@
                         <tbody>
                             {% for plan in plans %}
                             <form action="{{ url_for('admin_pricing') }}" method="POST">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                 <input type="hidden" name="plan_id" value="{{ plan.id }}">
                                 <tr>
                                     <td class="ps-4 fw-bold">{{ plan.plan_size }}</td>

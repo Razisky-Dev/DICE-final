@@ -1,0 +1,74 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}Site Notice{% endblock %}
+{% block header_title %}Site Notice{% endblock %}
+{% block header_subtitle %}Manage the global announcement banner visible to all users.{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="d-flex align-items-center justify-content-between mb-4">
+            <div>
+                <h4 class="fw-bold mb-1">Site Announcement</h4>
+                <p class="text-muted small mb-0">Manage the global notification banner visible to all users.</p>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-body p-4">
+                <form method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="mb-4">
+                        <label for="notice" class="form-label fw-bold small text-uppercase text-muted">Announcement
+                            Message</label>
+                        <textarea class="form-control bg-light border-0 p-3" id="notice" name="notice" rows="4"
+                            placeholder="Type a message here (e.g., 'Maintenance scheduled for tonight')..."
+                            style="font-size: 1rem; min-height: 120px;">{{ notice }}</textarea>
+                        <div class="form-text mt-2 d-flex justify-content-between">
+                            <span><i class="bi bi-info-circle me-1"></i> Use clear and concise language.</span>
+                            <span class="text-muted">Visible on user dashboard</span>
+                        </div>
+                    </div>
+
+                    <!-- Preview Section -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold small text-uppercase text-muted">Preview</label>
+                        <div class="alert alert-primary border-0 d-flex align-items-center" role="alert">
+                            <i class="bi bi-megaphone-fill me-3 fs-4"></i>
+                            <div>
+                                <strong class="d-block text-uppercase small opacity-75">Notice</strong>
+                                <span class="fst-italic opacity-75" id="previewText">{{ notice or 'No active notice
+                                    currently.' }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-3 pt-2">
+                        <a href="{{ url_for('admin_dashboard') }}"
+                            class="btn btn-light btn-lg flex-fill fw-bold text-muted">Cancel</a>
+                        <button type="submit" class="btn btn-primary btn-lg flex-fill fw-bold shadow-sm">
+                            <i class="bi bi-save me-2"></i> Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Simple live preview script
+    const noticeInput = document.getElementById('notice');
+    const previewText = document.getElementById('previewText');
+
+    noticeInput.addEventListener('input', function () {
+        if (this.value.trim() === "") {
+            previewText.textContent = "No active notice currently.";
+            previewText.classList.add('opacity-75', 'fst-italic');
+        } else {
+            previewText.textContent = this.value;
+            previewText.classList.remove('opacity-75', 'fst-italic');
+        }
+    });
+</script>
+{% endblock %}

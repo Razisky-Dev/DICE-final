@@ -1,631 +1,757 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends 'dashboard_layout.html' %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Store | RazilHub</title>
+{% block title %}Store Management | RazilHub{% endblock %}
 
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+{% block content %}
+<!-- Header -->
+<div class="d-flex align-items-end justify-content-between mb-4">
+    <div>
+        <h2 class="fw-bold text-dark mb-1">Store Management 🏪</h2>
+        <p class="text-muted mb-0">Manage your store settings, pricing, and orders</p>
+    </div>
+    <div>
+        <a href="{{ request.host_url }}store/{{ store.slug }}" target="_blank"
+            class="btn btn-outline-primary rounded-pill px-4 fw-bold">
+            <i class="bi bi-box-arrow-up-right me-2"></i> Visit Store
+        </a>
+    </div>
+</div>
 
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<!-- Flash Messages are handled in dashboard_layout -->
 
-    <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            background-color: #f5f7fa;
-        }
+<!-- Store Tabs -->
+<ul class="nav nav-pills mb-4 bg-white p-2 rounded-pill shadow-sm d-inline-flex" id="storeTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active rounded-pill px-4" id="overview-tab" data-bs-toggle="pill"
+            data-bs-target="#overview" type="button" role="tab">Overview</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link rounded-pill px-4" id="settings-tab" data-bs-toggle="pill" data-bs-target="#settings"
+            type="button" role="tab">Configuration</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link rounded-pill px-4" id="pricing-tab" data-bs-toggle="pill" data-bs-target="#pricing"
+            type="button" role="tab">Pricing Rules</button>
+    </li>
+</ul>
 
-        #sidebar-wrapper {
-            min-width: 250px;
-            max-width: 250px;
-        }
+<div class="tab-content" id="storeTabsContent">
 
-        #sidebar-wrapper .list-group-item {
-            border: none;
-            padding: 20px 25px;
-            font-size: 1rem;
-            color: #333;
-        }
-
-        #sidebar-wrapper .list-group-item:hover {
-            background-color: #007bff;
-            color: white;
-        }
-
-        #page-content-wrapper {
-            width: 100%;
-        }
-
-        .card {
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .navbar {
-            padding: 0.8rem 1rem;
-            background-color: #fff;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        #wrapper.toggled #sidebar-wrapper {
-            margin-left: -250px;
-        }
-
-        #sidebar-wrapper {
-            transition: margin 0.25s ease-out;
-        }
-
-        @media (max-width: 768px) {
-            #sidebar-wrapper {
-                margin-left: -250px;
-            }
-
-            #wrapper.toggled #sidebar-wrapper {
-                margin-left: 0;
-            }
-        }
-
-        .card:hover {
-            transform: translateY(-2px);
-            transition: 0.2s ease-in-out;
-        }
-    </style>
-</head>
-
-<body>
-
-    <div class="d-flex" id="wrapper">
-
-        <!-- Sidebar -->
-        <div class="bg-light border-end" id="sidebar-wrapper">
-            <div class="sidebar-heading py-4 fs-4 fw-bold" style="padding-left: 25px;">
-                RazilHub
-            </div>
-            <div class="list-group list-group-flush">
-                <a href="{{ url_for('dashboard') }}"
-                    class="list-group-item list-group-item-action bg-light">Dashboard</a>
-                <a href="{{ url_for('orders') }}" class="list-group-item list-group-item-action bg-light">Orders</a>
-                <a href="{{ url_for('wallet') }}" class="list-group-item list-group-item-action bg-light">Wallet</a>
-                <a href="{{ url_for('buy_data') }}" class="list-group-item list-group-item-action bg-light">Buy Data</a>
-                <a href="{{ url_for('store') }}"
-                    class="list-group-item list-group-item-action bg-light active">Store</a>
-                <a href="{{ url_for('profile') }}" class="list-group-item list-group-item-action bg-light">Profile</a>
-                <a href="{{ url_for('logout') }}" class="list-group-item list-group-item-action bg-light">Logout</a>
-            </div>
-        </div>
-
-        <!-- Page Content -->
-        <div id="page-content-wrapper">
-
-            <!-- Navbar -->
-            <nav class="navbar navbar-expand-lg navbar-light border-bottom">
-                <div class="container-fluid">
-                    <button class="btn btn-primary" id="sidebarToggle">☰</button>
-                    <div class="ms-auto">
-                        Store Management
-                    </div>
-                </div>
-            </nav>
-
-            <!-- Store Content -->
-            <div class="container-fluid mt-4">
-
-                <!-- Flash Messages -->
-                {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                {% for category, message in messages %}
-                <div class="alert alert-{{ category if category != 'error' else 'danger' }} alert-dismissible fade show"
-                    role="alert">
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-                {% endfor %}
-                {% endif %}
-                {% endwith %}
-
-                <ul class="nav nav-tabs mb-4" id="storeTabs" role="tablist">
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link active" id="overview-tab" data-bs-toggle="tab"
-                            data-bs-target="#overview" type="button" role="tab">Overview</button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="settings-tab" data-bs-toggle="tab" data-bs-target="#settings"
-                            type="button" role="tab">Store Link</button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="pricing-tab" data-bs-toggle="tab" data-bs-target="#pricing"
-                            type="button" role="tab">Pricing</button>
-                    </li>
-                </ul>
-
-                <div class="tab-content" id="storeTabsContent">
-
-                    <!-- Overview Tab -->
-                    <div class="tab-pane fade show active" id="overview" role="tabpanel">
-                        <!-- Stats Row -->
-                        <div class="row g-4 mb-4">
-                            <div class="col-md-4">
-                                <div class="card text-white bg-info h-100">
-                                    <div class="card-body">
-                                        <h6>Store Credit</h6>
-                                        <h4>GH₵{{ "{:,.2f}".format(store.credit_balance) }}</h4>
-                                        <div class="mt-3">
-                                            <form action="{{ url_for('store_withdraw') }}" method="POST"
-                                                class="d-inline">
-                                                <input type="hidden" name="amount" value="{{ store.credit_balance }}">
-                                                <button type="submit" class="btn btn-light btn-sm" {{ 'disabled' if
-                                                    store.credit_balance <=0 else '' }}>Transfer to Wallet</button>
-                                            </form>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="card text-white bg-success h-100">
-                                    <div class="card-body">
-                                        <h6>Total Sales</h6>
-                                        <h4>GH₵{{ "{:,.2f}".format(store.total_sales) }}</h4>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="card text-white bg-danger h-100">
-                                    <div class="card-body">
-                                        <h6>Total Withdrawn</h6>
-                                        <h4>GH₵{{ "{:,.2f}".format(store.total_withdrawn) }}</h4>
-                                    </div>
-                                </div>
+    <!-- Overview Tab -->
+    <div class="tab-pane fade show active" id="overview" role="tabpanel">
+        <!-- Stats Row -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-4">
+                <div class="card stat-card bg-info text-white h-100 border-0 shadow-sm rounded-4">
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-start mb-4">
+                            <div class="p-2 bg-white bg-opacity-25 rounded-3">
+                                <i class="bi bi-wallet2 fs-4 text-white"></i>
                             </div>
                         </div>
-
-                        <!-- Orders Table -->
-                        <div class="card">
-                            <div class="card-header bg-white">
-                                <h5 class="mb-0">Store Orders History</h5>
+                        <h6 class="card-subtitle text-white text-opacity-75 mb-1">Store Credit</h6>
+                        <h3 class="fw-bold mb-0">GH₵{{ "{:,.2f}".format(store.credit_balance) }}</h3>
+                        <div class="mt-3 row g-2">
+                            <div class="col-6">
+                                <button type="button"
+                                    class="btn btn-light text-info rounded-pill fw-bold w-100 shadow-sm"
+                                    data-bs-toggle="modal" data-bs-target="#transferToWalletModal">
+                                    <i class="bi bi-wallet2 me-1"></i> Transfer
+                                </button>
                             </div>
-                            <div class="card-body">
-                                <div class="table-responsive">
-                                    <table class="table table-hover">
-                                        <thead>
-                                            <tr>
-                                                <th>Date</th>
-                                                <th>Phone</th>
-                                                <th>Package</th>
-                                                <th>Price</th>
-                                                <th>Commission</th>
-                                                <th>Status</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {% for order in orders %}
-                                            <tr>
-                                                <td>{{ order.date.strftime('%Y-%m-%d %H:%M') }}</td>
-                                                <td>{{ order.phone }}</td>
-                                                <td>{{ order.package }}</td>
-                                                <td>GH₵{{ "{:.2f}".format(order.price) }}</td>
-                                                <td>GH₵{{ "{:.2f}".format(order.commission) }}</td>
-                                                <td>
-                                                    <span
-                                                        class="badge bg-{{ 'success' if order.status == 'Success' else 'warning' if order.status == 'Pending' else 'danger' }}">
-                                                        {{ order.status }}
-                                                    </span>
-                                                </td>
-                                            </tr>
-                                            {% else %}
-                                            <tr>
-                                                <td colspan="6" class="text-center text-muted">No store orders yet.</td>
-                                            </tr>
-                                            {% endfor %}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Store Link Tab -->
-                    <div class="tab-pane fade" id="settings" role="tabpanel">
-                        <div class="row g-4">
-                            <!-- Left Column: Settings -->
-                            <div class="col-lg-8">
-                                <div class="card border-0 shadow-sm h-100">
-                                    <div class="card-header bg-white border-bottom-0 pt-4 pb-0">
-                                        <h5 class="card-title d-flex align-items-center mb-0">
-                                            <span class="me-2 p-1 bg-light rounded">⚙️</span> Store Configuration
-                                        </h5>
-                                    </div>
-                                    <div class="card-body p-4">
-
-                                        <!-- Link Section -->
-                                        <div class="bg-light p-3 rounded mb-4 border">
-                                            <label class="form-label fw-bold text-dark small text-uppercase">Your Store
-                                                Link</label>
-                                            <div class="input-group mb-2">
-                                                <span class="input-group-text bg-white text-muted border-end-0">{{
-                                                    request.host_url }}store/</span>
-                                                <input type="text" class="form-control border-start-0 ps-0"
-                                                    id="slugInput" value="{{ store.slug }}" readonly
-                                                    style="font-weight: 500;">
-                                                <button class="btn btn-outline-primary" type="button"
-                                                    onclick="enableSlugEdit()">Edit Slug</button>
-                                            </div>
-                                            <div class="d-flex gap-2">
-                                                <a href="{{ request.host_url }}store/{{ store.slug }}" target="_blank"
-                                                    class="btn btn-primary btn-sm px-3">Visit Store</a>
-                                            </div>
-                                            <!-- Hidden Full Link for copying -->
-                                            <input type="hidden" value="{{ request.host_url }}store/{{ store.slug }}"
-                                                id="fullStoreLink">
-                                        </div>
-
-                                        <form action="{{ url_for('update_store_settings') }}" method="POST"
-                                            id="storeSettingsForm">
-                                            <!-- Hidden input for slug to submit -->
-                                            <input type="hidden" name="slug" id="hiddenSlugInput"
-                                                value="{{ store.slug }}">
-
-                                            <div class="row g-3 mb-3">
-                                                <div class="col-md-12">
-                                                    <label
-                                                        class="form-label text-muted small fw-bold text-uppercase">Store
-                                                        Name</label>
-                                                    <input type="text" class="form-control" name="name"
-                                                        value="{{ store.name }}" required>
-                                                </div>
-                                            </div>
-
-                                            <div class="row g-3 mb-4">
-                                                <div class="col-md-6">
-                                                    <label
-                                                        class="form-label text-muted small fw-bold text-uppercase">Support
-                                                        Call Number</label>
-                                                    <input type="text" class="form-control" name="support_phone"
-                                                        value="{{ store.support_phone or '' }}">
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <label
-                                                        class="form-label text-muted small fw-bold text-uppercase">Support
-                                                        WhatsApp</label>
-                                                    <input type="text" class="form-control" name="whatsapp"
-                                                        value="{{ store.whatsapp or '' }}">
-                                                </div>
-                                            </div>
-
-                                            <h6 class="text-muted small fw-bold text-uppercase mb-2">Store Description
-                                            </h6>
-                                            <div class="mb-4">
-                                                <textarea class="form-control" name="description" rows="3"
-                                                    placeholder="Describe your store...">{{ store.description or '' }}</textarea>
-                                            </div>
-
-                                            <h6 class="text-muted small fw-bold text-uppercase mb-2">Store Notice
-                                                (Optional)</h6>
-                                            <div class="mb-4">
-                                                <div class="alert alert-info py-2 small mb-2"><i
-                                                        class="bi bi-info-circle me-1"></i> Use this to display
-                                                    important updates to your customers (e.g., "We are offline"). Leave
-                                                    empty to hide.</div>
-                                                <textarea class="form-control" name="notice" rows="2"
-                                                    placeholder="Enter a notice for your customers...">{{ store.notice or '' }}</textarea>
-                                            </div>
-
-                                            <div class="text-end">
-                                                <button type="submit" class="btn btn-dark px-4">Save
-                                                    Configuration</button>
-                                            </div>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Right Column: Share & QR -->
-                            <div class="col-lg-4">
-                                <div class="card border-0 shadow-sm h-100">
-                                    <div class="card-header bg-white border-bottom-0 pt-4 pb-0">
-                                        <h5 class="card-title d-flex align-items-center mb-0">
-                                            <span class="me-2 p-1 bg-light rounded">🚀</span> Share & Connect
-                                        </h5>
-                                    </div>
-                                    <div class="card-body p-4 text-center">
-
-                                        <!-- QR Code -->
-                                        <div class="mb-4">
-                                            <div class="d-inline-block border p-2 mb-3 rounded bg-white">
-                                                <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data={{ request.host_url }}store/{{ store.slug }}"
-                                                    alt="QR Code" class="img-fluid">
-                                            </div>
-                                            <p class="text-muted small mb-2">Scan to access store instantly</p>
-                                            <a href="https://api.qrserver.com/v1/create-qr-code/?size=500x500&data={{ request.host_url }}store/{{ store.slug }}"
-                                                download="store_qr.png" target="_blank"
-                                                class="btn btn-outline-dark btn-sm w-100">Download High Res QR</a>
-                                        </div>
-
-                                        <hr class="text-muted opacity-25">
-
-                                        <!-- Share Options -->
-                                        <div class="d-grid gap-2 text-start">
-                                            <label class="text-muted small fw-bold text-uppercase mb-1">Social
-                                                Share</label>
-                                            <button class="btn btn-outline-success" onclick="shareOnWhatsApp()">
-                                                <i class="bi bi-whatsapp me-2"></i> WhatsApp
-                                            </button>
-                                            <button class="btn btn-outline-primary" onclick="shareOnFacebook()">
-                                                <i class="bi bi-facebook me-2"></i> Facebook
-                                            </button>
-                                            <button class="btn btn-light border mt-2" onclick="copyStoreLink()">
-                                                <i class="bi bi-clipboard me-2"></i> Copy as Text
-                                            </button>
-                                        </div>
-
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Pricing Tab -->
-                    <div class="tab-pane fade" id="pricing" role="tabpanel">
-                        <div class="row mb-3 align-items-center">
-                            <div class="col-md-6">
-                                <h5>Your Packages</h5>
-                            </div>
-                            <div class="col-md-6 text-md-end">
-                                <button class="btn btn-primary" data-bs-toggle="modal"
-                                    data-bs-target="#addPricingModal">
-                                    + Add Pricing
+                            <div class="col-6">
+                                <button type="button" class="btn btn-outline-light rounded-pill fw-bold w-100 shadow-sm"
+                                    data-bs-toggle="modal" data-bs-target="#withdrawStoreCreditModal">
+                                    <i class="bi bi-phone me-1"></i> Withdraw
                                 </button>
                             </div>
                         </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card stat-card bg-success text-white h-100 border-0 shadow-sm rounded-4">
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-start mb-4">
+                            <div class="p-2 bg-white bg-opacity-25 rounded-3">
+                                <i class="bi bi-bag-check fs-4 text-white"></i>
+                            </div>
+                        </div>
+                        <h6 class="card-subtitle text-white text-opacity-75 mb-1">Total Sales</h6>
+                        <h3 class="fw-bold mb-0">GH₵{{ "{:,.2f}".format(store.total_sales) }}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card stat-card bg-danger text-white h-100 border-0 shadow-sm rounded-4">
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-start mb-4">
+                            <div class="p-2 bg-white bg-opacity-25 rounded-3">
+                                <i class="bi bi-cash-stack fs-4 text-white"></i>
+                            </div>
+                        </div>
+                        <h6 class="card-subtitle text-white text-opacity-75 mb-1">Total Withdrawn</h6>
+                        <h3 class="fw-bold mb-0">GH₵{{ "{:,.2f}".format(store.total_withdrawn) }}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-                        <!-- Filter -->
-                        <div class="mb-3">
-                            <select class="form-select w-auto d-inline-block" id="networkFilter"
-                                onchange="filterPricingTable()">
-                                <option value="All">All Networks</option>
-                                <option value="MTN">MTN</option>
-                                <option value="TELECEL">TELECEL</option>
-                                <option value="AIRTELTIGO">AIRTELTIGO</option>
-                            </select>
+        <!-- Orders Table -->
+        <div class="card border-0 bg-white shadow-sm p-4 rounded-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="fw-bold text-dark mb-0">Store Orders History</h5>
+                <span class="badge bg-light text-primary border rounded-pill px-3">
+                    {{ orders|length }} Orders
+                </span>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="border-0 rounded-start-3 text-muted small text-uppercase">Date</th>
+                            <th class="border-0 text-muted small text-uppercase">Customer Phone</th>
+                            <th class="border-0 text-muted small text-uppercase">Package</th>
+                            <th class="border-0 text-muted small text-uppercase">Price</th>
+                            <th class="border-0 text-muted small text-uppercase">Commission</th>
+                            <th class="border-0 rounded-end-3 text-muted small text-uppercase">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in orders %}
+                        <tr>
+                            <td class="fw-bold text-dark">{{ order.date.strftime('%Y-%m-%d %H:%M') }}</td>
+                            <td>{{ order.phone }}</td>
+                            <td>
+                                <span class="badge bg-light text-dark border px-2 py-1">{{ order.package }}</span>
+                            </td>
+                            <td class="fw-bold">GH₵{{ "{:.2f}".format(order.price) }}</td>
+                            <td class="text-success fw-bold">+GH₵{{ "{:.2f}".format(order.commission) }}</td>
+                            <td>
+                                <span
+                                    class="badge bg-{{ 'success' if order.status == 'Success' else 'warning' if order.status == 'Pending' else 'danger' }} rounded-pill px-3">
+                                    {{ order.status }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center py-5">
+                                <div class="d-flex flex-column align-items-center justify-content-center opacity-50">
+                                    <i class="bi bi-cart-x fs-1 mb-2"></i>
+                                    <p class="mb-0">No store orders yet</p>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Withdrawals History -->
+        <div class="card border-0 bg-white shadow-sm p-4 rounded-4 mt-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="fw-bold text-dark mb-0">Withdrawal History</h5>
+                <span class="badge bg-light text-danger border rounded-pill px-3">
+                    {{ withdrawals|length }} Transactions
+                </span>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="border-0 rounded-start-3 text-muted small text-uppercase">Date</th>
+                            <th class="border-0 text-muted small text-uppercase">Reference</th>
+                            <th class="border-0 text-muted small text-uppercase">Type</th>
+                            <th class="border-0 text-muted small text-uppercase">Amount</th>
+                            <th class="border-0 rounded-end-3 text-muted small text-uppercase">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for txn in withdrawals %}
+                        <tr>
+                            <td class="fw-bold text-dark">{{ txn.date.strftime('%Y-%m-%d %H:%M') }}</td>
+                            <td class="small text-muted">{{ txn.reference }}</td>
+                            <td>
+                                <span class="badge bg-light text-dark border px-2 py-1">{{ txn.type.replace('Store ',
+                                    '')
+                                    }}</span>
+                            </td>
+                            <td class="fw-bold text-danger">-GH₵{{ "{:.2f}".format(txn.amount) }}</td>
+                            <td>
+                                <span
+                                    class="badge bg-{{ 'success' if txn.status == 'Success' else 'warning' if txn.status == 'Pending' else 'danger' }} rounded-pill px-3">
+                                    {{ txn.status }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5" class="text-center py-5">
+                                <div class="d-flex flex-column align-items-center justify-content-center opacity-50">
+                                    <i class="bi bi-cash-stack fs-1 mb-2"></i>
+                                    <p class="mb-0">No withdrawals yet</p>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Configuration Tab (Settings) -->
+    <div class="tab-pane fade" id="settings" role="tabpanel">
+        <div class="row g-4">
+            <!-- Left Column: Settings -->
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-sm rounded-4 h-100">
+                    <div class="card-header bg-white border-0 pt-4 px-4">
+                        <h5 class="card-title fw-bold mb-0">Store Details</h5>
+                    </div>
+                    <div class="card-body p-4">
+
+                        <!-- Link Section -->
+                        <div class="bg-light p-4 rounded-4 mb-4">
+                            <label class="form-label fw-bold text-dark small text-uppercase mb-2">Your Store
+                                Link</label>
+                            <div class="input-group mb-3">
+                                <span class="input-group-text bg-white border-0 text-muted">{{ request.host_url
+                                    }}store/</span>
+                                <input type="text" class="form-control border-0 fw-bold" id="slugInput"
+                                    value="{{ store.slug }}" readonly>
+                                <button class="btn btn-primary px-4 fw-bold" type="button"
+                                    onclick="enableSlugEdit()">Edit</button>
+                            </div>
+                            <!-- Hidden Full Link for copying -->
+                            <input type="hidden" value="{{ request.host_url }}store/{{ store.slug }}"
+                                id="fullStoreLink">
                         </div>
 
-                        <div class="card">
-                            <div class="card-body p-0">
-                                <div class="table-responsive">
-                                    <table class="table table-striped mb-0" id="pricingTable">
-                                        <thead class="bg-light">
-                                            <tr>
-                                                <th>Network</th>
-                                                <th>Package</th>
-                                                <th>Original Price</th>
-                                                <th>Your Price</th>
-                                                <th>Profit</th>
-                                                <th>Status</th>
-                                                <th>Action</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {% for item in pricing_list %}
-                                            <tr class="align-middle pricing-row" data-network="{{ item.network }}">
-                                                <td><span
-                                                        class="badge bg-{{ 'warning' if item.network == 'MTN' else 'danger' if item.network == 'TELECEL' else 'primary' }} text-dark">{{
-                                                        item.network }}</span></td>
-                                                <td>{{ item.package_name }}</td>
-                                                <td>GH₵{{ "{:.2f}".format(item.dealer_price) }}</td>
-                                                <td>GH₵{{ "{:.2f}".format(item.selling_price) }}</td>
-                                                <td class="text-success fw-bold">GH₵{{
-                                                    "{:.2f}".format(item.selling_price - item.dealer_price) }}</td>
-                                                <td>
-                                                    <span
-                                                        class="badge bg-{{ 'success' if item.status == 'Active' else 'secondary' }}">
-                                                        {{ item.status }}
-                                                    </span>
-                                                </td>
-                                                <td>
-                                                    <a href="{{ url_for('toggle_pricing', id=item.id) }}"
-                                                        class="btn btn-sm btn-outline-{{ 'danger' if item.status == 'Active' else 'success' }}">
-                                                        {{ 'Deactivate' if item.status == 'Active' else 'Activate' }}
-                                                    </a>
-                                                </td>
-                                            </tr>
-                                            {% else %}
-                                            <tr>
-                                                <td colspan="7" class="text-center text-muted py-4">No custom pricing
-                                                    added yet. Click "+ Add Pricing" to start.</td>
-                                            </tr>
-                                            {% endfor %}
-                                        </tbody>
-                                    </table>
+                        <form action="{{ url_for('update_store_settings') }}" method="POST" id="storeSettingsForm">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <!-- Hidden input for slug to submit -->
+                            <input type="hidden" name="slug" id="hiddenSlugInput" value="{{ store.slug }}">
+
+                            <div class="mb-4">
+                                <label class="form-label text-muted small fw-bold text-uppercase">Store Name</label>
+                                <input type="text" class="form-control bg-light border-0 py-2" name="name"
+                                    value="{{ store.name }}" required>
+                            </div>
+
+                            <div class="row g-4 mb-4">
+                                <div class="col-md-6">
+                                    <label class="form-label text-muted small fw-bold text-uppercase">Support Call
+                                        Number</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light border-0"><i
+                                                class="bi bi-telephone"></i></span>
+                                        <input type="text" class="form-control bg-light border-0 py-2"
+                                            name="support_phone" value="{{ store.support_phone or '' }}">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label text-muted small fw-bold text-uppercase">Support
+                                        WhatsApp</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light border-0"><i
+                                                class="bi bi-whatsapp"></i></span>
+                                        <input type="text" class="form-control bg-light border-0 py-2" name="whatsapp"
+                                            value="{{ store.whatsapp or '' }}">
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+
+                            <div class="mb-4">
+                                <label class="form-label text-muted small fw-bold text-uppercase">Store
+                                    Description</label>
+                                <textarea class="form-control bg-light border-0" name="description" rows="3"
+                                    placeholder="Describe your store...">{{ store.description or '' }}</textarea>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label text-muted small fw-bold text-uppercase">Store Notice
+                                    (Optional)</label>
+                                <div class="alert alert-info py-2 small mb-2 border-0 rounded-3">
+                                    <i class="bi bi-info-circle-fill me-1"></i> Use this to display important updates to
+                                    your customers.
+                                </div>
+                                <textarea class="form-control bg-light border-0" name="notice" rows="2"
+                                    placeholder="Enter a notice for your customers...">{{ store.notice or '' }}</textarea>
+                            </div>
+
+                            <div class="text-end">
+                                <button type="submit" class="btn btn-dark px-4 rounded-pill fw-bold py-2">
+                                    Save Configuration
+                                </button>
+                            </div>
+                        </form>
                     </div>
-
                 </div>
+            </div>
 
-            </div> <!-- end container-fluid -->
-        </div> <!-- end page-content-wrapper -->
-    </div> <!-- end wrapper -->
+            <!-- Right Column: Share & QR -->
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm rounded-4 h-100">
+                    <div class="card-header bg-white border-0 pt-4 px-4 text-center">
+                        <h5 class="card-title fw-bold mb-0">Share Store</h5>
+                    </div>
+                    <div class="card-body p-4 text-center">
 
-    <!-- Add Pricing Modal -->
-    <div class="modal fade" id="addPricingModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Add Pricing Configuration</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <form action="{{ url_for('add_pricing') }}" method="POST" id="pricingForm">
-
-                        <div class="mb-3">
-                            <label class="form-label">Network</label>
-                            <select class="form-select" name="network" id="modalNetworkSelect" required
-                                onchange="updatePackageOptions()">
-                                <option value="" selected disabled>Select Network</option>
-                                <option value="MTN">MTN</option>
-                                <option value="TELECEL">TELECEL</option>
-                                <option value="AIRTELTIGO">AIRTELTIGO</option>
-                            </select>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Package</label>
-                            <select class="form-select" name="package_name" id="modalPackageSelect" required
-                                onchange="updateDealerPrice()">
-                                <option value="" selected disabled>Select a Network first</option>
-                            </select>
-                            <div class="form-text">Choose the bundle size</div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Original Price (Dealer Price)</label>
-                            <div class="input-group">
-                                <span class="input-group-text">GH₵</span>
-                                <input type="number" class="form-control" name="dealer_price" id="modalDealerPrice"
-                                    readonly step="0.01">
+                        <!-- QR Code -->
+                        <div class="mb-4">
+                            <div class="d-inline-block p-3 rounded-4 bg-light mb-3">
+                                <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data={{ request.host_url }}store/{{ store.slug }}"
+                                    alt="QR Code" class="img-fluid rounded-3">
                             </div>
+                            <p class="text-muted small mb-3">Scan to open store</p>
+                            <a href="https://api.qrserver.com/v1/create-qr-code/?size=500x500&data={{ request.host_url }}store/{{ store.slug }}"
+                                download="store_qr.png" target="_blank"
+                                class="btn btn-outline-dark btn-sm w-100 rounded-pill fw-bold">
+                                <i class="bi bi-download me-2"></i> Download High Res QR
+                            </a>
                         </div>
 
-                        <div class="mb-3">
-                            <label class="form-label">Your Price</label>
-                            <div class="input-group">
-                                <span class="input-group-text">GH₵</span>
-                                <input type="number" class="form-control" name="selling_price" id="modalSellingPrice"
-                                    required step="0.01" oninput="calculateProfit()">
-                            </div>
-                            <div class="form-text text-danger d-none" id="priceError">Price cannot be less than dealer
-                                price!</div>
+                        <hr class="text-muted opacity-10">
+
+                        <!-- Share Options -->
+                        <div class="d-grid gap-2 text-start">
+                            <label class="text-muted small fw-bold text-uppercase mb-1">Social Share</label>
+                            <button class="btn btn-success text-white border-0 rounded-pill py-2"
+                                onclick="shareOnWhatsApp()">
+                                <i class="bi bi-whatsapp me-2"></i> WhatsApp
+                            </button>
+                            <button class="btn btn-primary text-white border-0 rounded-pill py-2"
+                                onclick="shareOnFacebook()">
+                                <i class="bi bi-facebook me-2"></i> Facebook
+                            </button>
+                            <button class="btn btn-light text-dark border-0 rounded-pill py-2"
+                                onclick="copyStoreLink()">
+                                <i class="bi bi-clipboard me-2"></i> Copy Link
+                            </button>
                         </div>
 
-                        <div class="alert alert-info">
-                            <strong>Projected Profit: </strong> <span id="modalProfitDisplay">GH₵ 0.00</span>
-                        </div>
-
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                            <button type="submit" class="btn btn-primary" id="savePricingBtn">Add Pricing</button>
-                        </div>
-                    </form>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        const sidebarToggle = document.getElementById('sidebarToggle');
-        const wrapper = document.getElementById('wrapper');
-        sidebarToggle.addEventListener('click', () => {
-            wrapper.classList.toggle('toggled');
-        });
+    <!-- Pricing Tab -->
+    <div class="tab-pane fade" id="pricing" role="tabpanel">
+        <div class="card border-0 shadow-sm rounded-4 p-4">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4 gap-3">
+                <h5 class="fw-bold text-dark mb-0">Custom Pricing Rules</h5>
 
-        function copyStoreLink() {
-            var copyText = document.getElementById("fullStoreLink");
-            copyText.select();
-            copyText.setSelectionRange(0, 99999);
-            navigator.clipboard.writeText(copyText.value);
-            alert("Copied: " + copyText.value);
+                <div class="d-flex gap-3">
+                    <select class="form-select bg-light border-0 py-2 rounded-pill" id="networkFilter"
+                        onchange="filterPricingTable()" style="width: auto;">
+                        <option value="All">All Networks</option>
+                        <option value="MTN">MTN</option>
+                        <option value="TELECEL">TELECEL</option>
+                        <option value="AIRTELTIGO">AIRTELTIGO</option>
+                    </select>
+
+                    <button class="btn btn-primary rounded-pill fw-bold px-4 py-2" data-bs-toggle="modal"
+                        data-bs-target="#addPricingModal">
+                        <i class="bi bi-plus-lg me-2"></i> Add Pricing
+                    </button>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="border-0 rounded-start-3 text-muted small text-uppercase">Network</th>
+                            <th class="border-0 text-muted small text-uppercase">Package</th>
+                            <th class="border-0 text-muted small text-uppercase">Original Price</th>
+                            <th class="border-0 text-muted small text-uppercase">Your Price</th>
+                            <th class="border-0 text-muted small text-uppercase">Profit</th>
+                            <th class="border-0 text-muted small text-uppercase">Status</th>
+                            <th class="border-0 rounded-end-3 text-muted small text-uppercase">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="pricingTableBody">
+                        {% for item in pricing_list %}
+                        <tr class="pricing-row" data-network="{{ item.network }}">
+                            <td>
+                                <span
+                                    class="badge rounded-pill bg-{{ 'warning text-dark' if item.network == 'MTN' else 'danger' if item.network == 'TELECEL' else 'primary' }}">
+                                    {{ item.network }}
+                                </span>
+                            </td>
+                            <td class="fw-bold text-dark">{{ item.package_name }}</td>
+                            <td class="text-muted">GH₵{{ "{:.2f}".format(item.dealer_price) }}</td>
+                            <td class="fw-bold">GH₵{{ "{:.2f}".format(item.selling_price) }}</td>
+                            <td class="text-success fw-bold">+GH₵{{ "{:.2f}".format(item.selling_price -
+                                item.dealer_price) }}</td>
+                            <td>
+                                <span
+                                    class="badge rounded-pill bg-{{ 'success' if item.status == 'Active' else 'secondary' }}">
+                                    {{ item.status }}
+                                </span>
+                            </td>
+                            <td>
+                                <a href="{{ url_for('toggle_pricing', id=item.id) }}"
+                                    class="btn btn-sm rounded-pill fw-bold btn-outline-{{ 'danger' if item.status == 'Active' else 'success' }} px-3">
+                                    {{ 'Deactivate' if item.status == 'Active' else 'Activate' }}
+                                </a>
+                                <button onclick="confirmDeletePricing('{{ url_for('delete_pricing', id=item.id) }}')"
+                                    class="btn btn-sm rounded-pill fw-bold btn-light text-danger px-3 ms-1">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        <!-- Specific Network Empty State (Hidden by default) -->
+                        <tr id="noNetworkRulesRow" style="display: none;">
+                            <td colspan="7" class="text-center py-5">
+                                <div class="d-flex flex-column align-items-center justify-content-center opacity-50">
+                                    <i class="bi bi-filter-circle fs-1 mb-2"></i>
+                                    <p class="mb-0" id="noNetworkRulesMsg">No pricing rules found for this network</p>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block modals %}
+<!-- Add Pricing Modal -->
+<div class="modal fade" id="addPricingModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header border-0 pb-0 px-4 pt-4">
+                <h5 class="modal-title fw-bold">Add Pricing Rule</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <form action="{{ url_for('add_pricing') }}" method="POST" id="pricingForm">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-muted text-uppercase">Network</label>
+                        <select class="form-select bg-light border-0 py-2" name="network" id="modalNetworkSelect"
+                            required onchange="updatePackageOptions()">
+                            <option value="" selected disabled>Select Network</option>
+                            <option value="MTN">MTN</option>
+                            <option value="TELECEL">TELECEL</option>
+                            <option value="AIRTELTIGO">AIRTELTIGO</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-muted text-uppercase">Package</label>
+                        <select class="form-select bg-light border-0 py-2" name="package_name" id="modalPackageSelect"
+                            required onchange="updateDealerPrice()">
+                            <option value="" selected disabled>Select a Network first</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-muted text-uppercase">Original Price
+                            (Dealer)</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-0">GH₵</span>
+                            <input type="number" class="form-control bg-light border-0 py-2" name="dealer_price"
+                                id="modalDealerPrice" readonly step="0.01">
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold small text-muted text-uppercase">Your Selling Price</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-0">GH₵</span>
+                            <input type="number" class="form-control bg-light border-0 py-2 fw-bold"
+                                name="selling_price" id="modalSellingPrice" required step="0.01"
+                                oninput="calculateProfit()">
+                        </div>
+                        <div class="form-text text-danger d-none fw-bold small mt-1" id="priceError">
+                            <i class="bi bi-exclamation-circle-fill me-1"></i> Price cannot be less than dealer price!
+                        </div>
+                    </div>
+
+                    <div
+                        class="alert alert-success border-0 bg-success bg-opacity-10 d-flex justify-content-between align-items-center mb-4">
+                        <small class="fw-bold text-success text-uppercase">Projected Profit</small>
+                        <span class="fw-bold fs-5 text-success" id="modalProfitDisplay">GH₵ 0.00</span>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-dark rounded-pill fw-bold py-2" id="savePricingBtn">Add
+                            Pricing Rule</button>
+                        <button type="button" class="btn btn-light rounded-pill fw-bold py-2"
+                            data-bs-dismiss="modal">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Transfer to Wallet Modal -->
+<div class="modal fade" id="transferToWalletModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header border-0 pb-0 px-4 pt-4">
+                <h5 class="modal-title fw-bold">Transfer to Wallet</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <form action="{{ url_for('store_withdraw') }}" method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="alert alert-info border-0 rounded-3 mb-4">
+                        <small class="text-uppercase fw-bold text-info opacity-75 d-block mb-1">Available
+                            Credit</small>
+                        <h3 class="fw-bold mb-0 text-info">GH₵{{ "{:,.2f}".format(store.credit_balance) }}</h3>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold small text-muted text-uppercase">Transfer Amount</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-0">GH₵</span>
+                            <input type="number" class="form-control bg-light border-0 py-2 fw-bold" name="amount"
+                                placeholder="0.00" min="0.1" max="{{ store.credit_balance }}" step="0.01" required>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-info text-white rounded-pill fw-bold py-2" {{ 'disabled' if
+                            store.credit_balance <=0 else '' }}>
+                            Transfer Now
+                        </button>
+                        <button type="button" class="btn btn-light rounded-pill fw-bold py-2"
+                            data-bs-dismiss="modal">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Withdraw Store Credit Modal -->
+<div class="modal fade" id="withdrawStoreCreditModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header border-0 pb-0 px-4 pt-4">
+                <h5 class="modal-title fw-bold">Withdraw Store Credit</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <form action="{{ url_for('store_withdraw_momo') }}" method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="alert alert-warning border-0 rounded-3 mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <small class="text-uppercase fw-bold text-warning-emphasis opacity-75">Available
+                                Credit</small>
+                            <span class="badge bg-warning text-dark">Min. Withdraw: GH₵ 10.00</span>
+                        </div>
+                        <h3 class="fw-bold mb-0 text-warning-emphasis">GH₵{{ "{:,.2f}".format(store.credit_balance) }}
+                        </h3>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-muted text-uppercase">Withdrawal Amount</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-0">GH₵</span>
+                            <input type="number" class="form-control bg-light border-0 py-2 fw-bold" name="amount"
+                                placeholder="0.00" min="10" max="{{ store.credit_balance }}" step="0.01" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-muted text-uppercase">Phone Number</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-0"><i class="bi bi-phone-vibrate"></i></span>
+                            <input type="tel" class="form-control bg-light border-0 py-2 fw-bold" name="phone"
+                                placeholder="0xxxxxxxx" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold small text-muted text-uppercase">Select Network</label>
+                        <div class="row g-2">
+                            <div class="col-4">
+                                <input type="radio" class="btn-check" name="network" id="network-mtn" value="MTN"
+                                    required>
+                                <label class="btn btn-outline-warning w-100 fw-bold border-2 py-2" for="network-mtn">
+                                    MTN
+                                </label>
+                            </div>
+                            <div class="col-4">
+                                <input type="radio" class="btn-check" name="network" id="network-telecel"
+                                    value="TELECEL" required>
+                                <label class="btn btn-outline-danger w-100 fw-bold border-2 py-2" for="network-telecel">
+                                    Telecel
+                                </label>
+                            </div>
+                            <div class="col-4">
+                                <input type="radio" class="btn-check" name="network" id="network-airteltigo"
+                                    value="AIRTELTIGO" required>
+                                <label class="btn btn-outline-primary w-100 fw-bold border-2 py-2"
+                                    for="network-airteltigo">
+                                    AT
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-dark rounded-pill fw-bold py-2" {{ 'disabled' if
+                            store.credit_balance < 10 else '' }}>
+                            Proceed to Withdraw
+                        </button>
+                        <button type="button" class="btn btn-light rounded-pill fw-bold py-2"
+                            data-bs-dismiss="modal">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function copyStoreLink() {
+        var copyText = document.getElementById("fullStoreLink");
+        // Create a temporary input element
+        var tempInput = document.createElement("input");
+        tempInput.value = copyText.value;
+        document.body.appendChild(tempInput);
+        tempInput.select();
+        document.execCommand("copy");
+        document.body.removeChild(tempInput);
+
+        alert("Store link copied: " + copyText.value);
+    }
+
+    function enableSlugEdit() {
+        const slugInput = document.getElementById('slugInput');
+        const hiddenInput = document.getElementById('hiddenSlugInput');
+
+        if (slugInput.hasAttribute('readonly')) {
+            slugInput.removeAttribute('readonly');
+            slugInput.classList.remove('border-0');
+            slugInput.classList.add('border', 'border-primary');
+            slugInput.focus();
+            // Update hidden input when main input changes
+            slugInput.addEventListener('input', function () {
+                hiddenInput.value = this.value;
+            });
+        } else {
+            slugInput.setAttribute('readonly', true);
+            slugInput.classList.remove('border', 'border-primary');
+            slugInput.classList.add('border-0');
         }
+    }
 
-        function enableSlugEdit() {
-            const slugInput = document.getElementById('slugInput');
-            const hiddenInput = document.getElementById('hiddenSlugInput');
+    function shareOnWhatsApp() {
+        const url = document.getElementById("fullStoreLink").value;
+        const text = encodeURIComponent(`Check out my store here: ${url}`);
+        window.open(`https://wa.me/?text=${text}`, '_blank');
+    }
 
-            if (slugInput.hasAttribute('readonly')) {
-                slugInput.removeAttribute('readonly');
-                slugInput.focus();
-                // Update hidden input when main input changes
-                slugInput.addEventListener('input', function () {
-                    hiddenInput.value = this.value;
-                });
-            } else {
-                slugInput.setAttribute('readonly', true);
-            }
-        }
+    function shareOnFacebook() {
+        const url = encodeURIComponent(document.getElementById("fullStoreLink").value);
+        window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank');
+    }
 
-        function shareOnWhatsApp() {
-            const url = document.getElementById("fullStoreLink").value;
-            const text = encodeURIComponent(`Check out my store here: ${url}`);
-            window.open(`https://wa.me/?text=${text}`, '_blank');
-        }
+    // Pricing Logic
+    const dealerPackages = {{ dealer_packages | tojson }};
 
-        function shareOnFacebook() {
-            const url = encodeURIComponent(document.getElementById("fullStoreLink").value);
-            window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank');
-        }
+    function updatePackageOptions() {
+        const network = document.getElementById('modalNetworkSelect').value;
+        const packageSelect = document.getElementById('modalPackageSelect');
+        const dealerPriceInput = document.getElementById('modalDealerPrice');
 
-        // Pricing Logic
-        const dealerPackages = {{ dealer_packages | tojson }};
+        packageSelect.innerHTML = '<option value="" selected disabled>Select Package</option>';
+        dealerPriceInput.value = '';
+        document.getElementById('modalSellingPrice').value = '';
+        document.getElementById('modalProfitDisplay').innerText = 'GH₵ 0.00';
 
-        function updatePackageOptions() {
-            const network = document.getElementById('modalNetworkSelect').value;
-            const packageSelect = document.getElementById('modalPackageSelect');
-            const dealerPriceInput = document.getElementById('modalDealerPrice');
-
-            packageSelect.innerHTML = '<option value="" selected disabled>Select Package</option>';
-            dealerPriceInput.value = '';
-            document.getElementById('modalSellingPrice').value = '';
-            document.getElementById('modalProfitDisplay').innerText = 'GH₵ 0.00';
-
-            if (dealerPackages[network]) {
-                dealerPackages[network].forEach(pkg => {
-                    const option = document.createElement('option');
-                    option.value = pkg.package;
-                    option.text = `${pkg.package} (Original: GH₵${pkg.price.toFixed(2)})`;
-                    option.dataset.price = pkg.price;
-                    packageSelect.appendChild(option);
-                });
-            }
-        }
-
-        function updateDealerPrice() {
-            const packageSelect = document.getElementById('modalPackageSelect');
-            const selectedOption = packageSelect.options[packageSelect.selectedIndex];
-            if (selectedOption.dataset.price) {
-                document.getElementById('modalDealerPrice').value = selectedOption.dataset.price;
-                calculateProfit();
-            }
-        }
-
-        function calculateProfit() {
-            const dealerPrice = parseFloat(document.getElementById('modalDealerPrice').value) || 0;
-            const sellingPrice = parseFloat(document.getElementById('modalSellingPrice').value) || 0;
-            const profit = sellingPrice - dealerPrice;
-            const btn = document.getElementById('savePricingBtn');
-            const errorMsg = document.getElementById('priceError');
-
-            document.getElementById('modalProfitDisplay').innerText = `GH₵ ${profit.toFixed(2)}`;
-
-            if (profit < 0) {
-                document.getElementById('modalProfitDisplay').classList.remove('text-success');
-                document.getElementById('modalProfitDisplay').classList.add('text-danger');
-                btn.disabled = true;
-                errorMsg.classList.remove('d-none');
-            } else {
-                document.getElementById('modalProfitDisplay').classList.add('text-success');
-                document.getElementById('modalProfitDisplay').classList.remove('text-danger');
-                btn.disabled = false;
-                errorMsg.classList.add('d-none');
-            }
-        }
-
-        function filterPricingTable() {
-            const filter = document.getElementById('networkFilter').value;
-            const rows = document.querySelectorAll('.pricing-row');
-
-            rows.forEach(row => {
-                if (filter === 'All' || row.dataset.network === filter) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
+        if (dealerPackages[network]) {
+            dealerPackages[network].forEach(pkg => {
+                const option = document.createElement('option');
+                option.value = pkg.package;
+                option.text = `${pkg.package} (Original: GH₵${pkg.price.toFixed(2)})`;
+                option.dataset.price = pkg.price;
+                packageSelect.appendChild(option);
             });
         }
-    </script>
-</body>
+    }
 
-</html>
+    function updateDealerPrice() {
+        const packageSelect = document.getElementById('modalPackageSelect');
+        const selectedOption = packageSelect.options[packageSelect.selectedIndex];
+        if (selectedOption.dataset.price) {
+            document.getElementById('modalDealerPrice').value = selectedOption.dataset.price;
+            calculateProfit();
+        }
+    }
+
+    function calculateProfit() {
+        const dealerPrice = parseFloat(document.getElementById('modalDealerPrice').value) || 0;
+        const sellingPrice = parseFloat(document.getElementById('modalSellingPrice').value) || 0;
+        const profit = sellingPrice - dealerPrice;
+        const btn = document.getElementById('savePricingBtn');
+        const errorMsg = document.getElementById('priceError');
+        const profitDisplay = document.getElementById('modalProfitDisplay');
+
+        profitDisplay.innerText = `GH₵ ${profit.toFixed(2)}`;
+
+        if (profit < 0) {
+            profitDisplay.classList.remove('text-success');
+            profitDisplay.classList.add('text-danger');
+            btn.disabled = true;
+            errorMsg.classList.remove('d-none');
+        } else {
+            profitDisplay.classList.add('text-success');
+            profitDisplay.classList.remove('text-danger');
+            btn.disabled = false;
+            errorMsg.classList.add('d-none');
+        }
+    }
+
+    function confirmDeletePricing(url) {
+        if (confirm("Are you sure you want to permanently delete this pricing rule? This action cannot be undone.")) {
+            window.location.href = url;
+        }
+    }
+
+    function filterPricingTable() {
+        const filter = document.getElementById('networkFilter').value;
+        const rows = document.querySelectorAll('.pricing-row');
+        let visibleCount = 0;
+
+        rows.forEach(row => {
+            if (filter === 'All' || row.dataset.network === filter) {
+                row.style.display = '';
+                visibleCount++;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+
+        // Show/Hide Empty State based on filter results
+        const emptyRow = document.getElementById('noNetworkRulesRow');
+        const emptyMsg = document.getElementById('noNetworkRulesMsg');
+
+        if (visibleCount === 0 && rows.length > 0) {
+            emptyRow.style.display = '';
+            emptyMsg.innerText = `No pricing rules found for ${filter}`;
+        } else {
+            if (emptyRow) emptyRow.style.display = 'none';
+        }
+    }
+</script>
+{% endblock %}

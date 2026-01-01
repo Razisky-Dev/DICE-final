@@ -141,9 +141,9 @@ def send_notification_email(subject, body):
 # =====================
 # CONSTANTS
 # =====================
-# Base "Dealer" Prices
-# Base "Dealer" Prices
-# DEALER_PACKAGES was removed as we now use dynamic DataPlan pricing from the database.
+# =====================
+# CONSTANTS
+# =====================
 
 # =====================
 # STORE MODELS
@@ -611,7 +611,6 @@ def update_store_settings():
 
     store.support_phone = request.form.get("support_phone")
     store.whatsapp = request.form.get("whatsapp")
-    store.whatsapp_group_link = request.form.get("whatsapp_group_link")
     store.whatsapp_group_link = request.form.get("whatsapp_group_link")
     store.description = request.form.get("description")
     store.notice = request.form.get("notice")

@@ -172,6 +172,26 @@ button:not(.nav-link):hover {
     background: linear-gradient(135deg, var(--warning-color) 0%, #ff8f00 100%);
 }
 
+.bg-gradient-teal {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+}
+
+.bg-gradient-purple {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.bg-gradient-orange {
+    background: linear-gradient(135deg, #ff9966 0%, #ff5e62 100%);
+}
+
+.bg-gradient-pink {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.bg-gradient-dark-premium {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+}
+
 /* Package Cards - Premium */
 .package-card {
     border: none;
@@ -305,6 +325,70 @@ button:not(.nav-link):hover {
     transition: var(--transition);
 }
 
+/* Profitability Cards */
+.profit-card {
+    border: none;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    transition: var(--transition);
+    background: #fff;
+    overflow: hidden;
+    position: relative;
+}
+
+.profit-card::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 6px;
+}
+
+.profit-card.mtn::before {
+    background: #ffcc00;
+}
+
+.profit-card.telecel::before {
+    background: #e60000;
+}
+
+.profit-card.airteltigo::before {
+    background: #0033cc;
+}
+
+.profit-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+}
+
+/* Premium Table Styles */
+.table-hover tbody tr {
+    transition: var(--transition);
+    border-radius: 12px;
+}
+
+.table-hover tbody tr:hover {
+    background-color: #f8fafc;
+    transform: scale(1.01);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+    z-index: 10;
+    position: relative;
+}
+
+.avatar-initials {
+    width: 40px;
+    height: 40px;
+    background: rgba(74, 144, 226, 0.1);
+    color: var(--primary-color);
+    border-radius: 12px;
+    /* Soft square like user dash */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+}
+
 #sidebar-wrapper .list-group-item:hover {
     background-color: #f1f5f9;
     color: #1a237e;
@@ -345,6 +429,30 @@ button:not(.nav-link):hover {
 
 .fade-in {
     animation: fadeIn 0.6s ease-out forwards;
+}
+
+/* Admin Specific Overrides */
+.sidebar-admin {
+    background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%) !important;
+}
+
+.sidebar-admin .sidebar-heading {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.sidebar-admin .list-group-item {
+    color: rgba(255, 255, 255, 0.7) !important;
+}
+
+.sidebar-admin .list-group-item:hover,
+.sidebar-admin .list-group-item.active {
+    color: #fff !important;
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-left: 4px solid #ffd700 !important;
+}
+
+.text-admin-gold {
+    color: #ffd700 !important;
 }
 
 /* Navbar */
@@ -545,4 +653,84 @@ body.auth-page a {
 body.auth-page a:hover {
     color: #0f2027;
     text-decoration: underline;
+}
+
+/* =========================================
+   Store Front Styles
+   ========================================= */
+
+.store-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 40px 20px;
+    text-align: center;
+}
+
+.store-title {
+    font-size: 3rem;
+    font-weight: 800;
+    color: #333;
+    margin-bottom: 0.5rem;
+}
+
+.action-btn {
+    background: #1a1a2e;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 500;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: transform 0.2s;
+    cursor: pointer;
+}
+
+.action-btn:hover {
+    transform: translateY(-2px);
+    color: white;
+}
+
+.network-card {
+    background: white;
+    border-radius: 20px;
+    padding: 20px;
+    height: 140px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    border: 2px solid transparent;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.network-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.network-card.active {
+    border-color: #000;
+    background-color: #f8f9fa;
+    transform: scale(1.02);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.network-logo-text {
+    font-weight: 900;
+    font-size: 1.5rem;
+}
+
+@media (max-width: 576px) {
+    .store-title {
+        font-size: 2rem;
+    }
+
+    .store-container {
+        padding: 20px 15px;
+    }
 }

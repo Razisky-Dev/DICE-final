@@ -16,32 +16,7 @@
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 
-    <style>
-        /* Admin Specific Overrides for "Special" look */
-        .sidebar {
-            background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%) !important;
-        }
 
-        .sidebar-heading {
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
-        }
-
-        .list-group-item {
-            color: rgba(255, 255, 255, 0.7) !important;
-        }
-
-        .list-group-item:hover,
-        .list-group-item.active {
-            color: #fff !important;
-            background: rgba(255, 255, 255, 0.1) !important;
-            border-left: 4px solid #ffd700 !important;
-            /* Gold accent */
-        }
-
-        .text-admin-gold {
-            color: #ffd700 !important;
-        }
-    </style>
 
     {% block extra_css %}{% endblock %}
 </head>
@@ -51,7 +26,7 @@
     <div class="d-flex" id="wrapper">
 
         <!-- Sidebar -->
-        <div class="border-0 shadow-none sidebar text-white" id="sidebar-wrapper">
+        <div class="border-0 shadow-none sidebar sidebar-admin text-white" id="sidebar-wrapper">
             <div class="sidebar-heading">
                 <div class="d-flex align-items-center gap-2">
                     <i class="bi bi-shield-lock-fill fs-4 text-admin-gold"></i>

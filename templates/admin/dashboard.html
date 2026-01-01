@@ -8,81 +8,91 @@
 <div class="row g-4 mb-4">
     <!-- Total Wallet Balance -->
     <div class="col-md-3">
-        <div class="stat-card h-100 border-0 shadow-sm position-relative overflow-hidden text-white"
-            style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
-            <div class="d-flex align-items-center mb-3">
-                <div class="bg-white bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center me-3"
-                    style="width: 50px; height: 50px;">
-                    <i class="bi bi-wallet2 fs-4 text-white"></i>
+        <div
+            class="card stat-card h-100 border-0 shadow-sm position-relative overflow-hidden text-white bg-gradient-teal">
+            <div class="card-body p-4">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="bg-white bg-opacity-25 rounded-3 d-flex align-items-center justify-content-center me-3"
+                        style="width: 50px; height: 50px;">
+                        <i class="bi bi-wallet2 fs-4 text-white"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-white-50 text-uppercase fw-bold small mb-1">User Balances</h6>
+                        <h3 class="fw-bold mb-0 text-white">GH₵ {{ "{:,.2f}".format(total_wallet_balance | default(0))
+                            }}
+                        </h3>
+                    </div>
                 </div>
-                <div>
-                    <h6 class="text-white-50 text-uppercase fw-bold small mb-1">User Balances</h6>
-                    <h3 class="fw-bold mb-0 text-white">GH₵ {{ "{:,.2f}".format(total_wallet_balance | default(0)) }}
-                    </h3>
+                <div class="small text-white fw-bold opacity-75">
+                    <i class="bi bi-piggy-bank"></i> Total Float
                 </div>
-            </div>
-            <div class="small text-white fw-bold opacity-75">
-                <i class="bi bi-piggy-bank"></i> Total Float
             </div>
         </div>
     </div>
 
     <!-- Total Users -->
     <div class="col-md-3">
-        <div class="stat-card h-100 border-0 shadow-sm position-relative overflow-hidden text-white"
-            style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-            <div class="d-flex align-items-center mb-3">
-                <div class="bg-white bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center me-3"
-                    style="width: 50px; height: 50px;">
-                    <i class="bi bi-people-fill fs-4 text-white"></i>
+        <div
+            class="card stat-card h-100 border-0 shadow-sm position-relative overflow-hidden text-white bg-gradient-purple">
+            <div class="card-body p-4">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="bg-white bg-opacity-25 rounded-3 d-flex align-items-center justify-content-center me-3"
+                        style="width: 50px; height: 50px;">
+                        <i class="bi bi-people-fill fs-4 text-white"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-white-50 text-uppercase fw-bold small mb-1">Total Users</h6>
+                        <h3 class="fw-bold mb-0 text-white">{{ total_users | default(0) }}</h3>
+                    </div>
                 </div>
-                <div>
-                    <h6 class="text-white-50 text-uppercase fw-bold small mb-1">Total Users</h6>
-                    <h3 class="fw-bold mb-0 text-white">{{ total_users | default(0) }}</h3>
+                <div class="small text-white fw-bold opacity-75">
+                    <i class="bi bi-check-circle"></i> Active Accounts
                 </div>
-            </div>
-            <div class="small text-white fw-bold opacity-75">
-                <i class="bi bi-check-circle"></i> Active Accounts
             </div>
         </div>
     </div>
 
     <!-- Total Orders -->
     <div class="col-md-3">
-        <div class="stat-card h-100 border-0 shadow-sm position-relative overflow-hidden text-white"
-            style="background: linear-gradient(135deg, #ff9966 0%, #ff5e62 100%);">
-            <div class="d-flex align-items-center mb-3">
-                <div class="bg-white bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center me-3"
-                    style="width: 50px; height: 50px;">
-                    <i class="bi bi-cart-check fs-4 text-white"></i>
+        <div
+            class="card stat-card h-100 border-0 shadow-sm position-relative overflow-hidden text-white bg-gradient-orange">
+            <div class="card-body p-4">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="bg-white bg-opacity-25 rounded-3 d-flex align-items-center justify-content-center me-3"
+                        style="width: 50px; height: 50px;">
+                        <i class="bi bi-cart-check fs-4 text-white"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-white-50 text-uppercase fw-bold small mb-1">Total Orders</h6>
+                        <h3 class="fw-bold mb-0 text-white">{{ total_orders | default(0) }}</h3>
+                    </div>
                 </div>
-                <div>
-                    <h6 class="text-white-50 text-uppercase fw-bold small mb-1">Total Orders</h6>
-                    <h3 class="fw-bold mb-0 text-white">{{ total_orders | default(0) }}</h3>
+                <div class="small text-white fw-bold opacity-75">
+                    <i class="bi bi-activity"></i> All Time
                 </div>
-            </div>
-            <div class="small text-white fw-bold opacity-75">
-                <i class="bi bi-activity"></i> All Time
             </div>
         </div>
     </div>
 
     <!-- This Month's Sales -->
     <div class="col-md-3">
-        <div class="stat-card h-100 border-0 shadow-sm position-relative overflow-hidden text-white"
-            style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
-            <div class="d-flex align-items-center mb-3">
-                <div class="bg-white bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center me-3"
-                    style="width: 50px; height: 50px;">
-                    <i class="bi bi-calendar-check fs-4 text-white"></i>
+        <div
+            class="card stat-card h-100 border-0 shadow-sm position-relative overflow-hidden text-white bg-gradient-pink">
+            <div class="card-body p-4">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="bg-white bg-opacity-25 rounded-3 d-flex align-items-center justify-content-center me-3"
+                        style="width: 50px; height: 50px;">
+                        <i class="bi bi-calendar-check fs-4 text-white"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-white-50 text-uppercase fw-bold small mb-1">Monthly GMV</h6>
+                        <h3 class="fw-bold mb-0 text-white">GH₵ {{ "{:,.2f}".format(this_month_sales | default(0)) }}
+                        </h3>
+                    </div>
                 </div>
-                <div>
-                    <h6 class="text-white-50 text-uppercase fw-bold small mb-1">Monthly GMV</h6>
-                    <h3 class="fw-bold mb-0 text-white">GH₵ {{ "{:,.2f}".format(this_month_sales | default(0)) }}</h3>
+                <div class="small text-white fw-bold opacity-75">
+                    <i class="bi bi-graph-up"></i> Current Month
                 </div>
-            </div>
-            <div class="small text-white fw-bold opacity-75">
-                <i class="bi bi-graph-up"></i> Current Month
             </div>
         </div>
     </div>
@@ -95,8 +105,8 @@
     </div>
     <!-- MTN -->
     <div class="col-md-4">
-        <div class="stat-card border-warning border-start border-4 shadow-sm h-100 bg-white">
-            <div class="card-body p-0">
+        <div class="profit-card mtn h-100">
+            <div class="card-body p-4">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h6 class="text-uppercase text-warning fw-bold small mb-0">MTN Data</h6>
                     <i class="bi bi-graph-up-arrow text-warning fs-5"></i>
@@ -115,8 +125,8 @@
     </div>
     <!-- TELECEL -->
     <div class="col-md-4">
-        <div class="stat-card border-danger border-start border-4 shadow-sm h-100 bg-white">
-            <div class="card-body p-0">
+        <div class="profit-card telecel h-100">
+            <div class="card-body p-4">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h6 class="text-uppercase text-danger fw-bold small mb-0">Telecel Data</h6>
                     <i class="bi bi-graph-up-arrow text-danger fs-5"></i>
@@ -135,8 +145,8 @@
     </div>
     <!-- AIRTELTIGO -->
     <div class="col-md-4">
-        <div class="stat-card border-primary border-start border-4 shadow-sm h-100 bg-white">
-            <div class="card-body p-0">
+        <div class="profit-card airteltigo h-100">
+            <div class="card-body p-4">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h6 class="text-uppercase text-primary fw-bold small mb-0">AirtelTigo Data</h6>
                     <i class="bi bi-graph-up-arrow text-primary fs-5"></i>
@@ -183,8 +193,7 @@
 
 <div class="row g-4 mb-4">
     <div class="col-lg-12">
-        <div class="stat-card h-100 border-0 shadow-sm bg-gradient-dark text-white p-4"
-            style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);">
+        <div class="card stat-card h-100 border-0 shadow-sm text-white p-4 bg-gradient-dark-premium">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h5 class="fw-bold mb-0 text-white">Quick Actions</h5>
             </div>

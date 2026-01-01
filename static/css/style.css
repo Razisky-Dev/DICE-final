@@ -624,10 +624,7 @@ body.auth-page .container {
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
 }
 
-/* Visual lift */
-position: relative;
-z-index: 10;
-}
+
 
 body.auth-page h2 {
     color: #1e293b;
@@ -637,15 +634,19 @@ body.auth-page h2 {
 }
 
 body.auth-page input {
+    width: 100%;
     background: #f8fafc;
     border: 2px solid #e2e8f0;
-    color: #334155;
+    color: #1e293b;
     font-weight: 500;
     font-size: 16px;
-    /* Prevents zoom on mobile */
+    /* CRITICAL: Prevents iOS Zoom */
     border-radius: 12px;
-    padding: 16px;
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    /* Spacing between inputs */
     transition: all 0.3s ease;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.02);
 }
 
 body.auth-page input:focus {

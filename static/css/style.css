@@ -513,6 +513,14 @@ button:not(.nav-link):hover {
     }
 
     /* Dashboard Mobile Fixes */
+    body,
+    html {
+        overflow-x: hidden;
+        /* Force stop horizontal scroll */
+        width: 100%;
+        position: relative;
+    }
+
     #page-content-wrapper {
         width: 100%;
         overflow-x: hidden;
@@ -520,10 +528,15 @@ button:not(.nav-link):hover {
         /* Notch Support */
     }
 
+    /* Neutralize Bootstrap Negative Margins which cause overflow */
+    #page-content-wrapper .row {
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
+
     .container-fluid {
-        padding-left: 1rem !important;
-        /* Reduce padding on mobile */
-        padding-right: 1rem !important;
+        padding-left: 15px !important;
+        padding-right: 15px !important;
     }
 
     /* Stats Cards on Mobile */

@@ -8,8 +8,24 @@ PASSWORD = "@@ZAzo8965Quophi"
 APP_DIR = "/var/www/dice"
 
 commands = [
-    # Verify content of style.css to see if fixes are present
-    "head -n 50 /var/www/dice/static/css/style.css"
+    # 1. Allow Git to operate
+    "git config --global --add safe.directory /var/www/dice",
+
+    # 2. Backup Database (Safety First!)
+    f"cp {APP_DIR}/instance/database.db {APP_DIR}/instance/database.db.backup_v2",
+
+    # 3. Force Git Pull (Discard server changes to tracked files)
+    f"cd {APP_DIR} && git fetch origin && git reset --hard origin/main",
+    
+    # 4. Restore Database (If it got deleted/overwritten)
+    f"mv {APP_DIR}/instance/database.db.backup_v2 {APP_DIR}/instance/database.db",
+    
+    # 5. Fix permissions again just in case
+    f"chown -R www-data:www-data {APP_DIR}",
+
+    # 6. Restart Services
+    "systemctl restart dice",
+    "systemctl restart nginx"
 ]
 
 def run_deploy():

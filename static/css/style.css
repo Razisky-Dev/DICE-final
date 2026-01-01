@@ -513,22 +513,52 @@ button:not(.nav-link):hover {
     }
 
     /* Dashboard Mobile Fixes */
+    /* Dashboard Mobile Fixes: PROFESSIONAL OFF-CANVAS LAYOUT */
     body,
     html {
         overflow-x: hidden;
-        /* Force stop horizontal scroll */
         width: 100%;
         position: relative;
     }
 
-    #page-content-wrapper {
-        width: 100%;
+    #wrapper {
+        display: block !important;
+        /* Disable flex on mobile */
         overflow-x: hidden;
-        padding-top: env(safe-area-inset-top);
-        /* Notch Support */
     }
 
-    /* Neutralize Bootstrap Negative Margins which cause overflow */
+    /* Fixed Off-Canvas Sidebar */
+    #sidebar-wrapper {
+        position: fixed;
+        top: 0;
+        left: -280px;
+        /* Hide off-screen */
+        width: 280px;
+        height: 100vh;
+        z-index: 1050;
+        /* Above everything */
+        margin-left: 0 !important;
+        /* Reset negative margin */
+        transition: left 0.3s ease-in-out;
+        box-shadow: 4px 0 15px rgba(0, 0, 0, 0.1);
+        background: white;
+        /* Ensure visibility */
+    }
+
+    /* Show Sidebar when Toggled */
+    #wrapper.toggled #sidebar-wrapper {
+        left: 0 !important;
+    }
+
+    /* Page Content Full Width */
+    #page-content-wrapper {
+        width: 100% !important;
+        margin-left: 0 !important;
+        padding-top: env(safe-area-inset-top);
+        min-width: 100vw;
+    }
+
+    /* Neutralize Bootstrap margins */
     #page-content-wrapper .row {
         margin-left: 0 !important;
         margin-right: 0 !important;

@@ -503,8 +503,9 @@ button:not(.nav-link):hover {
         padding: 1.5rem;
         margin: 20px auto;
         /* Ensure inputs don't overflow */
-        width: 100%;
+        width: 90%;
         max-width: 100%;
+        box-sizing: border-box;
     }
 
     h2 {

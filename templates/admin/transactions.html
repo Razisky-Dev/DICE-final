@@ -68,79 +68,75 @@
         </div>
     </div>
 
-    <div class="table-responsive">
-        <table class="table table-hover align-middle">
-            <thead class="table-light">
-                <tr>
-                    <th>Ref / ID</th>
-                    <th>User / Store</th>
-                    <th>Amount</th>
-                    <th class="d-none d-md-table-cell">Type</th>
-                    <th>Status</th>
-                    <th class="d-none d-lg-table-cell">Date</th>
-                    <th>Actions</th>
+    <div class="table-responsive rounded-4 shadow-sm border border-light">
+        <table class="table table-hover align-middle mb-0" style="min-width: 600px;">
+            <thead class="bg-light">
+                <tr class="text-secondary small text-uppercase">
+                    <th class="ps-4 py-3" style="min-width: 200px;">Transaction Details</th>
+                    <th class="py-3">User info</th>
+                    <th class="py-3 text-end pe-4">Amount & Status</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody class="bg-white">
                 {% for txn in transactions.items %}
-                <tr>
-                    <td>
-                        <div class="fw-bold text-dark">#{{ txn.id }}</div>
-                        <div class="small text-muted">{{ txn.reference }}</div>
-                    </td>
-                    <td>
-                        <div class="fw-bold">{{ txn.user.username }}</div>
-                        <div class="small text-muted">
-                            {% if txn.user.store %}
-                            <i class="bi bi-shop me-1"></i>{{ txn.user.store.name }}
-                            {% else %}
-                            <i class="bi bi-person me-1"></i>Direct
-                            {% endif %}
+                <tr class="border-bottom">
+                    <!-- Transaction Details (Type, Ref, Date) -->
+                    <td class="ps-4 py-3">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="rounded-circle p-2 d-flex align-items-center justify-content-center
+                                {% if txn.type == 'Deposit' %}bg-success-subtle text-success
+                                {% elif txn.type == 'Withdrawal' %}bg-danger-subtle text-danger
+                                {% else %}bg-primary-subtle text-primary{% endif %}"
+                                style="width: 40px; height: 40px;">
+                                <i class="bi 
+                                    {% if txn.type == 'Deposit' %}bi-arrow-down-left
+                                    {% elif txn.type == 'Withdrawal' %}bi-arrow-up-right
+                                    {% else %}bi-arrow-left-right{% endif %} fs-5"></i>
+                            </div>
+                            <div>
+                                <div class="fw-bold text-dark">{{ txn.type }}</div>
+                                <div class="small text-muted font-monospace">{{ txn.reference }}</div>
+                                <div class="small text-secondary mt-1" style="font-size: 0.75rem;">
+                                    {{ txn.date.strftime('%b %d, %Y • %I:%M %p') }}
+                                </div>
+                            </div>
                         </div>
                     </td>
-                    <td>
-                        <span
-                            class="fw-bold {% if txn.type == 'Deposit' or txn.type == 'Store Credit Transfer' %}text-success{% else %}text-danger{% endif %}">
+
+                    <!-- User Info -->
+                    <td class="py-3">
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="avatar-initials bg-light text-secondary rounded-circle"
+                                style="width: 32px; height: 32px; font-size: 0.8rem;">
+                                {{ txn.user.username[0] | upper }}
+                            </div>
+                            <div>
+                                <div class="fw-bold text-dark" style="font-size: 0.9rem;">{{ txn.user.username }}</div>
+                                {% if txn.user.store %}
+                                <div class="badge bg-light text-secondary border fw-normal" style="font-size: 0.7rem;">
+                                    <i class="bi bi-shop me-1"></i>{{ txn.user.store.name }}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </td>
+
+                    <!-- Amount & Status -->
+                    <td class="text-end pe-4 py-3">
+                        <div
+                            class="fw-bold mb-1 fs-6 {% if txn.type == 'Deposit' or txn.type == 'Store Credit Transfer' %}text-success{% else %}text-dark{% endif %}">
                             {% if txn.type == 'Deposit' or txn.type == 'Store Credit Transfer' %}+{% else %}-{% endif %}
                             GH₵ {{ "{:,.2f}".format(txn.amount | default(0)) }}
-                        </span>
-                    </td>
-                    <td class="d-none d-md-table-cell">
-                        <span class="badge bg-light text-dark border">{{ txn.type }}</span>
-                    </td>
-                    <td>
-                        {% if txn.status == 'Success' %}
-                        <span class="badge bg-success-subtle text-success border border-success-subtle">
-                            <i class="bi bi-check-circle me-1"></i>Success
-                        </span>
-                        {% elif txn.status == 'Pending' %}
-                        <span class="badge bg-warning-subtle text-warning border border-warning-subtle">
-                            <i class="bi bi-clock me-1"></i>Pending
-                        </span>
-                        {% else %}
-                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle">
-                            <i class="bi bi-x-circle me-1"></i>{{ txn.status }}
-                        </span>
-                        {% endif %}
-                    </td>
-                    <td class="d-none d-lg-table-cell">
-                        <div class="small">{{ txn.date.strftime('%b %d, %Y') }}</div>
-                        <div class="small text-muted">{{ txn.date.strftime('%H:%M %p') }}</div>
-                    </td>
-                    <td>
-                        {% if txn.type == 'Withdrawal' and txn.status == 'Pending' %}
-                        <div class="btn-group">
-                            <a href="{{ url_for('admin_manage_withdrawal', txn_id=txn.id, action='approve') }}"
-                                class="btn btn-sm btn-success" title="Approve">
-                                <i class="bi bi-check-lg"></i>
-                            </a>
-                            <a href="{{ url_for('admin_manage_withdrawal', txn_id=txn.id, action='reject') }}"
-                                class="btn btn-sm btn-danger" title="Reject"
-                                onclick="return confirm('Reject withdrawal and refund user?')">
-                                <i class="bi bi-x-lg"></i>
-                            </a>
                         </div>
-                        {% endif %}
+                        <div>
+                            {% if txn.status == 'Success' %}
+                            <span class="badge bg-success-subtle text-success rounded-pill px-3">Success</span>
+                            {% elif txn.status == 'Pending' %}
+                            <span class="badge bg-warning-subtle text-warning rounded-pill px-3">Pending</span>
+                            {% else %}
+                            <span class="badge bg-danger-subtle text-danger rounded-pill px-3">{{ txn.status }}</span>
+                            {% endif %}
+                        </div>
                     </td>
                 </tr>
                 {% endfor %}

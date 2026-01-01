@@ -512,9 +512,29 @@ button:not(.nav-link):hover {
         font-size: 1.75rem;
     }
 
+    /* Dashboard Mobile Fixes */
+    #page-content-wrapper {
+        width: 100%;
+        overflow-x: hidden;
+        padding-top: env(safe-area-inset-top);
+        /* Notch Support */
+    }
+
+    .container-fluid {
+        padding-left: 1rem !important;
+        /* Reduce padding on mobile */
+        padding-right: 1rem !important;
+    }
+
     /* Stats Cards on Mobile */
+    .stat-card {
+        width: 100% !important;
+        margin-bottom: 1rem;
+    }
+
     .stat-card .display-6 {
-        font-size: 2rem;
+        font-size: 1.75rem;
+        /* Smaller font for balance */
     }
 
     .stat-card .card-body {
@@ -539,8 +559,8 @@ button:not(.nav-link):hover {
 
     .network-tabs .nav-link {
         white-space: nowrap;
-        padding: 8px 20px;
-        font-size: 0.9rem;
+        padding: 8px 16px;
+        font-size: 0.85rem;
     }
 
     /* Package Cards Mobile Grid */

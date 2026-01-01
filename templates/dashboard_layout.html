@@ -188,8 +188,20 @@
     <script>
         const sidebarToggle = document.getElementById('sidebarToggle');
         const wrapper = document.getElementById('wrapper');
+
+        // Toggle Sidebar
         sidebarToggle.addEventListener('click', () => {
             wrapper.classList.toggle('toggled');
+        });
+
+        // Auto-close sidebar on mobile when a link is clicked
+        const sidebarLinks = document.querySelectorAll('#sidebar-wrapper .list-group-item');
+        sidebarLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                if (window.innerWidth <= 768) {
+                    wrapper.classList.remove('toggled');
+                }
+            });
         });
     </script>
 

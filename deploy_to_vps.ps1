@@ -1,7 +1,7 @@
 $VPS_IP = "72.62.150.44"
 $USER = "root"
 $REPO_URL = "https://github.com/Razisky-Dev/DICE-final.git"
-$APP_DIR = "/root/dice"
+$APP_DIR = "/var/www/dice"
 
 Write-Host "Deploying to $USER@$VPS_IP..." -ForegroundColor Cyan
 
@@ -26,7 +26,7 @@ ssh $USER@$VPS_IP "
 
 # 3. Upload vps_config files (in case they changed locally)
 Write-Host "Uploading configuration files..." -ForegroundColor Yellow
-scp -r ./vps_config $USER@$VPS_IP:$APP_DIR/
+scp -r ./vps_config "${USER}@${VPS_IP}:${APP_DIR}/"
 
 # 4. Setup and Restart Services
 Write-Host "Configuring and restarting services..." -ForegroundColor Yellow

@@ -1,6 +1,6 @@
 server {
     listen 80;
-    server_name YOUR_SERVER_IP;
+    server_name 72.62.150.44;
 
     location / {
         include proxy_params;

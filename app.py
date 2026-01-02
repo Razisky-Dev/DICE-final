@@ -970,33 +970,7 @@ def admin_dashboard():
                            recent_users=recent_users,
                            recent_stores=recent_stores)
 
-@app.route('/admin/pricing', methods=['GET', 'POST'])
-@admin_required
-def admin_pricing():
-    if request.method == 'POST':
-        plan_id = request.form.get('plan_id')
-        cost_price = request.form.get('cost_price')
-        selling_price = request.form.get('selling_price')
-        
-        plan = DataPlan.query.get_or_404(plan_id)
-        if cost_price:
-            plan.cost_price = float(cost_price)
-        if selling_price:
-            plan.selling_price = float(selling_price)
-            
-        db.session.commit()
-        flash(f"Updated pricing for {plan.network} - {plan.plan_size}", "success")
-        return redirect(url_for('admin_pricing'))
-        
-    plans = DataPlan.query.order_by(DataPlan.network, DataPlan.display_order).all()
-    # Group by network
-    grouped_plans = {}
-    for p in plans:
-        if p.network not in grouped_plans:
-            grouped_plans[p.network] = []
-        grouped_plans[p.network].append(p)
-        
-    return render_template('admin/pricing.html', grouped_plans=grouped_plans)
+
 
 
 # =====================

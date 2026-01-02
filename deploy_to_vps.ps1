@@ -37,7 +37,11 @@ ssh $USER@$VPS_IP "
     python3 -m venv venv
     source venv/bin/activate
     pip install -r requirements.txt
+    pip install -r requirements.txt
     pip install gunicorn
+
+    # Run Database Migrations
+    python3 update_schema_timestamp.py
 
     # Setup Gunicorn Service
     cp vps_config/dice.service /etc/systemd/system/dice.service

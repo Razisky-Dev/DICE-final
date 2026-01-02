@@ -65,6 +65,7 @@ class User(UserMixin, db.Model):
     balance = db.Column(db.Float, default=0.0)
     is_admin = db.Column(db.Boolean, default=False)
     is_suspended = db.Column(db.Boolean, default=False) # New field for suspension
+    last_read_notice_timestamp = db.Column(db.DateTime) # New field for notifications
 
 # =====================
 # TRANSACTION MODEL
@@ -104,7 +105,20 @@ class SiteSetting(db.Model):
 @app.context_processor
 def inject_site_notice():
     notice_setting = SiteSetting.query.filter_by(key='site_notice').first()
-    return dict(site_notice=notice_setting.value if notice_setting else None)
+    
+    # Check for timestamp
+    notice_timestamp_setting = SiteSetting.query.filter_by(key='site_notice_timestamp').first()
+    notice_timestamp = None
+    if notice_timestamp_setting and notice_timestamp_setting.value:
+        try:
+            notice_timestamp = datetime.fromtimestamp(float(notice_timestamp_setting.value))
+        except:
+            pass
+            
+    return dict(
+        site_notice=notice_setting.value if notice_setting else None,
+        site_notice_timestamp=notice_timestamp
+    )
 
 @app.context_processor
 def inject_admin_stats():
@@ -1287,6 +1301,17 @@ def admin_notice():
         setting.value = notice_text
         db.session.commit()
         
+        # Update Timestamp as well
+        ts_setting = SiteSetting.query.filter_by(key='site_notice_timestamp').first()
+        if not ts_setting:
+            ts_setting = SiteSetting(key='site_notice_timestamp')
+            db.session.add(ts_setting)
+        
+        # Save as timestamp float string
+        ts_setting.value = str(datetime.utcnow().timestamp())
+        
+        db.session.commit()
+        
         flash("Site notice updated.", "success")
         return redirect(url_for('admin_notice'))
         
@@ -1295,6 +1320,14 @@ def admin_notice():
     notice = setting.value if setting else ""
     
     return render_template('admin/notice.html', notice=notice)
+
+@app.route('/api/read_notification', methods=['POST'])
+@login_required
+def read_notification():
+    current_user.last_read_notice_timestamp = datetime.utcnow()
+    db.session.commit()
+    return jsonify({'status': 'success'})
+
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()

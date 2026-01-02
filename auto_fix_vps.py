@@ -57,13 +57,13 @@ def run_deploy():
             # Verify Deployment
             print("\n--- Verifying Remote Files ---")
             
-            # Check admin/base.html for v=4
-            stdin, stdout, stderr = ssh.exec_command('grep "v=4" /var/www/dice/templates/admin/base.html')
+            # Check admin/base.html for v=5
+            stdin, stdout, stderr = ssh.exec_command('grep "v=5" /var/www/dice/templates/admin/base.html')
             res = stdout.read().decode().strip()
             if res:
-                print(f"[SUCCESS] Found v=4 in admin/base.html: {res}")
+                print(f"[SUCCESS] Found v=5 in admin/base.html: {res}")
             else:
-                print("[FAILURE] v=4 NOT found in admin/base.html")
+                print("[FAILURE] v=5 NOT found in admin/base.html")
 
             # Check admin/transactions.html for 'Actions' (Should be absent)
             stdin, stdout, stderr = ssh.exec_command('grep "Actions" /var/www/dice/templates/admin/transactions.html')

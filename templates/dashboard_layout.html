@@ -194,6 +194,16 @@
             wrapper.classList.toggle('toggled');
         });
 
+        // Close sidebar when clicking outside on mobile
+        document.addEventListener('click', function (event) {
+            const isClickInsideSidebar = document.getElementById('sidebar-wrapper').contains(event.target);
+            const isClickOnToggle = sidebarToggle.contains(event.target);
+
+            if (!isClickInsideSidebar && !isClickOnToggle && window.innerWidth <= 768 && wrapper.classList.contains('toggled')) {
+                wrapper.classList.remove('toggled');
+            }
+        });
+
         // Auto-close sidebar on mobile when a link is clicked
         const sidebarLinks = document.querySelectorAll('#sidebar-wrapper .list-group-item');
         sidebarLinks.forEach(link => {

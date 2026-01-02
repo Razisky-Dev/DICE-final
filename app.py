@@ -214,6 +214,7 @@ class Order(db.Model):
     transaction_id = db.Column(db.String(50), unique=True, nullable=False)
     network = db.Column(db.String(20), nullable=False)
     package = db.Column(db.String(50), nullable=False)
+    phone = db.Column(db.String(20)) # Added for data destination
     amount = db.Column(db.Float, nullable=False)
     status = db.Column(db.String(20), default='Pending') # Pending, Delivered, Failed, Processing
     date = db.Column(db.DateTime, default=datetime.utcnow)
@@ -1044,10 +1045,66 @@ def buy_data():
             data_bundles[plan.network].append(plan)
             
     return render_template("buy_data.html", data_bundles=data_bundles, balance=current_user.balance)
-# @app.route("/buy_data")
-# ... replaced by DB driven route ...
+    return render_template("buy_data.html", data_bundles=data_bundles, balance=current_user.balance)
 
-# ... (omitted routes)
+@app.route("/api/purchase_data", methods=["POST"])
+@login_required
+def purchase_data():
+    data = request.json
+    network = data.get('network')
+    plan_id = data.get('plan_id')
+    phone = data.get('phone')
+    
+    if not all([network, plan_id, phone]):
+        return jsonify({"success": False, "message": "Missing required details."}), 400
+        
+    plan = DataPlan.query.get(plan_id)
+    if not plan:
+        return jsonify({"success": False, "message": "Invalid plan selected."}), 400
+        
+    # Check Balance
+    if current_user.balance < plan.selling_price:
+        return jsonify({"success": False, "message": "Insufficient wallet balance."}), 400
+        
+    try:
+        # Deduct Balance
+        current_user.balance -= plan.selling_price
+        
+        # Create Transaction Record
+        ref = f"TRX-{int(datetime.utcnow().timestamp())}-{current_user.id}"
+        txn = Transaction(
+            user_id=current_user.id,
+            reference=ref,
+            type="Data Purchase",
+            amount=plan.selling_price,
+            status="Success"
+        )
+        db.session.add(txn)
+        
+        # Create Order Record
+        order = Order(
+            user_id=current_user.id,
+            transaction_id=ref,
+            network=network,
+            package=plan.plan_size,
+            phone=phone,
+            amount=plan.selling_price,
+            status="Processing" # Initially processing
+        )
+        db.session.add(order)
+        
+        db.session.commit()
+        
+        # TODO: Trigger actual API call to provider here
+        # For now, simulate success
+        order.status = "Delivered"
+        db.session.commit()
+        
+        return jsonify({"success": True, "message": "Purchase successful! Data is being processed."})
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"success": False, "message": f"Transaction failed: {str(e)}"}), 500
 
 @app.route('/admin/transactions')
 @admin_required

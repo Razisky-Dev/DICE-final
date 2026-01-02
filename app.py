@@ -65,6 +65,7 @@ class User(UserMixin, db.Model):
     balance = db.Column(db.Float, default=0.0)
     is_admin = db.Column(db.Boolean, default=False)
     is_suspended = db.Column(db.Boolean, default=False) # New field for suspension
+    is_super_admin = db.Column(db.Boolean, default=False) # New field for super admin
     last_read_notice_timestamp = db.Column(db.DateTime) # New field for notifications
 
 # =====================
@@ -1166,9 +1167,15 @@ def admin_update_balance(user_id):
 @app.route('/admin/user/<int:user_id>/toggle_admin')
 @admin_required
 def admin_toggle_admin(user_id):
+    # Only Super Admin can toggle other admins
+    if not current_user.is_super_admin:
+        flash("Only Super Admins can manage admin privileges.", "error")
+        return redirect(url_for('admin_users'))
+
     if user_id == current_user.id:
         flash("You cannot remove your own admin status.", "error")
         return redirect(url_for('admin_users'))
+        
     user = User.query.get_or_404(user_id)
     user.is_admin = not user.is_admin
     db.session.commit()
@@ -1355,6 +1362,59 @@ def admin_manage_wallet():
             user = User.query.filter_by(email=email).first()
 
     return render_template('admin/manage_wallet.html', user=user)
+
+@app.route('/admin/orders')
+@admin_required
+def admin_orders():
+    page = request.args.get('page', 1, type=int)
+    per_page = 20
+    
+    # Filter by Status
+    status_filter = request.args.get('status')
+    network_filter = request.args.get('network')
+    
+    query = Order.query.order_by(Order.date.desc())
+    
+    if status_filter:
+        query = query.filter(Order.status == status_filter)
+    if network_filter:
+        query = query.filter(Order.network == network_filter)
+        
+    orders = query.paginate(page=page, per_page=per_page)
+    
+    return render_template('admin/orders.html', orders=orders)
+
+@app.route('/admin/orders/export')
+@admin_required
+def admin_export_orders():
+    si = io.StringIO()
+    cw = csv.writer(si)
+    cw.writerow(['ID', 'Txn Ref', 'User', 'Network', 'Package', 'Phone', 'Amount', 'Status', 'Date'])
+    
+    orders = Order.query.order_by(Order.date.desc()).all()
+    for o in orders:
+        cw.writerow([o.id, o.transaction_id, o.user.username, o.network, o.package, o.phone, o.amount, o.status, o.date])
+        
+    output = make_response(si.getvalue())
+    output.headers["Content-Disposition"] = "attachment; filename=all_orders_export.csv"
+    output.headers["Content-type"] = "text/csv"
+    return output
+
+@app.route('/admin/order/<int:order_id>/update_status', methods=['POST'])
+@admin_required
+def admin_update_order_status(order_id):
+    order = Order.query.get_or_404(order_id)
+    new_status = request.form.get('status')
+    
+    if new_status:
+        order.status = new_status
+        db.session.commit()
+        flash(f"Order #{order.transaction_id} status updated to {new_status}.", "success")
+    else:
+        flash("Invalid status provided.", "error")
+        
+    return redirect(url_for('admin_orders'))
+
 
 @app.route('/admin/notice', methods=['GET', 'POST'])
 @admin_required

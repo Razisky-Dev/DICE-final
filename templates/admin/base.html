@@ -50,6 +50,11 @@
                     class="list-group-item list-group-item-action bg-transparent border-0 mb-1 {% if request.endpoint == 'admin_stores' %}active{% endif %}">
                     <i class="bi bi-shop me-3 fs-5"></i> Manage Stores
                 </a>
+                <a href="{{ url_for('admin_orders') }}"
+                    onclick="document.getElementById('wrapper').classList.remove('toggled')"
+                    class="list-group-item list-group-item-action bg-transparent border-0 mb-1 {% if request.endpoint == 'admin_orders' %}active{% endif %}">
+                    <i class="bi bi-cart-check-fill me-3 fs-5"></i> Manage Orders
+                </a>
                 <a href="{{ url_for('admin_transactions') }}"
                     onclick="document.getElementById('wrapper').classList.remove('toggled')"
                     class="list-group-item list-group-item-action bg-transparent border-0 mb-1 {% if request.endpoint == 'admin_transactions' %}active{% endif %}">

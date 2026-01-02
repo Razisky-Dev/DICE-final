@@ -42,6 +42,7 @@ ssh $USER@$VPS_IP "
 
     # Run Database Migrations
     python3 update_schema_timestamp.py
+    python3 migrate_db_superadmin.py
 
     # Setup Gunicorn Service
     cp vps_config/dice.service /etc/systemd/system/dice.service

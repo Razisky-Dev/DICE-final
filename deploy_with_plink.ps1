@@ -27,7 +27,7 @@ Run-Plink "apt-get update && apt-get install -y git python3-pip python3-venv ngi
 
 # 2. Git Pull
 Write-Host "2. Updating codebase..." -ForegroundColor Yellow
-Run-Plink "if [ ! -d $APP_DIR/.git ]; then git clone $REPO_URL $APP_DIR; else cd $APP_DIR; git remote set-url origin $REPO_URL; git pull origin main; fi"
+Run-Plink "if [ ! -d $APP_DIR/.git ]; then git clone $REPO_URL $APP_DIR; else cd $APP_DIR; git remote set-url origin $REPO_URL; git fetch origin; git reset --hard origin/main; fi"
 
 # 3. Upload Config using PSCP
 Write-Host "3. Uploading configuration files..." -ForegroundColor Yellow
@@ -62,6 +62,8 @@ $setup_script = "
     rm -f /etc/nginx/sites-enabled/default
     nginx -t && systemctl restart nginx
 "
+# Fix CRLF line endings from Windows to Linux
+$setup_script = $setup_script -replace "`r`n", "`n"
 Run-Plink $setup_script
 
 Write-Host "Deployment Complete! Visit http://$VPS_IP" -ForegroundColor Green

@@ -37,7 +37,7 @@
                 </select>
             </form>
 
-            <a href="{{ url_for('admin_export_orders') }}" class="btn btn-sm btn-success fw-bold">
+            <a href="{{ url_for('admin_export_orders', status=request.args.get('status'), network=request.args.get('network')) }}" class="btn btn-sm btn-success fw-bold">
                 <i class="bi bi-file-earmark-spreadsheet me-1"></i> Export CSV
             </a>
         </div>

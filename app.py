@@ -1328,7 +1328,7 @@ def admin_manage_wallet():
                 
             if action == 'credit':
                 # Atomic Update
-                user.balance = User.balance + amount
+                user.balance += amount
                 # Log Transaction
                 txn = Transaction(
                     user_id=user.id,
@@ -1345,7 +1345,7 @@ def admin_manage_wallet():
                     flash(f"Insufficient balance. User has GH₵{user.balance:,.2f}", "error")
                 else:
                     # Atomic Update
-                    user.balance = User.balance - amount
+                    user.balance -= amount
                     # Log Transaction
                     txn = Transaction(
                         user_id=user.id,
@@ -1389,14 +1389,37 @@ def admin_orders():
 def admin_export_orders():
     si = io.StringIO()
     cw = csv.writer(si)
-    cw.writerow(['ID', 'Txn Ref', 'User', 'Network', 'Package', 'Phone', 'Amount', 'Status', 'Date'])
+    cw.writerow(['ID', 'Txn Ref', 'User', 'User Email', 'Network', 'Package', 'Phone', 'Amount', 'Status', 'Date'])
     
-    orders = Order.query.order_by(Order.date.desc()).all()
+    # Apply same filters as the main orders page
+    status_filter = request.args.get('status')
+    network_filter = request.args.get('network')
+    
+    query = Order.query.order_by(Order.date.desc())
+    
+    if status_filter:
+        query = query.filter(Order.status == status_filter)
+    if network_filter:
+        query = query.filter(Order.network == network_filter)
+    
+    orders = query.all()
     for o in orders:
-        cw.writerow([o.id, o.transaction_id, o.user.username, o.network, o.package, o.phone, o.amount, o.status, o.date])
+        cw.writerow([
+            o.id, 
+            o.transaction_id, 
+            o.user.username, 
+            o.user.email,
+            o.network, 
+            o.package, 
+            o.phone or 'N/A', 
+            f"GH₵{o.amount:.2f}", 
+            o.status, 
+            o.date.strftime('%Y-%m-%d %H:%M:%S')
+        ])
         
     output = make_response(si.getvalue())
-    output.headers["Content-Disposition"] = "attachment; filename=all_orders_export.csv"
+    filename = f"orders_export_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+    output.headers["Content-Disposition"] = f"attachment; filename={filename}"
     output.headers["Content-type"] = "text/csv"
     return output
 

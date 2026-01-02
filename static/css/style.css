@@ -535,14 +535,14 @@ button:not(.nav-link):hover {
         /* Hide off-screen */
         width: 280px;
         height: 100vh;
-        z-index: 1050;
-        /* Above everything */
+        z-index: 9999;
+        /* Strictly Above Navbar */
         margin-left: 0 !important;
         /* Reset negative margin */
         transition: left 0.3s ease-in-out;
         box-shadow: 4px 0 15px rgba(0, 0, 0, 0.1);
-        background: white;
-        /* Ensure visibility */
+        background: inherit;
+        /* inherit from parent/class instead of forcing white */
     }
 
     /* Show Sidebar when Toggled */

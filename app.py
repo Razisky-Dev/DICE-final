@@ -365,6 +365,13 @@ def dashboard():
         recent_activity=recent_activity
     )
 
+@app.route("/api/read_notification", methods=["POST"])
+@login_required
+def read_notification():
+    current_user.last_read_notice_timestamp = datetime.utcnow()
+    db.session.commit()
+    return jsonify({"success": True})
+
 @app.route("/orders")
 @login_required
 def orders():

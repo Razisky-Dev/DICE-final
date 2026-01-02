@@ -396,14 +396,17 @@
                                 </span>
                             </td>
                             <td>
-                                <a href="{{ url_for('toggle_pricing', id=item.id) }}"
-                                    class="btn btn-sm rounded-pill fw-bold btn-outline-{{ 'danger' if item.status == 'Active' else 'success' }} px-3">
-                                    {{ 'Deactivate' if item.status == 'Active' else 'Activate' }}
-                                </a>
-                                <button onclick="confirmDeletePricing('{{ url_for('delete_pricing', id=item.id) }}')"
-                                    class="btn btn-sm rounded-pill fw-bold btn-light text-danger px-3 ms-1">
-                                    <i class="bi bi-trash"></i>
-                                </button>
+                                <div class="d-flex align-items-center gap-2">
+                                    <a href="{{ url_for('toggle_pricing', id=item.id) }}"
+                                        class="btn btn-sm rounded-pill fw-bold btn-outline-{{ 'danger' if item.status == 'Active' else 'success' }} px-3">
+                                        {{ 'Deactivate' if item.status == 'Active' else 'Activate' }}
+                                    </a>
+                                    <button
+                                        onclick="confirmDeletePricing('{{ url_for('delete_pricing', id=item.id) }}')"
+                                        class="btn btn-sm rounded-pill fw-bold btn-light text-danger px-3">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                         {% endfor %}

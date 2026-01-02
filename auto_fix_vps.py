@@ -53,6 +53,12 @@ def run_deploy():
                 
         print("\nDeployment Fixes Completed Successfully.")
 
+        # Run Database Migrations
+        print("Running database migrations...")
+        stdin, stdout, stderr = ssh.exec_command(f"cd {APP_DIR} && source venv/bin/activate && python3 update_schema_timestamp.py && python3 update_schema_order_phone.py")
+        print(stdout.read().decode())
+        print(stderr.read().decode())
+
         try:
             # Verify Deployment
             print("\n--- Verifying Remote Files ---")

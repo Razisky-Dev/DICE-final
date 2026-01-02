@@ -222,6 +222,7 @@
 
 <script>
     let selectedPlan = null;
+    const purchaseModal = new bootstrap.Modal(document.getElementById('purchaseModal'));
 
     function openPurchaseModal(id, network, size, price) {
         selectedPlan = { id, network, size, price };
@@ -232,17 +233,29 @@
 
         const badge = document.getElementById('modalNetworkBadge');
         badge.textContent = network;
-        badge.className = `badge rounded-pill mb-2 px-3 py-2 border bg-${network === 'MTN' ? 'warning text-dark' : network === 'TELECEL' ? 'danger' : 'primary'}`;
+
+        // Remove old classes
+        badge.className = 'badge rounded-pill mb-2 px-3 py-2 border';
+
+        // Add new class based on network
+        if (network === 'MTN') {
+            badge.classList.add('bg-warning', 'text-dark');
+        } else if (network === 'TELECEL') {
+            badge.classList.add('bg-danger', 'text-white');
+        } else {
+            badge.classList.add('bg-primary', 'text-white');
+        }
 
         // Show Modal
-        new bootstrap.Modal(document.getElementById('purchaseModal')).show();
+        purchaseModal.show();
     }
 
     document.getElementById('purchaseForm').addEventListener('submit', async function (e) {
         e.preventDefault();
         if (!selectedPlan) return;
 
-        const phone = document.getElementById('purchasePhone').value;
+        const phoneInput = document.getElementById('purchasePhone');
+        const phone = phoneInput.value;
         const btn = document.getElementById('confirmBtn');
         const btnText = document.getElementById('btnText');
         const spinner = document.getElementById('btnSpinner');
@@ -274,13 +287,14 @@
                 alert("Error: " + result.message);
             }
         } catch (error) {
+            console.error('Error:', error);
             alert("An error occurred. Please try again.");
         } finally {
             // Reset State
             btn.disabled = false;
             btnText.textContent = "Confirm Payment";
             spinner.classList.add('d-none');
-            bootstrap.Modal.getInstance(document.getElementById('purchaseModal')).hide();
+            purchaseModal.hide();
         }
     });
 </script>

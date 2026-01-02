@@ -13,64 +13,87 @@
         </a>
     </div>
 
-    <div class="table-responsive">
-        <table class="table table-hover align-middle">
-            <thead class="table-light">
-                <tr>
-                    <th>ID</th>
-                    <th>User Details</th>
-                    <th class="d-none d-md-table-cell">Mobile</th>
-                    <th class="d-none d-lg-table-cell">Role</th>
-                    <th>Balance</th>
-                    <th class="text-end">Actions</th>
+    <div class="table-responsive rounded-4 shadow-sm border border-light">
+        <table class="table table-hover align-middle mb-0" style="min-width: 600px;">
+            <thead class="bg-light">
+                <tr class="text-secondary small text-uppercase">
+                    <th class="ps-4 py-3">User Details</th>
+                    <th class="d-none d-md-table-cell py-3">Role</th>
+                    <th class="py-3">Balance</th>
+                    <th class="text-end pe-4 py-3">Actions</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody class="bg-white">
                 {% for user in users.items %}
-                <tr>
-                    <td>#{{ user.id }}</td>
-                    <td>
-                        <div class="fw-bold">{{ user.first_name }} {{ user.last_name }}</div>
-                        <div class="small text-muted">{{ user.email }}</div>
+                <tr class="border-bottom">
+                    <td class="ps-4 py-3">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="avatar-initials bg-light text-primary rounded-circle fw-bold d-flex align-items-center justify-content-center"
+                                style="width: 40px; height: 40px;">
+                                {{ user.username[0] | upper }}
+                            </div>
+                            <div>
+                                <div class="fw-bold text-dark">{{ user.first_name }} {{ user.last_name }}</div>
+                                <div class="small text-muted">{{ user.email }}</div>
+                                <div class="d-md-none small text-secondary mt-1">{{ user.mobile }}</div>
+                            </div>
+                        </div>
                     </td>
-                    <td class="d-none d-md-table-cell">{{ user.mobile }}</td>
-                    <td class="d-none d-lg-table-cell">
+                    <td class="d-none d-md-table-cell py-3">
                         {% if user.is_suspended %}
-                        <span class="badge bg-danger">Suspended</span>
+                        <span class="badge bg-danger-subtle text-danger rounded-pill px-3">Suspended</span>
                         {% elif user.is_admin %}
-                        <span class="badge bg-warning text-dark">Admin</span>
+                        <span class="badge bg-warning-subtle text-warning-emphasis rounded-pill px-3">Admin</span>
                         {% else %}
-                        <span class="badge bg-info">Active</span>
+                        <span class="badge bg-info-subtle text-info-emphasis rounded-pill px-3">Active</span>
                         {% endif %}
                     </td>
-                    <td>
-                        <span class="fw-bold text-success">GH₵ {{ "{:,.2f}".format(user.balance | default(0)) }}</span>
+                    <td class="py-3">
+                        <span class="fw-bold text-success fs-6">GH₵ {{ "{:,.2f}".format(user.balance | default(0))
+                            }}</span>
                     </td>
-                    <td class="text-end">
-                        <a href="{{ url_for('admin_toggle_admin', user_id=user.id) }}"
-                            class="btn btn-sm {{ 'btn-warning' if user.is_admin else 'btn-outline-warning' }} me-1"
-                            title="Toggle Admin Role">
-                            <i class="bi bi-shield-lock"></i>
-                        </a>
-                        <a href="{{ url_for('admin_toggle_suspend', user_id=user.id) }}"
-                            class="btn btn-sm {{ 'btn-danger' if user.is_suspended else 'btn-outline-danger' }} me-1"
-                            title="{{ 'Unsuspend' if user.is_suspended else 'Suspend' }}">
-                            <i class="bi {{ 'bi-play-circle' if user.is_suspended else 'bi-pause-circle' }}"></i>
-                        </a>
-                        <button class="btn btn-sm btn-primary me-1 edit-balance-btn" data-bs-toggle="modal"
-                            data-bs-target="#editBalanceModal" data-user-id="{{ user.id }}"
-                            data-username="{{ user.username }}" data-email="{{ user.email }}"
-                            data-balance="{{ user.balance }}"
-                            data-action-url="{{ url_for('admin_update_balance', user_id=user.id) }}"
-                            title="Edit Balance">
-                            <i class="bi bi-pencil-square"></i>
-                        </button>
-                        <a href="{{ url_for('admin_delete_user', user_id=user.id) }}"
-                            class="btn btn-sm btn-outline-secondary"
-                            onclick="return confirm('Are you sure? This will delete the user and all their data permanently.')"
-                            title="Delete User">
-                            <i class="bi bi-trash"></i>
-                        </a>
+                    <td class="text-end pe-4 py-3">
+                        <div class="dropdown">
+                            <button class="btn btn-light btn-sm rounded-circle shadow-sm" type="button"
+                                data-bs-toggle="dropdown">
+                                <i class="bi bi-three-dots-vertical"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg rounded-3">
+                                <li>
+                                    <button class="dropdown-item d-flex align-items-center gap-2 py-2 edit-balance-btn"
+                                        data-bs-toggle="modal" data-bs-target="#editBalanceModal"
+                                        data-user-id="{{ user.id }}" data-username="{{ user.username }}"
+                                        data-email="{{ user.email }}" data-balance="{{ user.balance }}"
+                                        data-action-url="{{ url_for('admin_update_balance', user_id=user.id) }}">
+                                        <i class="bi bi-wallet2 text-primary"></i> Update Balance
+                                    </button>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item d-flex align-items-center gap-2 py-2"
+                                        href="{{ url_for('admin_toggle_suspend', user_id=user.id) }}">
+                                        <i
+                                            class="bi {{ 'bi-play-circle text-success' if user.is_suspended else 'bi-pause-circle text-warning' }}"></i>
+                                        {{ 'Unsuspend User' if user.is_suspended else 'Suspend User' }}
+                                    </a>
+                                </li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+                                <li>
+                                    <a class="dropdown-item d-flex align-items-center gap-2 py-2"
+                                        href="{{ url_for('admin_toggle_admin', user_id=user.id) }}">
+                                        <i class="bi bi-shield-lock text-info"></i> Toggle Admin
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item d-flex align-items-center gap-2 py-2 text-danger"
+                                        href="{{ url_for('admin_delete_user', user_id=user.id) }}"
+                                        onclick="return confirm('Are you sure? This will delete the user permanently.')">
+                                        <i class="bi bi-trash"></i> Delete User
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
                     </td>
                 </tr>
                 {% endfor %}

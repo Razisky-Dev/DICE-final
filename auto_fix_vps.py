@@ -52,6 +52,31 @@ def run_deploy():
                 print(f"Command failed with status {exit_status}")
                 
         print("\nDeployment Fixes Completed Successfully.")
+
+        try:
+            # Verify Deployment
+            print("\n--- Verifying Remote Files ---")
+            
+            # Check admin/base.html for v=3
+            stdin, stdout, stderr = ssh.exec_command('grep "v=3" /var/www/dice/templates/admin/base.html')
+            res = stdout.read().decode().strip()
+            if res:
+                print(f"[SUCCESS] Found v=3 in admin/base.html: {res}")
+            else:
+                print("[FAILURE] v=3 NOT found in admin/base.html")
+
+            # Check admin/transactions.html for 'Actions' (Should be absent)
+            stdin, stdout, stderr = ssh.exec_command('grep "Actions" /var/www/dice/templates/admin/transactions.html')
+            res = stdout.read().decode().strip()
+            if not res:
+                print("[SUCCESS] 'Actions' column successfully REMOVED from transactions.html")
+            else:
+                print(f"[FAILURE] Found 'Actions' in transactions.html: {res}")
+
+        except Exception as e:
+            print(f"Error during verification: {e}")
+
+        print("\nDeployment Cycle Complete.")
         ssh.close()
         
     except Exception as e:

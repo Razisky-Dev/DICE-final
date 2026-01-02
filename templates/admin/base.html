@@ -14,7 +14,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=3">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=4">
 
 
 
@@ -36,18 +36,22 @@
             </div>
             <div class="list-group list-group-flush py-4 bg-transparent">
                 <a href="{{ url_for('admin_dashboard') }}"
+                    onclick="document.getElementById('wrapper').classList.remove('toggled')"
                     class="list-group-item list-group-item-action bg-transparent border-0 mb-1 {% if request.endpoint == 'admin_dashboard' %}active{% endif %}">
                     <i class="bi bi-speedometer2 me-3 fs-5"></i> Dashboard
                 </a>
                 <a href="{{ url_for('admin_users') }}"
+                    onclick="document.getElementById('wrapper').classList.remove('toggled')"
                     class="list-group-item list-group-item-action bg-transparent border-0 mb-1 {% if request.endpoint == 'admin_users' %}active{% endif %}">
                     <i class="bi bi-people me-3 fs-5"></i> Manage Users
                 </a>
                 <a href="{{ url_for('admin_stores') }}"
+                    onclick="document.getElementById('wrapper').classList.remove('toggled')"
                     class="list-group-item list-group-item-action bg-transparent border-0 mb-1 {% if request.endpoint == 'admin_stores' %}active{% endif %}">
                     <i class="bi bi-shop me-3 fs-5"></i> Manage Stores
                 </a>
                 <a href="{{ url_for('admin_transactions') }}"
+                    onclick="document.getElementById('wrapper').classList.remove('toggled')"
                     class="list-group-item list-group-item-action bg-transparent border-0 mb-1 {% if request.endpoint == 'admin_transactions' %}active{% endif %}">
                     <i class="bi bi-receipt-cutoff me-3 fs-5"></i> Transactions
                     {% if pending_withdrawals_count > 0 %}
@@ -55,6 +59,7 @@
                     {% endif %}
                 </a>
                 <a href="{{ url_for('admin_pricing') }}"
+                    onclick="document.getElementById('wrapper').classList.remove('toggled')"
                     class="list-group-item list-group-item-action bg-transparent border-0 mb-1 {% if request.endpoint == 'admin_pricing' %}active{% endif %}">
                     <i class="bi bi-tags-fill me-3 fs-5"></i> Pricing Rules
                 </a>
@@ -63,10 +68,12 @@
                     <small class="text-uppercase text-white-50 fw-bold" style="font-size: 0.7rem;">System Tools</small>
                 </div>
                 <a href="{{ url_for('admin_manage_wallet') }}"
+                    onclick="document.getElementById('wrapper').classList.remove('toggled')"
                     class="list-group-item list-group-item-action bg-transparent border-0 mb-1 {% if request.endpoint == 'admin_manage_wallet' %}active{% endif %}">
                     <i class="bi bi-wallet-fill me-3 fs-5"></i> Manage Wallet
                 </a>
                 <a href="{{ url_for('admin_notice') }}"
+                    onclick="document.getElementById('wrapper').classList.remove('toggled')"
                     class="list-group-item list-group-item-action bg-transparent border-0 mb-1 {% if request.endpoint == 'admin_notice' %}active{% endif %}">
                     <i class="bi bi-megaphone-fill me-3 fs-5"></i> Site Notice
                 </a>
@@ -75,6 +82,7 @@
                     <small class="text-uppercase text-white-50 fw-bold" style="font-size: 0.7rem;">Quick Links</small>
                 </div>
                 <a href="{{ url_for('dashboard') }}"
+                    onclick="document.getElementById('wrapper').classList.remove('toggled')"
                     class="list-group-item list-group-item-action bg-transparent border-0 mb-1 text-info">
                     <i class="bi bi-box-arrow-up-right me-3 fs-5"></i> View Live Site
                 </a>

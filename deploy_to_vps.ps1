@@ -20,7 +20,8 @@ ssh $USER@$VPS_IP "
     else
         cd $APP_DIR
         git remote set-url origin $REPO_URL
-        git pull origin main
+        git fetch origin
+        git reset --hard origin/main
     fi
 "
 

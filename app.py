@@ -1023,6 +1023,38 @@ def admin_stores():
     stores = Store.query.order_by(Store.id.desc()).paginate(page=page, per_page=per_page)
     return render_template('admin/stores.html', stores=stores)
 
+@app.route('/admin/pricing', methods=['GET', 'POST'])
+@admin_required
+def admin_pricing():
+    if request.method == 'POST':
+        plan_id = request.form.get('plan_id')
+        try:
+            cost_price = float(request.form.get('cost_price'))
+            selling_price = float(request.form.get('selling_price'))
+        except (ValueError, TypeError):
+            flash("Invalid price format.", "error")
+            return redirect(url_for('admin_pricing'))
+
+        plan = DataPlan.query.get(plan_id)
+        if not plan:
+            flash("Plan not found.", "error")
+        else:
+            plan.cost_price = cost_price
+            plan.selling_price = selling_price
+            db.session.commit()
+            flash(f"Updated pricing for {plan.network} {plan.plan_size}", "success")
+        return redirect(url_for('admin_pricing'))
+
+    # GET
+    plans = DataPlan.query.order_by(DataPlan.display_order).all()
+    grouped_plans = {"MTN": [], "TELECEL": [], "AIRTELTIGO": []}
+    for p in plans:
+        if p.network not in grouped_plans:
+             grouped_plans[p.network] = []
+        grouped_plans[p.network].append(p)
+                 
+    return render_template('admin/pricing.html', grouped_plans=grouped_plans)
+
 @app.route("/buy_data")
 @login_required
 def buy_data():

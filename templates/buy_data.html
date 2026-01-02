@@ -255,6 +255,23 @@
         purchaseModal.show();
     }
 
+    // Ensure modal is at the end of body to avoid stacking context issues
+    document.addEventListener('DOMContentLoaded', function () {
+        const modalEl = document.getElementById('purchaseModal');
+        if (modalEl) {
+            document.body.appendChild(modalEl);
+        }
+
+        // Cleanup any stuck backdrops
+        const backdrops = document.querySelectorAll('.modal-backdrop');
+        if (backdrops.length > 0) {
+            backdrops.forEach(backdrop => backdrop.remove());
+            document.body.classList.remove('modal-open');
+            document.body.style.overflow = '';
+            document.body.style.paddingRight = '';
+        }
+    });
+
     document.getElementById('purchaseForm').addEventListener('submit', async function (e) {
         e.preventDefault();
         if (!selectedPlan) return;

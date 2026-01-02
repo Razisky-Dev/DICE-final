@@ -784,12 +784,16 @@ body.auth-page a:hover {
     align-items: center;
     gap: 8px;
     transition: transform 0.2s;
-    cursor: pointer;
+    color: white;
 }
 
-.action-btn:hover {
-    transform: translateY(-2px);
-    color: white;
+/* Fix Modal Z-Index Conflicts */
+.modal {
+    z-index: 10055 !important;
+}
+
+.modal-backdrop {
+    z-index: 10050 !important;
 }
 
 .network-card {

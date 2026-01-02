@@ -21,7 +21,8 @@ def add_phone_column():
         if 'phone' not in columns:
             print("Adding 'phone' column to 'order' table...")
             # SQLite supports adding columns with ALTER TABLE
-            cursor.execute('ALTER TABLE "order" ADD COLUMN phone TEXT')
+            # Try bracket syntax for robustness against reserved keywords
+            cursor.execute("ALTER TABLE [order] ADD COLUMN phone TEXT")
             conn.commit()
             print("Migration successful.")
         else:

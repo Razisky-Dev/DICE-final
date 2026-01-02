@@ -111,7 +111,7 @@ def inject_site_notice():
     notice_timestamp = None
     if notice_timestamp_setting and notice_timestamp_setting.value:
         try:
-            notice_timestamp = datetime.fromtimestamp(float(notice_timestamp_setting.value))
+            notice_timestamp = datetime.utcfromtimestamp(float(notice_timestamp_setting.value))
         except:
             pass
             

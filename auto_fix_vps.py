@@ -55,7 +55,24 @@ def run_deploy():
 
         # Run Database Migrations
         print("Running database migrations...")
-        stdin, stdout, stderr = ssh.exec_command(f"cd {APP_DIR} && source venv/bin/activate && python3 update_schema_timestamp.py && python3 update_schema_order_phone.py")
+        # The original command was:
+        # stdin, stdout, stderr = ssh.exec_command(f"cd {APP_DIR} && source venv/bin/activate && python3 update_schema_timestamp.py && python3 update_schema_order_phone.py")
+        
+        # Update schema for timestamp
+        stdin, stdout, stderr = ssh.exec_command(f'cd {APP_DIR} && {APP_DIR}/venv/bin/python3 update_schema_timestamp.py')
+        print(f"Updating User table with 'last_read_notice_timestamp' column...")
+        err = stderr.read().decode()
+        if err:
+             print(f"Column update error (might already exist): {err}")
+        
+        # Update schema for order phone (if needed, based on original code)
+        stdin, stdout, stderr = ssh.exec_command(f'cd {APP_DIR} && {APP_DIR}/venv/bin/python3 update_schema_order_phone.py')
+        print(stdout.read().decode())
+        print(stderr.read().decode())
+
+        # Run the Big Time fix script
+        print("Running DB Fix for 'Big Time' names...")
+        stdin, stdout, stderr = ssh.exec_command(f'cd {APP_DIR} && {APP_DIR}/venv/bin/python3 fix_db_plans.py')
         print(stdout.read().decode())
         print(stderr.read().decode())
 

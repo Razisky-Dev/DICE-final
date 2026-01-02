@@ -33,7 +33,7 @@ def seed_data_plans():
                  db.session.add(DataPlan(network="TELECEL", plan_size=size, cost_price=price, selling_price=price, display_order=idx))
 
         if not DataPlan.query.filter_by(network="AIRTELTIGO").first():
-             at_plans = [("Big Time 1 GB", 4.5), ("Big Time 2 GB", 9.0)]
+             at_plans = [("1 GB", 4.5), ("2 GB", 9.0)]
              for idx, (size, price) in enumerate(at_plans):
                  db.session.add(DataPlan(network="AIRTELTIGO", plan_size=size, cost_price=price, selling_price=price, display_order=idx))
 

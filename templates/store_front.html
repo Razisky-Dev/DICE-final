@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
 
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=6">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=7">
 </head>
 
 
@@ -19,7 +19,7 @@
 
     <div class="container py-5">
         <div class="row justify-content-center">
-            <div class="col-lg-8 text-center">
+            <div class="col-12 text-center">
                 <!-- Store Header -->
                 <h1 class="store-title fw-bold mb-2 display-4">{{ store.name }}</h1>
                 <p class="mb-4 text-muted fs-5">{{ store.description or 'Welcome to our store. Select a network to view
@@ -307,7 +307,7 @@
                     else if (network === 'AIRTELTIGO') cardClass += ' airteltigo';
 
                     const html = `
-                        <div class="col-6 col-md-4 col-lg-3">
+                        <div class="col-6 col-sm-4 col-md-3 col-lg-3 col-xl-2">
                             <div class="${cardClass} p-4 h-100 d-flex flex-column text-center">
                                 <div class="meta-text mb-2 text-muted">${p.network}</div>
                                 <div class="size-badge mb-1">${p.package_name}</div>

@@ -17,58 +17,72 @@
 
 <body>
 
-    <div class="container py-5">
-        <div class="row justify-content-center">
-            <div class="col-12 text-center">
-                <!-- Store Header -->
-                <h1 class="store-title fw-bold mb-2 display-4">{{ store.name }}</h1>
-                <p class="mb-4 text-muted fs-5">{{ store.description or 'Welcome to our store. Select a network to view
-                    packages.' }}</p>
+    <!-- Hero Section -->
+    <div class="hero-section text-center py-5 mb-5 bg-dark text-white position-relative overflow-hidden">
+        <div class="container position-relative z-index-1 py-5">
+            <h1 class="display-3 fw-bold mb-3">{{ store.name }}</h1>
+            <p class="lead opacity-75 mb-4 mx-auto" style="max-width: 600px;">{{ store.description or 'Unbeatable data
+                bundles at the best prices. Select your network below.' }}</p>
 
-                {% if store.notice %}
-                <div class="alert alert-warning border-0 shadow-sm d-inline-block px-4 py-3 mb-5 rounded-4">
-                    <i class="bi bi-megaphone-fill me-2"></i> <strong>Notice:</strong> {{ store.notice }}
-                </div>
-                {% endif %}
+            {% if store.notice %}
+            <div class="alert alert-warning border-0 shadow-sm d-inline-block px-4 py-2 rounded-pill mt-3">
+                <i class="bi bi-megaphone-fill me-2"></i> {{ store.notice }}
+            </div>
+            {% endif %}
 
-                <div class="d-flex justify-content-center gap-3 mb-5">
-                    <button class="action-btn btn btn-dark rounded-pill px-4 py-2" onclick="openTransactionsModal()">
-                        <i class="bi bi-clock-history me-2"></i> Transactions
-                    </button>
-                </div>
+            <div class="mt-4">
+                <button class="btn btn-outline-light rounded-pill px-4 py-2" onclick="openTransactionsModal()">
+                    <i class="bi bi-clock-history me-2"></i> Check Transactions
+                </button>
+            </div>
+        </div>
+        <!-- Decorative Background Circle -->
+        <div class="position-absolute top-50 start-50 translate-middle rounded-circle bg-gradient-primary opacity-25"
+            style="width: 800px; height: 800px; filter: blur(100px); z-index: 0;"></div>
+    </div>
 
-                <!-- Network Selection -->
-                <div class="row g-3 mb-5 justify-content-center">
-                    <div class="col-6 col-md-4">
-                        <div class="network-card bg-warning text-dark border-0 shadow-sm h-100 d-flex flex-column align-items-center justify-content-center p-3 rounded-4 cursor-pointer hover-scale"
-                            onclick="selectNetwork('MTN', this)">
-                            <div class="fw-bold fs-5">MTN</div>
-                            <small class="mt-1 opacity-75 d-block">Data Bundles</small>
-                        </div>
-                    </div>
-                    <div class="col-6 col-md-4">
-                        <div class="network-card bg-danger text-white border-0 shadow-sm h-100 d-flex flex-column align-items-center justify-content-center p-3 rounded-4 cursor-pointer hover-scale"
-                            onclick="selectNetwork('TELECEL', this)">
-                            <div class="fw-bold fs-5">TELECEL</div>
-                            <small class="mt-1 opacity-75 d-block">Data Packages</small>
-                        </div>
-                    </div>
-                    <div class="col-12 col-md-4">
-                        <div class="network-card bg-primary text-white border-0 shadow-sm h-100 d-flex flex-column align-items-center justify-content-center p-3 rounded-4 cursor-pointer hover-scale"
-                            onclick="selectNetwork('AIRTELTIGO', this)">
-                            <div class="fw-bold fs-5 fst-italic">at</div>
-                            <small class="mt-1 opacity-75 d-block">Data Packages</small>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Packages Display Area -->
-                <h4 class="text-center mb-4 fw-bold text-dark" id="selectedNetworkTitle" style="display: none;">
-                    Available Packages</h4>
-                <div id="packagesContainer" class="row g-4 justify-content-center" style="display: none;">
-                    <!-- Packages will be injected here via JS -->
+    <div class="container pb-5" style="max-width: 1400px;">
+        <!-- Network Selection -->
+        <div class="row g-4 mb-5 justify-content-center">
+            <div class="col-6 col-md-4">
+                <div class="network-card mtn-card p-4 h-100 d-flex flex-column align-items-center justify-content-center text-center rounded-4 cursor-pointer hover-scale"
+                    onclick="selectNetwork('MTN', this)">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/a/af/MTN_Logo.svg" alt="MTN" height="60"
+                        class="mb-3">
+                    <h5 class="fw-bold mb-1">MTN Data</h5>
+                    <small class="text-muted">Available</small>
                 </div>
             </div>
+            <div class="col-6 col-md-4">
+                <div class="network-card telecel-card p-4 h-100 d-flex flex-column align-items-center justify-content-center text-center rounded-4 cursor-pointer hover-scale"
+                    onclick="selectNetwork('TELECEL', this)">
+                    <div class="bg-danger text-white rounded-3 fw-bold fs-3 mb-3 d-flex align-items-center justify-content-center"
+                        style="width: 60px; height: 60px;">T</div>
+                    <h5 class="fw-bold mb-1">Telecel</h5>
+                    <small class="text-muted">Available</small>
+                </div>
+            </div>
+            <div class="col-12 col-md-4">
+                <div class="network-card at-card p-4 h-100 d-flex flex-column align-items-center justify-content-center text-center rounded-4 cursor-pointer hover-scale"
+                    onclick="selectNetwork('AIRTELTIGO', this)">
+                    <div class="bg-primary text-white rounded-3 fw-bold fs-3 mb-3 d-flex align-items-center justify-content-center fst-italic"
+                        style="width: 60px; height: 60px;">at</div>
+                    <h5 class="fw-bold mb-1">AirtelTigo</h5>
+                    <small class="text-muted">Available</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Packages Display Area -->
+        <div class="d-flex align-items-center justify-content-center mb-4" id="selectedNetworkTitleWrapper"
+            style="display: none !important;">
+            <div class="h-px bg-secondary opacity-25 flex-grow-1" style="height: 1px; max-width: 200px;"></div>
+            <h4 class="fw-bold text-dark mx-4 mb-0" id="selectedNetworkTitle">Available Packages</h4>
+            <div class="h-px bg-secondary opacity-25 flex-grow-1" style="height: 1px; max-width: 200px;"></div>
+        </div>
+
+        <div id="packagesContainer" class="row g-4 justify-content-center px-lg-4" style="display: none;">
+            <!-- Packages will be injected here via JS -->
         </div>
     </div>
 
@@ -330,6 +344,7 @@
             }
 
             // Ensure container and title are visible
+            document.getElementById('selectedNetworkTitleWrapper').style.setProperty('display', 'flex', 'important');
             title.style.display = 'block';
             container.style.display = 'flex';
         }

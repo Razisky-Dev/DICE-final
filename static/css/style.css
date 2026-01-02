@@ -29,7 +29,8 @@ body {
 }
 
 /* Auth / form containers */
-.container {
+/* Auth / form containers */
+.auth-container {
     max-width: 450px;
     margin: 60px auto;
     background: var(--card-bg);
@@ -799,28 +800,32 @@ body.auth-page a:hover {
 .network-card {
     background: white;
     border-radius: 20px;
-    padding: 20px;
-    height: 140px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.2s;
-    border: 2px solid transparent;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
 }
 
 .network-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+    border-color: rgba(0, 0, 0, 0.1);
 }
 
 .network-card.active {
-    border-color: #000;
-    background-color: #f8f9fa;
-    transform: scale(1.02);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 4px rgba(74, 144, 226, 0.1);
+}
+
+.mtn-card:hover {
+    border-color: #ffcc00;
+}
+
+.telecel-card:hover {
+    border-color: #e60000;
+}
+
+.at-card:hover {
+    border-color: #0033cc;
 }
 
 .network-logo-text {

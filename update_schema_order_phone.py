@@ -30,7 +30,7 @@ def add_phone_column():
             return
 
         # Check if column exists
-        cursor.execute(f"PRAGMA table_info({target_table})")
+        cursor.execute(f'PRAGMA table_info("{target_table}")')
         columns = [info[1] for info in cursor.fetchall()]
         
         if 'phone' not in columns:

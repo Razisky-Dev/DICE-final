@@ -1328,12 +1328,7 @@ def admin_notice():
     
     return render_template('admin/notice.html', notice=notice)
 
-@app.route('/api/read_notification', methods=['POST'])
-@login_required
-def read_notification():
-    current_user.last_read_notice_timestamp = datetime.utcnow()
-    db.session.commit()
-    return jsonify({'status': 'success'})
+
 
 if __name__ == "__main__":
     with app.app_context():

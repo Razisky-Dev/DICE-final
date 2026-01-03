@@ -299,7 +299,7 @@ def login():
     attempts = 0
 
     if request.method == 'POST':
-        email = request.form.get('email')
+        email = request.form.get('email').strip()
         password = request.form.get('password')
 
         # check if input is a valid email
@@ -1302,7 +1302,7 @@ def security_update():
 @app.route("/admin/login", methods=["GET", "POST"])
 def admin_login():
     if request.method == "POST":
-        email = request.form.get("email")
+        email = request.form.get("email").strip()
         password = request.form.get("password")
         
         user = User.query.filter_by(email=email).first()

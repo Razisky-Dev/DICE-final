@@ -107,6 +107,7 @@ class DataPlan(db.Model):
     network = db.Column(db.String(20), nullable=False) # MTN, TELECEL, AIRTELTIGO
     plan_size = db.Column(db.String(20), nullable=False) # e.g. "1 GB"
     cost_price = db.Column(db.Float, nullable=False, default=0.0) # Depot Price (Cost)
+    manufacturing_price = db.Column(db.Float, nullable=False, default=0.0) # Raw Cost (Super Admin only)
     dealer_price = db.Column(db.Float, nullable=False, default=0.0) # Price for Store Owners
     selling_price = db.Column(db.Float, nullable=False, default=0.0) # Site Price (Revenue)
     display_order = db.Column(db.Integer, default=0)
@@ -1468,6 +1469,7 @@ def admin_pricing():
         plan_id = request.form.get('plan_id')
         try:
             cost_price = float(request.form.get('cost_price'))
+            manufacturing_price = float(request.form.get('manufacturing_price') or 0.0)
             dealer_price = float(request.form.get('dealer_price'))
             selling_price = float(request.form.get('selling_price'))
         except (ValueError, TypeError):
@@ -1479,6 +1481,7 @@ def admin_pricing():
             flash("Plan not found.", "error")
         else:
             plan.cost_price = cost_price
+            plan.manufacturing_price = manufacturing_price
             plan.dealer_price = dealer_price
             plan.selling_price = selling_price
             db.session.commit()

@@ -28,9 +28,14 @@
                             <tr>
                                 <th class="ps-4">Plan Size</th>
                                 <th>Depot Price (Cost)</th>
+                                {% if current_user.is_super_admin %}
+                                <th>Manufacturing Price</th>
+                                {% endif %}
                                 <th>Dealer Price (Store Cost)</th>
                                 <th>Site Price (Selling)</th>
+                                {% if current_user.is_super_admin %}
                                 <th>Profit</th>
+                                {% endif %}
                                 <th>Action</th>
                             </tr>
                         </thead>
@@ -48,6 +53,16 @@
                                                 value="{{ plan.cost_price }}" required>
                                         </div>
                                     </td>
+                                    {% if current_user.is_super_admin %}
+                                    <td>
+                                        <div class="input-group input-group-sm" style="max-width: 120px;">
+                                            <span class="input-group-text">GH₵</span>
+                                            <input type="number" step="0.01" name="manufacturing_price"
+                                                class="form-control border-info" value="{{ plan.manufacturing_price }}"
+                                                placeholder="0.00">
+                                        </div>
+                                    </td>
+                                    {% endif %}
                                     <td>
                                         <div class="input-group input-group-sm" style="max-width: 120px;">
                                             <span class="input-group-text">GH₵</span>
@@ -63,12 +78,14 @@
                                                 value="{{ plan.selling_price }}" required>
                                         </div>
                                     </td>
+                                    {% if current_user.is_super_admin %}
                                     <td>
                                         <span
                                             class="badge bg-success bg-opacity-10 text-success border border-success-subtle">
-                                            + GH₵ {{ "{:,.2f}".format(plan.selling_price - plan.cost_price) }}
+                                            + GH₵ {{ "{:,.2f}".format(plan.selling_price - plan.manufacturing_price) }}
                                         </span>
                                     </td>
+                                    {% endif %}
                                     <td>
                                         <button type="submit" class="btn btn-sm btn-primary">Update</button>
                                     </td>

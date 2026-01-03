@@ -1,7 +1,20 @@
 # Deploy to Hostinger VPS
-$VPS_IP = "72.62.150.44"
-$VPS_USER = "root"
-$VPS_PASS = "@@ZAzo8965Quophi"
+# Read credentials from local .env file
+$envParams = @{}
+Get-Content .env | ForEach-Object {
+    if ($_ -match '^(.*?)=(.*)$') {
+        $envParams[$matches[1]] = $matches[2]
+    }
+}
+
+$VPS_IP = $envParams["VPS_IP"]
+$VPS_USER = $envParams["VPS_USER"]
+$VPS_PASS = $envParams["VPS_PASS"]
+
+if (-not $VPS_IP -or -not $VPS_PASS) {
+    Write-Error "Could not find VPS_IP or VPS_PASS in .env file. Please ensure they are set."
+    exit 1
+}
 $REPO_URL = "https://github.com/Razisky-Dev/DICE-final.git"
 
 Write-Host "Connecting to Hostinger VPS at $VPS_IP..." -ForegroundColor Green

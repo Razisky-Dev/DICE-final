@@ -91,9 +91,8 @@ ln -s /etc/nginx/sites-available/dice /etc/nginx/sites-enabled/
 rm -f /etc/nginx/sites-enabled/default
 
 # Restart services
-supervisorctl reread
-supervisorctl update
-supervisorctl start dice
+supervisorctl# Restart Supervisor to apply changes
+supervisorctl restart dice
 systemctl restart nginx
 
 echo "Deployment completed!"

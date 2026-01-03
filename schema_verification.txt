@@ -1,0 +1,3 @@
+DB URI: sqlite:///database.db
+DataPlan Columns: ['id', 'network', 'plan_size', 'cost_price', 'selling_price', 'display_order', 'status', 'manufacturing_price', 'dealer_price']
+User Columns: ['id', 'first_name', 'last_name', 'username', 'email', 'mobile', 'password', 'balance', 'is_admin', 'is_suspended', 'last_read_notice_timestamp', 'is_super_admin', 'preferred_network']

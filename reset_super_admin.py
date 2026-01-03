@@ -3,9 +3,9 @@ from werkzeug.security import generate_password_hash
 
 def reset_super_admin():
     with app.app_context():
-        target_email = "bytesmedia@gmail.com"
+        target_email = "bytemedeals@gmail.com"
         target_password = "Quophi@2"
-        target_username = "SuperAdminBytes" # Avoid conflict if 'SuperAdmin' exists with diff email
+        target_username = "SuperAdminByteMe" # Updated to reflect new email context if needed, or keep generic
         
         print(f"Configuring Super Admin: {target_email}")
         

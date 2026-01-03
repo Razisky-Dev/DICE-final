@@ -438,52 +438,7 @@ def wallet():
         transactions=transactions
     )
 
-def process_successful_deposit(reference, amount_paid, metadata=None):
-    """
-    Reusable logic to credit user wallet after successful Paystack charge.
-    Returns: (bool, message)
-    """
-    try:
-        # Check if transaction already processed
-        txn = Transaction.query.filter_by(reference=reference).first()
-        if txn and txn.status == 'Success':
-            return True, "Transaction already processed."
 
-        # Calculate Amount to Credit
-        # Fallback logic if metadata missing: Paid / 1.03
-        amount_to_credit = 0.0
-        
-        if metadata and 'original_amount' in metadata:
-           try:
-               amount_to_credit = float(metadata['original_amount'])
-           except:
-               pass
-               
-        if amount_to_credit <= 0:
-            amount_to_credit = float(amount_paid) / 1.03
-
-        # Create or Update Transaction
-        if not txn:
-            # We need a user_id. If coming from webhook, we might rely on email lookup
-            # But let's assume we can get it. 
-            # Ideally, Paystack metadata should store user_id for webhooks.
-            # If called from callback, we have current_user.
-            # If called from webhook, we need to find user by email from Paystack data.
-            pass 
-            # NOTE: Logic split below because of context differences.
-            
-        # Refined Logic:
-        # We need to find the pending txn or create a new one.
-        # But we didn't save Pending Deposit txns in 'deposit' route (we only calculated).
-        # So we must create it now.
-        
-        # We need the user! 
-        # For callback, we use current_user. 
-        # For webhook, we query by email.
-        return False, "Process logic handled in routes due to user context."
-        
-    except Exception as e:
-        return False, str(e)
 
 # Redefining helper to actually take the User object or params
 def execute_deposit_credit(user, reference, amount_to_credit):

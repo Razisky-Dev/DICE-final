@@ -1,0 +1,18 @@
+<script src="https://js.paystack.co/v1/inline.js"></script>
+
+<button onclick="payWithPaystack()">Buy Now</button>
+
+<script>
+function payWithPaystack() {
+  let handler = PaystackPop.setup({
+    key: "{{ paystack_public_key }}",
+    email: "customer@email.com",
+    amount: 500000,
+    currency: "GHS",
+    callback: function(response) {
+      window.location.href = "/verify/" + response.reference;
+    }
+  });
+  handler.openIframe();
+}
+</script>

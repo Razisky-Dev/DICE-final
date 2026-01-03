@@ -123,6 +123,7 @@
 
                 <form method="POST" action="{{ url_for('withdraw') }}">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
                     <div class="mb-3">
                         <label class="form-label fw-bold small text-uppercase text-muted">Amount (GH₵)</label>
                         <div class="input-group">
@@ -131,13 +132,37 @@
                                 placeholder="0.00" min="1" step="0.01" required>
                         </div>
                     </div>
-                    <button type="submit" class="btn btn-danger w-100 rounded-pill fw-bold py-2">
-                        Request Withdrawal <i class="bi bi-box-arrow-up-right ms-2"></i>
-                    </button>
-                </form>
+
+                    {% if current_user.preferred_network and current_user.mobile %}
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-uppercase text-muted">Destination (Locked)</label>
+                        <div class="input-group mb-2">
+                            <span class="input-group-text bg-secondary bg-opacity-10 border-0"><i
+                                    class="bi bi-bank"></i></span>
+                            <input type="text" class="form-control bg-secondary bg-opacity-10 border-0"
+                                value="{{ current_user.preferred_network }} - {{ current_user.mobile }}" readonly>
+                        </div>
+                    </div>
+                    <small class="text-muted" style="font-size: 0.7rem;"><i class="bi bi-lock-fill"></i> Locked to
+                        Registered Account</small>
             </div>
+            <!-- Hidden fields to pass check if needed, though backend ignores them -->
+            <input type="hidden" name="network" value="{{ current_user.preferred_network }}">
+            <input type="hidden" name="phone_number" value="{{ current_user.mobile }}">
+            {% else %}
+            <div class="alert alert-warning small border-0">
+                <i class="bi bi-exclamation-circle me-1"></i> Please set your <b>Withdrawal Network</b> in your
+                <a href="{{ url_for('profile') }}" class="fw-bold">Profile</a> before withdrawing.
+            </div>
+            {% endif %}
+
+            <button type="submit" class="btn btn-danger w-100 rounded-pill fw-bold py-2">
+                Request Withdrawal <i class="bi bi-box-arrow-up-right ms-2"></i>
+            </button>
+            </form>
         </div>
     </div>
+</div>
 </div>
 
 <!-- Transaction History -->

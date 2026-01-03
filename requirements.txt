@@ -11,3 +11,4 @@ requests
 cryptography
 Flask-WTF
 python-dotenv
+openpyxl

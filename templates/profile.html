@@ -69,6 +69,38 @@
                 </div>
 
                 <div class="mb-3">
+                    <label class="form-label text-uppercase small text-muted fw-bold">Withdrawal Network</label>
+                    {% if current_user.preferred_network %}
+                    <!-- READ ONLY VIEW -->
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-0"><i class="bi bi-bank"></i></span>
+                        <input type="text" class="form-control bg-light border-0"
+                            value="{% if current_user.preferred_network == 'MTN' %}MTN Mobile Money{% elif current_user.preferred_network == 'VOD' %}Telecel (Vodafone){% elif current_user.preferred_network == 'ATM' %}AirtelTigo Money{% else %}{{ current_user.preferred_network }}{% endif %}"
+                            readonly>
+                        <span class="input-group-text bg-light border-0"><i
+                                class="bi bi-lock-fill text-muted"></i></span>
+                    </div>
+                    {% else %}
+                    <!-- ONE TIME SETUP -->
+                    <form action="{{ url_for('security_update') }}" method="POST">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-0"><i class="bi bi-bank"></i></span>
+                            <select name="preferred_network" class="form-select bg-light border-0"
+                                onchange="this.form.submit()">
+                                <option value="" disabled selected>Select Network (Permanent)</option>
+                                <option value="MTN">MTN Mobile Money</option>
+                                <option value="VOD">Telecel (Vodafone)</option>
+                                <option value="ATM">AirtelTigo Money</option>
+                            </select>
+                        </div>
+                        <small class="text-danger" style="font-size: 0.7rem;">* Choose carefully. You cannot change this
+                            later.</small>
+                    </form>
+                    {% endif %}
+                </div>
+
+                <div class="mb-3">
                     <label class="form-label text-uppercase small text-muted fw-bold">Account Status</label>
                     <div class="d-flex align-items-center bg-light p-2 rounded">
                         <div class="bg-success rounded-circle me-2" style="width: 10px; height: 10px;"></div>

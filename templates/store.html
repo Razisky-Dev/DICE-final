@@ -594,46 +594,58 @@
                         </div>
                     </div>
 
+                    {% if current_user.preferred_network and current_user.mobile %}
                     <div class="mb-3">
-                        <label class="form-label fw-bold small text-muted text-uppercase">Phone Number</label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-light border-0"><i class="bi bi-phone-vibrate"></i></span>
-                            <input type="tel" class="form-control bg-light border-0 py-2 fw-bold" name="phone"
-                                placeholder="0xxxxxxxx" required>
+                        <label class="form-label fw-bold small text-muted text-uppercase">Phone Number (Locked)</label>
+                        <div class="input-group mb-3">
+                            <span class="input-group-text bg-light border-0"><i class="bi bi-lock-fill"></i></span>
+                            <input type="text" class="form-control bg-light border-0 py-2 fw-bold"
+                                value="{{ current_user.mobile }}" readonly>
                         </div>
-                    </div>
 
-                    <div class="mb-4">
-                        <label class="form-label fw-bold small text-muted text-uppercase">Select Network</label>
+                        <label class="form-label fw-bold small text-muted text-uppercase">Network (Locked)</label>
                         <div class="row g-2">
                             <div class="col-4">
-                                <input type="radio" class="btn-check" name="network" id="network-mtn" value="MTN"
-                                    required>
-                                <label class="btn btn-outline-warning w-100 fw-bold border-2 py-2" for="network-mtn">
+                                <input type="radio" class="btn-check" name="network" id="network-mtn" value="MTN" {% if
+                                    current_user.preferred_network=='MTN' %}checked{% endif %} disabled>
+                                <label
+                                    class="btn btn-outline-warning w-100 fw-bold border-2 py-2 {% if current_user.preferred_network != 'MTN' %}opacity-50{% endif %}"
+                                    for="network-mtn">
                                     MTN
                                 </label>
                             </div>
                             <div class="col-4">
-                                <input type="radio" class="btn-check" name="network" id="network-telecel"
-                                    value="TELECEL" required>
-                                <label class="btn btn-outline-danger w-100 fw-bold border-2 py-2" for="network-telecel">
+                                <input type="radio" class="btn-check" name="network" id="network-telecel" value="VOD" {%
+                                    if current_user.preferred_network=='VOD' %}checked{% endif %} disabled>
+                                <label
+                                    class="btn btn-outline-danger w-100 fw-bold border-2 py-2 {% if current_user.preferred_network != 'VOD' %}opacity-50{% endif %}"
+                                    for="network-telecel">
                                     Telecel
                                 </label>
                             </div>
                             <div class="col-4">
-                                <input type="radio" class="btn-check" name="network" id="network-airteltigo"
-                                    value="AIRTELTIGO" required>
-                                <label class="btn btn-outline-primary w-100 fw-bold border-2 py-2"
+                                <input type="radio" class="btn-check" name="network" id="network-airteltigo" value="ATM"
+                                    {% if current_user.preferred_network=='ATM' %}checked{% endif %} disabled>
+                                <label
+                                    class="btn btn-outline-primary w-100 fw-bold border-2 py-2 {% if current_user.preferred_network != 'ATM' %}opacity-50{% endif %}"
                                     for="network-airteltigo">
                                     AT
                                 </label>
                             </div>
                         </div>
+                        <small class="text-muted" style="font-size: 0.7rem;">Locked to registered account
+                            details.</small>
                     </div>
+                    {% else %}
+                    <div class="alert alert-warning small border-0 mb-3">
+                        <i class="bi bi-exclamation-triangle me-1"></i> Please set your <b>Withdrawal Network</b> in <a
+                            href="{{ url_for('profile') }}">Profile</a> first.
+                    </div>
+                    {% endif %}
 
                     <div class="d-grid gap-2">
                         <button type="submit" class="btn btn-dark rounded-pill fw-bold py-2" {{ 'disabled' if
-                            store.credit_balance < 10 else '' }}>
+                            store.credit_balance < 10 or not current_user.preferred_network else '' }}>
                             Proceed to Withdraw
                         </button>
                         <button type="button" class="btn btn-light rounded-pill fw-bold py-2"

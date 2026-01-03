@@ -75,6 +75,7 @@
                     <th class="ps-4 py-3" style="min-width: 200px;">Transaction Details</th>
                     <th class="py-3">User info</th>
                     <th class="py-3 text-end pe-4">Amount & Status</th>
+                    <th class="py-3 text-end pe-4">Actions</th>
                 </tr>
             </thead>
             <tbody class="bg-white">
@@ -137,6 +138,36 @@
                             <span class="badge bg-danger-subtle text-danger rounded-pill px-3">{{ txn.status }}</span>
                             {% endif %}
                         </div>
+                    </td>
+
+                    <!-- ACTIONS -->
+                    <td class="text-end pe-4 py-3">
+                        {% if (txn.type == 'Withdrawal' or txn.type == 'Store Withdrawal') and txn.status == 'Pending'
+                        %}
+                        <div class="d-flex justify-content-end gap-2" style="position: relative; z-index: 10;">
+                            <!-- Approve -->
+                            <form action="{{ url_for('approve_withdrawal', txn_id=txn.id) }}" method="POST"
+                                onsubmit="return confirm('Approve this withdrawal & Send Money?');"
+                                style="display: inline-block;">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn-success btn-sm rounded-circle shadow-sm"
+                                    title="Approve" style="cursor: pointer; position: relative;">
+                                    <i class="bi bi-check-lg" style="pointer-events: none;"></i>
+                                </button>
+                            </form>
+                            <!-- Reject -->
+                            <form action="{{ url_for('reject_withdrawal', txn_id=txn.id) }}" method="POST"
+                                onsubmit="return confirm('Reject & Refund User?');" style="display: inline-block;">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn-danger btn-sm rounded-circle shadow-sm"
+                                    title="Reject" style="cursor: pointer; position: relative;">
+                                    <i class="bi bi-x-lg" style="pointer-events: none;"></i>
+                                </button>
+                            </form>
+                        </div>
+                        {% else %}
+                        <span class="text-muted small">-</span>
+                        {% endif %}
                     </td>
                 </tr>
                 {% endfor %}

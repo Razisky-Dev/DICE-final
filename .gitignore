@@ -29,3 +29,8 @@ instance/
 # OS
 .DS_Store
 Thumbs.db
+
+# Sensitive Deployment Scripts
+enable_paystack.ps1
+deploy_with_plink.ps1
+deploy.ps1

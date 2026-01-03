@@ -314,6 +314,8 @@ button:not(.nav-link):hover {
     #page-content-wrapper {
         min-width: 0;
         width: 100%;
+        position: relative;
+        z-index: 1;
     }
 
     #wrapper.toggled #sidebar-wrapper {
@@ -840,5 +842,11 @@ body.auth-page a:hover {
 
     .store-container {
         padding: 20px 15px;
+    }
+}
+
+@media (min-width: 768px) {
+    .fade.show.sidebar-backdrop {
+        display: none !important;
     }
 }

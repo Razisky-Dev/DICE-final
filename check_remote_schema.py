@@ -4,7 +4,7 @@ from sqlalchemy import inspect
 def check_schema():
     with app.app_context():
         inspector = inspect(db.engine)
-        for table_name in ['data_plan', 'transaction']:
+        for table_name in ['order', 'user']:
             print(f"Table: {table_name}")
             columns = inspector.get_columns(table_name)
             for column in columns:

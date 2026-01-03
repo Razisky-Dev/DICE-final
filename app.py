@@ -309,7 +309,8 @@ def login():
             attempts = failed_logins.get(email, 0) if email else 0
             return render_template('login.html', attempts=attempts, email=email)
 
-        user = User.query.filter_by(email=email).first()
+        # Case-insensitive email check
+        user = User.query.filter(func.lower(User.email) == email.lower()).first()
 
         # Initialize failed attempts for this email
         if email not in failed_logins:
@@ -1305,7 +1306,8 @@ def admin_login():
         email = request.form.get("email").strip()
         password = request.form.get("password")
         
-        user = User.query.filter_by(email=email).first()
+        # Case-insensitive email check
+        user = User.query.filter(func.lower(User.email) == email.lower()).first()
         
         if user and check_password_hash(user.password, password):
             if user.is_admin:

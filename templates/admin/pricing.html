@@ -28,6 +28,7 @@
                             <tr>
                                 <th class="ps-4">Plan Size</th>
                                 <th>Depot Price (Cost)</th>
+                                <th>Dealer Price (Reseller)</th>
                                 <th>Site Price (Selling)</th>
                                 <th>Profit</th>
                                 <th>Action</th>
@@ -45,6 +46,14 @@
                                             <span class="input-group-text">GH₵</span>
                                             <input type="number" step="0.01" name="cost_price" class="form-control"
                                                 value="{{ plan.cost_price }}" required>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="input-group input-group-sm" style="max-width: 120px;">
+                                            <span class="input-group-text">GH₵</span>
+                                            <input type="number" step="0.01" name="dealer_price"
+                                                class="form-control fw-bold text-primary"
+                                                value="{{ plan.dealer_price }}" required>
                                         </div>
                                     </td>
                                     <td>

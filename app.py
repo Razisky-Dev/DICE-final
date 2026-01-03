@@ -9,6 +9,13 @@ import hashlib
 import json
 import openpyxl
 from openpyxl import Workbook
+import random
+import string
+
+def generate_reference():
+    """Generates a standardized transaction reference: byt + 12 random alphanumeric chars."""
+    suffix = ''.join(random.choices(string.ascii_lowercase + string.digits, k=12))
+    return f"byt{suffix}"
 from flask_mail import Mail, Message
 from itsdangerous import URLSafeTimedSerializer
 from flask_login import (
@@ -85,6 +92,9 @@ class Transaction(db.Model):
     type = db.Column(db.String(20), nullable=False) # Deposit, Withdrawal
     amount = db.Column(db.Float, nullable=False)
     status = db.Column(db.String(20), default='Pending') # Pending, Success, Failed
+    recipient_number = db.Column(db.String(20)) # New: Saved at time of request
+    recipient_network = db.Column(db.String(20)) # New: Saved at time of request
+    account_name = db.Column(db.String(100)) # New: Verified name
     date = db.Column(db.DateTime, default=datetime.utcnow)
 
     user = db.relationship('User', backref=db.backref('transactions', lazy=True))
@@ -97,6 +107,7 @@ class DataPlan(db.Model):
     network = db.Column(db.String(20), nullable=False) # MTN, TELECEL, AIRTELTIGO
     plan_size = db.Column(db.String(20), nullable=False) # e.g. "1 GB"
     cost_price = db.Column(db.Float, nullable=False, default=0.0) # Depot Price (Cost)
+    dealer_price = db.Column(db.Float, nullable=False, default=0.0) # Price for Store Owners
     selling_price = db.Column(db.Float, nullable=False, default=0.0) # Site Price (Revenue)
     display_order = db.Column(db.Integer, default=0)
     status = db.Column(db.String(20), default='Active') # Active, Inactive
@@ -476,7 +487,7 @@ def deposit():
         return redirect(url_for('wallet'))
 
 
-    reference = f"DEP-{int(datetime.utcnow().timestamp())}" # Internal reference
+    reference = generate_reference()
 
     # ===============================================================
     # [PAYSTACK INTEGRATION START]
@@ -684,7 +695,7 @@ def withdraw():
     # Generate Safe Reference
     safe_name = re.sub(r'[^a-zA-Z0-9 ]', '', account_name)[:20]
     ts = int(datetime.utcnow().timestamp())
-    reference = f"WTH|{network_code}|{phone_number}|{safe_name}|{ts}"
+    reference=generate_reference()
 
     # Deduct Balance Immediately
     current_user.balance -= amount
@@ -694,7 +705,10 @@ def withdraw():
         reference=reference,
         type="Withdrawal",
         amount=amount,
-        status="Pending" # Waiting for Admin
+        status="Pending",
+        recipient_number=phone_number,
+        recipient_network=network_code,
+        account_name=account_name
     )
     db.session.add(txn)
     db.session.commit()
@@ -885,7 +899,7 @@ def add_pricing():
     plan_record = DataPlan.query.filter_by(network=network, plan_size=package_name, status='Active').first()
     
     if plan_record:
-        official_price = plan_record.cost_price
+        official_price = plan_record.dealer_price
     
     if official_price is None:
         flash("Invalid package selected or package is no longer active.", "error")
@@ -995,7 +1009,7 @@ def store_withdraw():
         # Log as transaction
         txn = Transaction(
             user_id=current_user.id,
-            reference=f"ST-WTH-{int(datetime.utcnow().timestamp())}",
+        reference = generate_reference(),
             type="Store Credit Transfer",
             amount=amount,
             status="Success"
@@ -1044,10 +1058,13 @@ def store_withdraw_momo():
     # Transaction Record
     txn = Transaction(
         user_id=current_user.id,
-        reference=f"ST-MOMO-{int(datetime.utcnow().timestamp())}",
+        reference = generate_reference(),
         type="Store Withdrawal",
         amount=amount,
-        status="Pending" 
+        status="Pending",
+        recipient_number=phone,
+        recipient_network=network,
+        account_name="Store Owner" # Or fetch real name if verified
     )
     db.session.add(txn)
     db.session.commit()
@@ -1111,7 +1128,7 @@ def initiate_payment():
     pricing = StorePricing.query.get_or_404(pricing_id)
     
     # Generate Reference for Store Order
-    reference = f"STO-{store.id}-{int(datetime.utcnow().timestamp())}"
+    reference = generate_reference()
     
     # Initialize Paystack Payment
     secret_key = os.getenv("PAYSTACK_SECRET_KEY")
@@ -1207,9 +1224,20 @@ def store_payment_callback():
             )
             
             # Update Store Stats
+            commission = pricing.selling_price - pricing.dealer_price
             store.total_sales += pricing.selling_price
-            store.credit_balance += (pricing.selling_price - pricing.dealer_price)
+            store.credit_balance += commission
             
+            # Log Commission Transaction for Store Owner
+            comm_txn = Transaction(
+                user_id=store.user_id,
+                reference=f"COMM-{reference}", # Link to main ref
+                type="Store Commission",
+                amount=commission,
+                status="Success"
+            )
+            db.session.add(comm_txn)
+
             db.session.add(new_order)
             db.session.commit()
             
@@ -1440,6 +1468,7 @@ def admin_pricing():
         plan_id = request.form.get('plan_id')
         try:
             cost_price = float(request.form.get('cost_price'))
+            dealer_price = float(request.form.get('dealer_price'))
             selling_price = float(request.form.get('selling_price'))
         except (ValueError, TypeError):
             flash("Invalid price format.", "error")
@@ -1450,6 +1479,7 @@ def admin_pricing():
             flash("Plan not found.", "error")
         else:
             plan.cost_price = cost_price
+            plan.dealer_price = dealer_price
             plan.selling_price = selling_price
             db.session.commit()
             flash(f"Updated pricing for {plan.network} {plan.plan_size}", "success")
@@ -1506,7 +1536,7 @@ def purchase_data():
         current_user.balance -= plan.selling_price
         
         # Create Transaction Record
-        ref = f"TRX-{int(datetime.utcnow().timestamp())}-{current_user.id}"
+        ref = generate_reference()
         txn = Transaction(
             user_id=current_user.id,
             reference=ref,
@@ -1790,7 +1820,7 @@ def admin_manage_wallet():
                 # Log Transaction
                 txn = Transaction(
                     user_id=user.id,
-                    reference=f"ADM-CR-{int(datetime.utcnow().timestamp())}",
+                    reference=generate_reference(),
                     type="Admin Credit",
                     amount=amount,
                     status="Success"
@@ -1807,7 +1837,7 @@ def admin_manage_wallet():
                     # Log Transaction
                     txn = Transaction(
                         user_id=user.id,
-                        reference=f"ADM-DB-{int(datetime.utcnow().timestamp())}",
+                        reference=generate_reference(),
                         type="Admin Debit",
                         amount=amount,
                         status="Success"

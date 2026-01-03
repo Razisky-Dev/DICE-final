@@ -7,7 +7,7 @@ $REPO_URL = "https://github.com/Razisky-Dev/DICE-final.git"
 Write-Host "Connecting to Hostinger VPS at $VPS_IP..." -ForegroundColor Green
 
 # Using plink for SSH connection
-plink.exe -ssh $VPS_USER@$VPS_IP -pw $VPS_PASS @"
+plink.exe -batch -ssh $VPS_USER@$VPS_IP -pw $VPS_PASS @"
 # Update system
 apt update && apt upgrade -y
 
@@ -31,8 +31,17 @@ source venv/bin/activate
 pip install -r requirements.txt
 
 # Setup environment variables
-cp .env.example .env
-# Edit .env with your actual values
+# Setup environment variables
+if [ ! -f .env ]; then
+    cp .env.example .env
+    echo "Created .env from example (Update with real keys!)"
+else
+    echo ".env already exists, skipping Copy."
+fi
+
+# Diagnostic: List files
+ls -la /var/www/dice
+
 
 # Initialize database
 python init_db.py

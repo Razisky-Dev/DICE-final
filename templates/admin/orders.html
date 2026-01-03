@@ -26,35 +26,41 @@
 
         <div class="d-flex gap-2">
             <!-- Filter Form -->
-            <form action="{{ url_for('admin_orders') }}" method="GET" class="d-flex gap-2 align-items-center">
-                <div class="input-group input-group-sm">
-                    <span class="input-group-text bg-light border-0"><i class="bi bi-search"></i></span>
-                    <input type="text" name="search" class="form-control bg-light border-0"
-                        placeholder="Search ID or Phone..." value="{{ request.args.get('search', '') }}">
-                </div>
+            <!-- Search Filter -->
+            <form id="searchForm" action="{{ url_for('admin_orders') }}" method="GET" class="d-none">
+                <input type="hidden" name="search" id="searchInput">
+                <input type="hidden" name="network" value="{{ request.args.get('network', '') }}">
+                <input type="hidden" name="status" value="{{ request.args.get('status', '') }}">
+            </form>
 
-                <select name="network" class="form-select form-select-sm bg-light border-0"
-                    onchange="this.form.submit()">
-                    <option value="">All Networks</option>
-                    <option value="MTN" {% if request.args.get('network')=='MTN' %}selected{% endif %}>MTN</option>
-                    <option value="TELECEL" {% if request.args.get('network')=='TELECEL' %}selected{% endif %}>Telecel
-                    </option>
-                    <option value="AIRTELTIGO" {% if request.args.get('network')=='AIRTELTIGO' %}selected{% endif %}>
-                        AirtelTigo</option>
-                </select>
+            <div class="d-flex align-items-center">
+                <button type="button"
+                    class="btn btn-light shadow-sm rounded-circle d-flex align-items-center justify-content-center"
+                    style="width: 38px; height: 38px;" onclick="showSearchPopup()">
+                    <i class="bi bi-search text-primary"></i>
+                </button>
+            </div>
 
-                <select name="status" class="form-select form-select-sm bg-light border-0"
-                    onchange="this.form.submit()">
-                    <option value="">All Statuses</option>
-                    <option value="Pending" {% if request.args.get('status')=='Pending' %}selected{% endif %}>Pending
-                    </option>
-                    <option value="Processing" {% if request.args.get('status')=='Processing' %}selected{% endif %}>
-                        Processing</option>
-                    <option value="Delivered" {% if request.args.get('status')=='Delivered' %}selected{% endif %}>
-                        Delivered</option>
-                    <option value="Failed" {% if request.args.get('status')=='Failed' %}selected{% endif %}>Failed
-                    </option>
-                </select>
+            <select name="network" class="form-select form-select-sm bg-light border-0" onchange="this.form.submit()">
+                <option value="">All Networks</option>
+                <option value="MTN" {% if request.args.get('network')=='MTN' %}selected{% endif %}>MTN</option>
+                <option value="TELECEL" {% if request.args.get('network')=='TELECEL' %}selected{% endif %}>Telecel
+                </option>
+                <option value="AIRTELTIGO" {% if request.args.get('network')=='AIRTELTIGO' %}selected{% endif %}>
+                    AirtelTigo</option>
+            </select>
+
+            <select name="status" class="form-select form-select-sm bg-light border-0" onchange="this.form.submit()">
+                <option value="">All Statuses</option>
+                <option value="Pending" {% if request.args.get('status')=='Pending' %}selected{% endif %}>Pending
+                </option>
+                <option value="Processing" {% if request.args.get('status')=='Processing' %}selected{% endif %}>
+                    Processing</option>
+                <option value="Delivered" {% if request.args.get('status')=='Delivered' %}selected{% endif %}>
+                    Delivered</option>
+                <option value="Failed" {% if request.args.get('status')=='Failed' %}selected{% endif %}>Failed
+                </option>
+            </select>
             </form>
 
             <a href="{{ url_for('admin_export_orders', status=request.args.get('status'), network=request.args.get('network')) }}"
@@ -74,6 +80,7 @@
                     <th class="border-0 text-uppercase small fw-bold">Package</th>
                     <th class="border-0 text-uppercase small fw-bold">Amount</th>
                     <th class="border-0 text-uppercase small fw-bold">Status</th>
+                    <th class="border-0 text-uppercase small fw-bold">To</th>
                     <th class="border-0 text-uppercase small fw-bold">Date</th>
                     <th class="pe-4 border-0 text-uppercase small fw-bold text-end">Action</th>
                 </tr>
@@ -82,7 +89,7 @@
                 {% for order in orders.items %}
                 <tr>
                     <td class="ps-4">
-                        <div class="fw-bold text-dark">byt-{{ order.id }}</div>
+                        <div class="fw-bold text-dark">{{ order.transaction_id }}</div>
                     </td>
                     <td>
                         <div class="d-flex align-items-center">
@@ -90,10 +97,7 @@
                                 style="width:30px; height:30px; font-size: 0.8rem;">
                                 {{ order.user.first_name[0] | default('U') }}
                             </div>
-                            <div>
-                                <div class="fw-bold text-dark small">{{ order.user.username }}</div>
-                                <small class="text-muted d-block" style="font-size: 0.7rem;">{{ order.phone }}</small>
-                            </div>
+                            <div class="fw-bold text-dark small">{{ order.user.username }}</div>
                         </div>
                     </td>
                     <td>
@@ -130,6 +134,7 @@
                             </select>
                         </form>
                     </td>
+                    <td class="small fw-bold">{{ order.phone }}</td>
                     <td class="small text-muted">
                         {{ order.date.strftime('%Y-%m-%d') }}<br>
                         {{ order.date.strftime('%H:%M') }}
@@ -191,5 +196,29 @@
 {% endblock %}
 
 {% block extra_js %}
-<!-- No extra JS needed for inline forms -->
+<script>
+    function showSearchPopup() {
+        ByteSwal.fire({
+            title: 'Search Orders',
+            text: 'Enter Transaction ID or Phone Number',
+            input: 'text',
+            inputPlaceholder: 'e.g. byt123456789 or 054xxxxxxx',
+            showCancelButton: true,
+            confirmButtonText: 'Search',
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            preConfirm: (value) => {
+                if (!value) {
+                    Swal.showValidationMessage('Please enter a value')
+                }
+                return value
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById('searchInput').value = result.value;
+                document.getElementById('searchForm').submit();
+            }
+        });
+    }
+</script>
 {% endblock %}

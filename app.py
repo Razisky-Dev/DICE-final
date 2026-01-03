@@ -878,7 +878,7 @@ def store():
         if plan.network in dynamic_dealer_packages:
             dynamic_dealer_packages[plan.network].append({
                 "package": plan.plan_size,
-                "price": plan.cost_price 
+                "price": plan.dealer_price 
             })
     
     return render_template("store.html", store=my_store, orders=store_orders, pricing_list=store_pricing, dealer_packages=dynamic_dealer_packages, withdrawals=withdrawals)

@@ -79,10 +79,9 @@
                     <th class="border-0 text-uppercase small fw-bold">User</th>
                     <th class="border-0 text-uppercase small fw-bold">Package</th>
                     <th class="border-0 text-uppercase small fw-bold">Amount</th>
-                    <th class="border-0 text-uppercase small fw-bold">Status</th>
                     <th class="border-0 text-uppercase small fw-bold">To</th>
-                    <th class="border-0 text-uppercase small fw-bold">Date</th>
-                    <th class="pe-4 border-0 text-uppercase small fw-bold text-end">Action</th>
+                    <th class="border-0 text-uppercase small fw-bold">Status</th>
+                    <th class="pe-4 border-0 text-uppercase small fw-bold text-end">Date</th>
                 </tr>
             </thead>
             <tbody>
@@ -113,6 +112,7 @@
                         <div class="small fw-bold mt-1">{{ order.package }}</div>
                     </td>
                     <td class="fw-bold text-dark">GH₵ {{ "{:,.2f}".format(order.amount) }}</td>
+                    <td class="small fw-bold">{{ order.phone }}</td>
                     <td>
                         <form action="{{ url_for('admin_update_order_status', order_id=order.id) }}" method="POST"
                             class="d-flex align-items-center gap-2">
@@ -134,15 +134,9 @@
                             </select>
                         </form>
                     </td>
-                    <td class="small fw-bold">{{ order.phone }}</td>
-                    <td class="small text-muted">
+                    <td class="pe-4 text-end small text-muted">
                         {{ order.date.strftime('%Y-%m-%d') }}<br>
                         {{ order.date.strftime('%H:%M') }}
-                    </td>
-                    <td class="pe-4 text-end">
-                        <div class="small text-muted">
-                            <i class="bi bi-three-dots-vertical"></i>
-                        </div>
                     </td>
                 </tr>
                 {% else %}

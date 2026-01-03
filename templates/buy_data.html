@@ -304,14 +304,32 @@
             const result = await response.json();
 
             if (result.success) {
-                alert("Success! " + result.message);
-                location.reload();
+                ByteSwal.fire({
+                    icon: 'success',
+                    title: 'Success!',
+                    text: result.message,
+                    confirmButtonColor: '#3085d6',
+                    confirmButtonText: 'Great!'
+                }).then(() => {
+                    location.reload();
+                });
             } else {
-                alert("Error: " + result.message);
+                ByteSwal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: result.message,
+                    confirmButtonColor: '#d33',
+                    confirmButtonText: 'Try Again'
+                });
             }
         } catch (error) {
             console.error('Error:', error);
-            alert("An error occurred. Please try again.");
+            ByteSwal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: "An error occurred. Please try again.",
+                confirmButtonColor: '#d33'
+            });
         } finally {
             // Reset State
             btn.disabled = false;

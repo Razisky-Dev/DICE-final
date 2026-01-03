@@ -155,28 +155,7 @@
             <div class="container-fluid px-4 pb-5">
 
                 <!-- Flash Messages -->
-                {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                <div class="mb-4 fade-in">
-                    {% for category, message in messages %}
-                    <div class="alert alert-{{ category if category != 'error' else 'danger' }} alert-dismissible fade show border-0 shadow-sm"
-                        role="alert">
-                        <div class="d-flex align-items-center gap-2">
-                            {% if category == 'success' %}
-                            <i class="bi bi-check-circle-fill text-success"></i>
-                            {% elif category == 'error' %}
-                            <i class="bi bi-exclamation-triangle-fill text-danger"></i>
-                            {% else %}
-                            <i class="bi bi-info-circle-fill text-primary"></i>
-                            {% endif %}
-                            {{ message }}
-                        </div>
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                    {% endfor %}
-                </div>
-                {% endif %}
-                {% endwith %}
+                <!-- Flash Messages handled by SweetAlert2 -->
 
                 <div class="fade-in">
                     {% block content %}{% endblock %}
@@ -254,6 +233,35 @@
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        // Custom mixin for Byte-ID enforcement
+        const ByteSwal = Swal.mixin({
+            didOpen: (popup) => {
+                const title = popup.querySelector('.swal2-title');
+                const confirmBtn = popup.querySelector('.swal2-confirm');
+                if (title) title.setAttribute('id', 'byte-1');
+                if (confirmBtn) confirmBtn.setAttribute('id', 'byte-2');
+            }
+        });
+
+        {% with messages = get_flashed_messages(with_categories = true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        ByteSwal.fire({
+            icon: '{{ category if category != "error" else "error" }}',
+            title: '{{ "Success!" if category == "success" else "Error!" }}',
+            text: '{{ message }}',
+            confirmButtonColor: '#3085d6',
+            confirmButtonText: 'OK'
+        });
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+    </script>
 
     {% block extra_js %}{% endblock %}
 

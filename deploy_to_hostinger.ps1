@@ -44,7 +44,6 @@ source venv/bin/activate
 pip install -r requirements.txt
 
 # Setup environment variables
-# Setup environment variables
 if [ ! -f .env ]; then
     cp .env.example .env
     echo "Created .env from example (Update with real keys!)"
@@ -55,9 +54,11 @@ fi
 # Diagnostic: List files
 ls -la /var/www/dice
 
-
 # Initialize database
-python init_db.py
+python3 init_db.py
+
+# Run Migrations
+python3 migrate_all.py
 
 # Setup supervisor
 cat > /etc/supervisor/conf.d/dice.conf << EOF
@@ -91,7 +92,7 @@ ln -s /etc/nginx/sites-available/dice /etc/nginx/sites-enabled/
 rm -f /etc/nginx/sites-enabled/default
 
 # Restart services
-supervisorctl# Restart Supervisor to apply changes
+# Restart Supervisor to apply changes
 supervisorctl restart dice
 systemctl restart nginx
 

@@ -4,10 +4,10 @@
 
 {% block content %}
 <!-- Header -->
-<div class="d-flex align-items-end justify-content-between mb-4">
-    <div>
-        <h2 class="fw-bold text-dark mb-1">Your Wallet 💳</h2>
-        <p class="text-muted mb-0">Manage your funds and view transactions</p>
+<div class="d-flex align-items-end justify-content-between mb-4 text-center">
+    <div class="w-100">
+        <h2 class="fw-bold text-dark mb-1 text-center">Your Wallet 💳</h2>
+        <p class="text-muted mb-0 text-center">Manage your funds and view transactions</p>
     </div>
 </div>
 
@@ -168,56 +168,57 @@
 <!-- Transaction History -->
 <div class="card border-0 shadow-sm rounded-4 p-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h5 class="fw-bold text-dark mb-0">Transaction History</h5>
-        <a href="#" class="btn btn-light btn-sm rounded-pill px-3">View All</a>
+        <h5 class="fw-bold text-dark mb-0 text-center w-100">Transaction History</h5>
+        <a href="#" class="btn btn-light btn-sm rounded-pill px-3 position-absolute end-0 me-4">View All</a>
     </div>
 
     <div class="table-responsive">
-        <table class="table table-hover align-middle">
-            <thead class="table-light">
+        <table class="table table-hover align-middle mb-0 text-center text-nowrap" style="min-width: 600px;">
+            <thead class="bg-light text-muted text-center">
                 <tr>
-                    <th class="border-0 rounded-start-3 text-muted small text-uppercase">Ref ID</th>
-                    <th class="border-0 text-muted small text-uppercase">Type</th>
-                    <th class="border-0 text-muted small text-uppercase">Amount</th>
-                    <th class="border-0 text-muted small text-uppercase">Status</th>
-                    <th class="border-0 rounded-end-3 text-muted small text-uppercase">Date</th>
+                    <th class="ps-4 border-0 text-uppercase small fw-bold text-center">Reference</th>
+                    <th class="border-0 text-uppercase small fw-bold text-center">Type</th>
+                    <th class="border-0 text-uppercase small fw-bold text-center">Amount</th>
+                    <th class="border-0 text-uppercase small fw-bold text-center">Status</th>
+                    <th class="pe-4 border-0 text-uppercase small fw-bold text-center">Date</th>
                 </tr>
             </thead>
-            <tbody>
-                {% if transactions %}
+            <tbody class="text-center">
                 {% for txn in transactions %}
                 <tr>
-                    <td class="text-muted small font-monospace">{{ txn.reference }}</td>
-                    <td>
-                        {% if txn.type == 'Deposit' %}
-                        <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3">Deposit</span>
-                        {% else %}
-                        <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill px-3">Withdrawal</span>
-                        {% endif %}
+                    <td class="ps-4 text-center">
+                        <span class="small font-monospace text-muted">{{ txn.reference }}</span>
                     </td>
-                    <td class="fw-bold">GH₵{{ "{:,.2f}".format(txn.amount) }}</td>
-                    <td>
-                        {% if txn.status == 'Success' %}
-                        <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3">Success</span>
-                        {% elif txn.status == 'Pending' %}
-                        <span class="badge bg-warning bg-opacity-10 text-warning rounded-pill px-3">Pending</span>
-                        {% else %}
-                        <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill px-3">Failed</span>
-                        {% endif %}
+                    <td class="text-center">
+                        <span class="badge bg-light text-dark border">{{ txn.type }}</span>
                     </td>
-                    <td class="text-muted small">{{ txn.date.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td class="text-center">
+                        <span
+                            class="fw-bold {% if txn.type == 'Deposit' or txn.type == 'Store Commission' or txn.type == 'Admin Credit' %}text-success{% else %}text-danger{% endif %}">
+                            {% if txn.type == 'Deposit' or txn.type == 'Store Commission' or txn.type == 'Admin Credit'
+                            %}+{% else %}-{% endif %}GH₵{{ "{:,.2f}".format(txn.amount) }}
+                        </span>
+                    </td>
+                    <td class="text-center">
+                        <span class="badge rounded-pill 
+                            {% if txn.status == 'Success' %}bg-success-subtle text-success
+                            {% elif txn.status == 'Pending' %}bg-warning-subtle text-warning
+                            {% else %}bg-danger-subtle text-danger{% endif %} px-3">
+                            {{ txn.status }}
+                        </span>
+                    </td>
+                    <td class="pe-4 text-center">
+                        <small class="text-muted">{{ txn.date.strftime('%b %d, %H:%M') }}</small>
+                    </td>
                 </tr>
-                {% endfor %}
                 {% else %}
                 <tr>
                     <td colspan="5" class="text-center py-5">
-                        <div class="d-flex flex-column align-items-center justify-content-center opacity-50">
-                            <i class="bi bi-clock-history fs-1 mb-2"></i>
-                            <p class="mb-0">No transactions yet</p>
-                        </div>
+                        <i class="bi bi-wallet2 display-6 mb-3 d-block opacity-25"></i>
+                        <div class="text-muted">No transactions yet.</div>
                     </td>
                 </tr>
-                {% endif %}
+                {% endfor %}
             </tbody>
         </table>
     </div>

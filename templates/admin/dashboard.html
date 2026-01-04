@@ -100,7 +100,7 @@
 
 <!-- Profit Profitability Section -->
 <div class="row g-4 mb-4">
-    <div class="col-12">
+    <div class="col-12 text-center">
         <h5 class="fw-bold text-dark mb-3">Profitability Overview</h5>
     </div>
     <!-- MTN -->
@@ -171,15 +171,15 @@
     <div class="col-lg-8">
         <div class="stat-card h-100 border-0 shadow-sm bg-white">
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h5 class="fw-bold mb-0 text-dark">Sales Trends</h5>
-                <span class="badge bg-light text-dark">Last 7 Days</span>
+                <h5 class="fw-bold mb-0 text-dark w-100 text-center">Sales Trends</h5>
+                <span class="badge bg-light text-dark position-absolute end-0 me-4">Last 7 Days</span>
             </div>
             <canvas id="salesChart" height="100"></canvas>
         </div>
     </div>
     <!-- Network Pie Chart -->
     <div class="col-lg-4">
-        <div class="stat-card h-100 border-0 shadow-sm bg-white">
+        <div class="stat-card h-100 border-0 shadow-sm bg-white text-center">
             <h5 class="fw-bold mb-4 text-dark">Sales by Network</h5>
             <div class="position-relative" style="height: 200px;">
                 <canvas id="networkChart"></canvas>
@@ -195,7 +195,7 @@
     <div class="col-lg-12">
         <div class="card stat-card h-100 border-0 shadow-sm text-white bg-gradient-dark-premium">
             <div class="card-body p-4">
-                <div class="d-flex justify-content-between align-items-center mb-4">
+                <div class="d-flex justify-content-center align-items-center mb-4">
                     <h5 class="fw-bold mb-0 text-white">Quick Actions</h5>
                 </div>
                 <div class="row g-3">
@@ -273,24 +273,25 @@
     <div class="col-lg-6">
         <div class="stat-card h-100 border-0 shadow-sm bg-white">
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <h5 class="fw-bold mb-0 text-dark">Recent Registrations</h5>
+                <h5 class="fw-bold mb-0 text-dark w-100 text-center">Recent Registrations</h5>
                 <a href="{{ url_for('admin_users') }}"
-                    class="btn btn-sm btn-light text-primary fw-bold rounded-pill px-3">View All</a>
+                    class="btn btn-sm btn-light text-primary fw-bold rounded-pill px-3 position-absolute end-0 me-4">View
+                    All</a>
             </div>
             <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="bg-light text-muted">
+                <table class="table table-hover align-middle mb-0 text-center">
+                    <thead class="bg-light text-muted text-center">
                         <tr>
-                            <th class="ps-3 border-0 rounded-start text-uppercase small fw-bold">Name</th>
-                            <th class="border-0 text-uppercase small fw-bold">Email</th>
-                            <th class="pe-3 border-0 rounded-end text-uppercase small fw-bold">Status</th>
+                            <th class="ps-3 border-0 rounded-start text-uppercase small fw-bold text-center">Name</th>
+                            <th class="border-0 text-uppercase small fw-bold text-center">Email</th>
+                            <th class="pe-3 border-0 rounded-end text-uppercase small fw-bold text-center">Status</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody class="text-center">
                         {% for user in recent_users %}
                         <tr>
-                            <td class="ps-3">
-                                <div class="d-flex align-items-center">
+                            <td class="ps-3 text-center">
+                                <div class="d-flex align-items-center justify-content-center">
                                     <div class="avatar-initials bg-primary bg-opacity-10 text-primary rounded-circle me-2 fw-bold d-flex align-items-center justify-content-center"
                                         style="width:32px; height:32px;">
                                         {{ user.first_name[0] | default('U') }}
@@ -300,8 +301,8 @@
                                     </div>
                                 </div>
                             </td>
-                            <td class="small text-muted">{{ user.email }}</td>
-                            <td class="pe-3">
+                            <td class="small text-muted text-center">{{ user.email }}</td>
+                            <td class="pe-3 text-center">
                                 {% if user.is_admin %}
                                 <span
                                     class="badge bg-danger bg-opacity-10 text-danger border border-danger-subtle rounded-pill">Admin</span>
@@ -326,25 +327,29 @@
     <div class="col-lg-6">
         <div class="stat-card h-100 border-0 shadow-sm bg-white">
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <h5 class="fw-bold mb-0 text-dark">Newest Stores</h5>
+                <h5 class="fw-bold mb-0 text-dark w-100 text-center">Newest Stores</h5>
                 <a href="{{ url_for('admin_stores') }}"
-                    class="btn btn-sm btn-light text-primary fw-bold rounded-pill px-3">View All</a>
+                    class="btn btn-sm btn-light text-primary fw-bold rounded-pill px-3 position-absolute end-0 me-4">View
+                    All</a>
             </div>
             <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="bg-light text-muted">
+                <table class="table table-hover align-middle mb-0 text-center">
+                    <thead class="bg-light text-muted text-center">
                         <tr>
-                            <th class="ps-3 border-0 rounded-start text-uppercase small fw-bold">Store Name</th>
-                            <th class="border-0 text-uppercase small fw-bold">Owner</th>
-                            <th class="pe-3 border-0 rounded-end text-uppercase small fw-bold">Sales (GMV)</th>
+                            <th class="ps-3 border-0 rounded-start text-uppercase small fw-bold text-center">Store Name
+                            </th>
+                            <th class="border-0 text-uppercase small fw-bold text-center">Owner</th>
+                            <th class="pe-3 border-0 rounded-end text-uppercase small fw-bold text-center">Sales (GMV)
+                            </th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody class="text-center">
                         {% for store in recent_stores %}
                         <tr>
-                            <td class="ps-3 fw-bold text-dark">{{ store.name }}</td>
-                            <td class="small text-muted">{{ store.user.username }}</td>
-                            <td class="pe-3 fw-bold text-success">GH₵ {{ "{:,.2f}".format(store.total_sales |
+                            <td class="ps-3 fw-bold text-dark text-center">{{ store.name }}</td>
+                            <td class="small text-muted text-center">{{ store.user.username }}</td>
+                            <td class="pe-3 fw-bold text-success text-center">GH₵ {{ "{:,.2f}".format(store.total_sales
+                                |
                                 default(0)) }}</td>
                         </tr>
                         {% else %}

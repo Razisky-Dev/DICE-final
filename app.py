@@ -13,9 +13,9 @@ import random
 import string
 
 def generate_reference():
-    """Generates a standardized transaction reference: byt + 12 random alphanumeric chars."""
-    suffix = ''.join(random.choices(string.ascii_lowercase + string.digits, k=12))
-    return f"byt{suffix}"
+    """Generates a standardized transaction reference: BYT + 8 random uppercase alphanumeric chars."""
+    suffix = ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
+    return f"BYT{suffix}"
 from flask_mail import Mail, Message
 from itsdangerous import URLSafeTimedSerializer
 from flask_login import (
@@ -192,6 +192,8 @@ class Store(db.Model):
     whatsapp_group_link = db.Column(db.String(200)) # New field
     description = db.Column(db.String(300))
     notice = db.Column(db.String(500)) # New field for store announcements
+    status = db.Column(db.String(20), default='Active') # Active, Suspended, Inactive
+
     
     # Store Stats
     total_sales = db.Column(db.Float, default=0.0)
@@ -1456,24 +1458,72 @@ def admin_users():
     users = User.query.order_by(User.id.desc()).paginate(page=page, per_page=per_page)
     return render_template('admin/users.html', users=users)
 
-@app.route('/admin/stores')
+@app.route('/admin/stores', methods=['GET', 'POST'])
 @admin_required
 def admin_stores():
+    if request.method == 'POST':
+        # Bulk Actions
+        action_type = request.form.get('action_type')
+        selected_ids = request.form.getlist('store_ids')
+        
+        if not selected_ids:
+             flash("No stores selected.", "warning")
+             return redirect(url_for('admin_stores'))
+             
+        if action_type == 'update_status':
+            new_status = request.form.get('new_status')
+            if new_status:
+                try:
+                    # Bulk update
+                    Store.query.filter(Store.id.in_(selected_ids)).update({Store.status: new_status}, synchronize_session=False)
+                    db.session.commit()
+                    flash(f"Successfully updated {len(selected_ids)} stores to '{new_status}'", "success")
+                except Exception as e:
+                    db.session.rollback()
+                    flash(f"Error updating status: {str(e)}", "error")
+            else:
+                flash("No status selected.", "warning")
+        
+        return redirect(url_for('admin_stores'))
+
+    # GET
     page = request.args.get('page', 1, type=int)
     per_page = 20
-    stores = Store.query.order_by(Store.id.desc()).paginate(page=page, per_page=per_page)
-    return render_template('admin/stores.html', stores=stores)
+    
+    # Filter Logic
+    status_filter = request.args.get('status')
+    query = Store.query
+    
+    if status_filter:
+        query = query.filter(Store.status == status_filter)
+        
+    stores = query.order_by(Store.id.desc()).paginate(page=page, per_page=per_page)
+    
+    return render_template('admin/stores.html', stores=stores, current_filter=status_filter)
 
 @app.route('/admin/pricing', methods=['GET', 'POST'])
+@login_required
 @admin_required
 def admin_pricing():
     if request.method == 'POST':
         plan_id = request.form.get('plan_id')
         try:
-            cost_price = float(request.form.get('cost_price'))
+            # Removed cost_price from inputs since it's removed from UI? 
+            # User said "Remove Depot Price", presumably from UI. 
+            # But the form handling might still expect it if I don't remove it here.
+            # I'll keep it as optional or remove it from here too if I remove the input.
+            # The user said "Remove Depot Price(Cost)", so I assume from the valid update logic too.
+            # However, keeping the column in DB is fine, just updating legacy field if passed, or ignore.
+            # Safe to assume we just ignore it if it's not in the form.
+            
             manufacturing_price = float(request.form.get('manufacturing_price') or 0.0)
             dealer_price = float(request.form.get('dealer_price'))
             selling_price = float(request.form.get('selling_price'))
+            
+            # Optional: cost_price might not be sent. Handle gracefully.
+            cost_price = request.form.get('cost_price')
+            cost_price = float(cost_price) if cost_price else 0.0
+            
         except (ValueError, TypeError):
             flash("Invalid price format.", "error")
             return redirect(url_for('admin_pricing'))
@@ -1482,7 +1532,7 @@ def admin_pricing():
         if not plan:
             flash("Plan not found.", "error")
         else:
-            plan.cost_price = cost_price
+            if cost_price: plan.cost_price = cost_price
             plan.manufacturing_price = manufacturing_price
             plan.dealer_price = dealer_price
             plan.selling_price = selling_price
@@ -1493,12 +1543,27 @@ def admin_pricing():
     # GET
     plans = DataPlan.query.order_by(DataPlan.display_order).all()
     grouped_plans = {"MTN": [], "TELECEL": [], "AIRTELTIGO": []}
+    
+    # Calculate Total Profit (Realized from Orders)
+    # Strategy: Total Sales Amount - (Sum of Manufacturing Price for those orders)
+    # Note: Using current manufacturing price as historical ref is an approximation
+    all_delivered_orders = Order.query.filter_by(status='Delivered').all()
+    
+    # Map (network, plan_size) -> manufacturing_price
+    plan_cost_map = {(p.network, p.plan_size): p.manufacturing_price for p in plans}
+    
+    total_profit = 0.0
+    for order in all_delivered_orders:
+        m_price = plan_cost_map.get((order.network, order.package), 0.0)
+        # Profit = Order Amount - Manufacturing Price
+        total_profit += (order.amount - m_price)
+
     for p in plans:
         if p.network not in grouped_plans:
              grouped_plans[p.network] = []
         grouped_plans[p.network].append(p)
                  
-    return render_template('admin/pricing.html', grouped_plans=grouped_plans)
+    return render_template('admin/pricing.html', grouped_plans=grouped_plans, total_profit=total_profit)
 
 @app.route("/buy_data")
 @login_required
@@ -1625,23 +1690,36 @@ def admin_transactions():
     # Assuming 'Delivered' or 'Success' implies completed sale.
     direct_orders = Order.query.filter(Order.status.in_(['Delivered', 'Success', 'Processing'])).all()
     
-    for o in direct_orders:
-        if o.network in profit_stats:
-            cost = cost_map.get((o.network, o.package), 0.0)
-            profit_stats[o.network]["sales"] += o.amount
-            # Profit = Selling Price (Order Amount) - Cost Price (Depot)
-            profit_stats[o.network]["profit"] += (o.amount - cost)
-            
-    # 2. Calculate from Store Orders (B2B)
-    store_orders = StoreOrder.query.filter(StoreOrder.status.in_(['Delivered', 'Success'])).all()
-    for so in store_orders:
-         if so.network in profit_stats:
-            # Note: StoreOrder package name might differ if not standardized, but assuming consistency
-            cost = cost_map.get((so.network, so.package), 0.0)
-            profit_stats[so.network]["sales"] += so.price # This is what the platform sold it for
-            profit_stats[so.network]["profit"] += (so.price - cost)
+    try:
+        for o in direct_orders:
+            # Handle case where network might be lower/mixed case or unmapped
+            net_key = o.network.upper() if o.network else "UNKNOWN"
+            if net_key in profit_stats:
+                cost = cost_map.get((o.network, o.package), 0.0)
+                amount = o.amount if o.amount is not None else 0.0
+                profit_stats[net_key]["sales"] += amount
+                # Profit = Selling Price (Order Amount) - Cost Price (Depot)
+                profit_stats[net_key]["profit"] += (amount - cost)
+                
+        # 2. Calculate from Store Orders (B2B)
+        store_orders = StoreOrder.query.filter(StoreOrder.status.in_(['Delivered', 'Success'])).all()
+        for so in store_orders:
+             net_key = so.network.upper() if so.network else "UNKNOWN"
+             if net_key in profit_stats:
+                # Note: StoreOrder package name might differ if not standardized, but assuming consistency
+                cost = cost_map.get((so.network, so.package), 0.0)
+                price = so.price if so.price is not None else 0.0
+                profit_stats[net_key]["sales"] += price # This is what the platform sold it for
+                profit_stats[net_key]["profit"] += (price - cost)
+    except Exception as e:
+        print(f"Error calculating profit: {e}")
+        # Continue rendering page even if profit calc fails (stats will be 0 or partial)
 
-    return render_template('admin/transactions.html', transactions=transactions, profit_stats=profit_stats)
+    # Calculate Total Profit Accumulation
+    total_profit_all = sum(stat['profit'] for stat in profit_stats.values())
+    total_sales_all = sum(stat['sales'] for stat in profit_stats.values())
+
+    return render_template('admin/transactions.html', transactions=transactions, profit_stats=profit_stats, total_profit_all=total_profit_all, total_sales_all=total_sales_all)
 
 @app.route('/admin/user/<int:user_id>/balance', methods=['POST'])
 @admin_required
@@ -1856,9 +1934,34 @@ def admin_manage_wallet():
 
     return render_template('admin/manage_wallet.html', user=user)
 
-@app.route('/admin/orders')
+@app.route('/admin/orders', methods=['GET', 'POST'])
 @admin_required
 def admin_orders():
+    if request.method == 'POST':
+        # Bulk Actions
+        action_type = request.form.get('action_type')
+        selected_ids = request.form.getlist('order_ids')
+        
+        if not selected_ids:
+             flash("No orders selected.", "warning")
+             return redirect(url_for('admin_orders'))
+             
+        if action_type == 'update_status':
+            new_status = request.form.get('new_status')
+            if new_status:
+                try:
+                    # Bulk update
+                    Order.query.filter(Order.id.in_(selected_ids)).update({Order.status: new_status}, synchronize_session=False)
+                    db.session.commit()
+                    flash(f"Successfully updated {len(selected_ids)} orders to '{new_status}'", "success")
+                except Exception as e:
+                    db.session.rollback()
+                    flash(f"Error updating status: {str(e)}", "error")
+            else:
+                flash("No status selected.", "warning")
+        
+        return redirect(url_for('admin_orders'))
+
     page = request.args.get('page', 1, type=int)
     per_page = 20
     

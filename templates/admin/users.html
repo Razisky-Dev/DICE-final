@@ -7,39 +7,38 @@
 {% block content %}
 <div class="table-card">
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
-        <h5 class="fw-bold mb-0">Total Users: {{ users.total }}</h5>
-        <a href="{{ url_for('admin_export_users') }}" class="btn btn-sm btn-success">
+        <h5 class="fw-bold mb-0 text-center w-100">Total Users: {{ users.total }}</h5>
+        <a href="{{ url_for('admin_export_users') }}" class="btn btn-sm btn-success position-absolute end-0 me-4">
             <i class="bi bi-file-earmark-spreadsheet me-2"></i>Export CSV
         </a>
     </div>
 
     <div class="table-responsive rounded-4 shadow-sm border border-light">
-        <table class="table table-hover align-middle mb-0" style="min-width: 600px;">
-            <thead class="bg-light">
-                <tr class="text-secondary small text-uppercase">
-                    <th class="ps-4 py-3">User Details</th>
-                    <th class="d-none d-md-table-cell py-3">Role</th>
-                    <th class="py-3">Balance</th>
-                    <th class="text-end pe-4 py-3">Actions</th>
+        <table class="table table-hover align-middle mb-0 text-center text-nowrap" style="min-width: 800px;">
+            <thead class="bg-light text-muted text-center">
+                <tr>
+                    <th class="ps-4 border-0 text-uppercase small fw-bold text-center">UID</th>
+                    <th class="border-0 text-uppercase small fw-bold text-center">User Details</th>
+                    <th class="border-0 text-uppercase small fw-bold text-center">Role</th>
+                    <th class="border-0 text-uppercase small fw-bold text-center">Balance</th>
+                    <th class="pe-4 border-0 text-uppercase small fw-bold text-center">Actions</th>
                 </tr>
             </thead>
-            <tbody class="bg-white">
+            <tbody class="text-center bg-white">
                 {% for user in users.items %}
                 <tr class="border-bottom">
-                    <td class="ps-4 py-3">
-                        <div class="d-flex align-items-center gap-3">
-                            <div class="avatar-initials bg-light text-primary rounded-circle fw-bold d-flex align-items-center justify-content-center"
-                                style="width: 40px; height: 40px;">
-                                {{ user.username[0] | upper }}
-                            </div>
-                            <div>
-                                <div class="fw-bold text-dark">{{ user.first_name }} {{ user.last_name }}</div>
-                                <div class="small text-muted">{{ user.email }}</div>
-                                <div class="d-md-none small text-secondary mt-1">{{ user.mobile }}</div>
-                            </div>
+                    <td class="ps-4 text-center py-3">
+                        <span class="text-muted small">#{{ user.id }}</span>
+                    </td>
+                    <td class="text-center py-3">
+                        <!-- Using flex-column to stack name/email centered -->
+                        <div class="d-flex flex-column align-items-center">
+                            <div class="fw-bold text-dark">{{ user.first_name }} {{ user.last_name }}</div>
+                            <div class="small text-muted">{{ user.email }}</div>
+                            <div class="small text-muted">{{ user.mobile }}</div>
                         </div>
                     </td>
-                    <td class="d-none d-md-table-cell py-3">
+                    <td class="text-center py-3">
                         {% if user.is_suspended %}
                         <span class="badge bg-danger-subtle text-danger rounded-pill px-3">Suspended</span>
                         {% elif user.is_admin %}
@@ -52,7 +51,7 @@
                         <span class="fw-bold text-success fs-6">GH₵ {{ "{:,.2f}".format(user.balance | default(0))
                             }}</span>
                     </td>
-                    <td class="text-end pe-4 py-3">
+                    <td class="pe-4 py-3" style="text-align: right;">
                         <div class="dropdown">
                             <button class="btn btn-light btn-sm rounded-circle shadow-sm" type="button"
                                 data-bs-toggle="dropdown">

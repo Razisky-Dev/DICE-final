@@ -9,8 +9,8 @@
     <div class="col-12">
         {% for network, plans in grouped_plans.items() %}
         <div class="card mb-4 border-0 shadow-sm">
-            <div class="card-header bg-white py-3 border-0">
-                <h5 class="fw-bold mb-0 d-flex align-items-center">
+            <div class="card-header bg-white py-3 border-0 text-center">
+                <h5 class="fw-bold mb-0 d-flex align-items-center justify-content-center">
                     <span class="badge 
                         {% if network == 'MTN' %}bg-warning text-dark
                         {% elif network == 'TELECEL' %}bg-danger
@@ -23,74 +23,79 @@
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead class="bg-light text-muted">
+                    <table class="table table-hover align-middle mb-0 text-center text-nowrap"
+                        style="min-width: 800px;">
+                        <thead class="bg-light text-muted text-center">
                             <tr>
-                                <th class="ps-4">Plan Size</th>
-                                <th>Depot Price (Cost)</th>
+                                <th class="ps-4 border-0 text-uppercase small fw-bold text-center">Plan</th>
                                 {% if current_user.is_super_admin %}
-                                <th>Manufacturing Price</th>
+                                <th class="border-0 text-uppercase small fw-bold text-center">Raw Cost</th>
                                 {% endif %}
-                                <th>Dealer Price (Store Cost)</th>
-                                <th>Site Price (Selling)</th>
+                                <th class="border-0 text-uppercase small fw-bold text-center">Store Price</th>
+                                <th class="border-0 text-uppercase small fw-bold text-center">Selling Price</th>
                                 {% if current_user.is_super_admin %}
-                                <th>Profit</th>
+                                <th class="border-0 text-uppercase small fw-bold text-center">Profit</th>
                                 {% endif %}
-                                <th>Action</th>
+                                <th class="pe-4 border-0 text-uppercase small fw-bold text-center">Action</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody class="text-center">
                             {% for plan in plans %}
-                            <form action="{{ url_for('admin_pricing') }}" method="POST">
-                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                <input type="hidden" name="plan_id" value="{{ plan.id }}">
-                                <tr>
-                                    <td class="ps-4 fw-bold">{{ plan.plan_size }}</td>
-                                    <td>
-                                        <div class="input-group input-group-sm" style="max-width: 120px;">
-                                            <span class="input-group-text">GH₵</span>
-                                            <input type="number" step="0.01" name="cost_price" class="form-control"
-                                                value="{{ plan.cost_price }}" required>
-                                        </div>
-                                    </td>
-                                    {% if current_user.is_super_admin %}
-                                    <td>
-                                        <div class="input-group input-group-sm" style="max-width: 120px;">
-                                            <span class="input-group-text">GH₵</span>
-                                            <input type="number" step="0.01" name="manufacturing_price"
-                                                class="form-control border-info" value="{{ plan.manufacturing_price }}"
-                                                placeholder="0.00">
-                                        </div>
-                                    </td>
-                                    {% endif %}
-                                    <td>
-                                        <div class="input-group input-group-sm" style="max-width: 120px;">
-                                            <span class="input-group-text">GH₵</span>
-                                            <input type="number" step="0.01" name="dealer_price"
-                                                class="form-control fw-bold text-primary"
-                                                value="{{ plan.dealer_price }}" required>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="input-group input-group-sm" style="max-width: 120px;">
-                                            <span class="input-group-text">GH₵</span>
-                                            <input type="number" step="0.01" name="selling_price" class="form-control"
-                                                value="{{ plan.selling_price }}" required>
-                                        </div>
-                                    </td>
-                                    {% if current_user.is_super_admin %}
-                                    <td>
-                                        <span
-                                            class="badge bg-success bg-opacity-10 text-success border border-success-subtle">
-                                            + GH₵ {{ "{:,.2f}".format(plan.selling_price - plan.manufacturing_price) }}
-                                        </span>
-                                    </td>
-                                    {% endif %}
-                                    <td>
-                                        <button type="submit" class="btn btn-sm btn-primary">Update</button>
-                                    </td>
-                                </tr>
-                            </form>
+                            <tr>
+                                <td class="ps-4 text-center">
+                                    <div class="fw-bold text-dark">{{ plan.plan_size }}</div>
+                                </td>
+                                {% if current_user.is_super_admin %}
+                                <td class="text-center">
+                                    <div class="input-group input-group-sm justify-content-center"
+                                        style="width: 120px; margin: 0 auto;">
+                                        <span class="input-group-text border-0 bg-light text-muted">₵</span>
+                                        <input type="number" step="0.01"
+                                            class="form-control border-0 bg-light fw-bold text-center"
+                                            name="manufacturing_price" value="{{ plan.manufacturing_price }}"
+                                            form="form-{{ plan.id }}">
+                                    </div>
+                                </td>
+                                {% endif %}
+                                <td class="text-center">
+                                    <div class="input-group input-group-sm justify-content-center"
+                                        style="width: 120px; margin: 0 auto;">
+                                        <span class="input-group-text border-0 bg-light text-muted">₵</span>
+                                        <input type="number" step="0.01"
+                                            class="form-control border-0 bg-light fw-bold text-center"
+                                            name="dealer_price" value="{{ plan.dealer_price }}"
+                                            form="form-{{ plan.id }}">
+                                    </div>
+                                </td>
+                                <td class="text-center">
+                                    <div class="input-group input-group-sm justify-content-center"
+                                        style="width: 120px; margin: 0 auto;">
+                                        <span class="input-group-text border-0 bg-light text-muted">₵</span>
+                                        <input type="number" step="0.01"
+                                            class="form-control border-0 bg-light fw-bold text-center"
+                                            name="selling_price" value="{{ plan.selling_price }}"
+                                            form="form-{{ plan.id }}">
+                                    </div>
+                                </td>
+                                {% if current_user.is_super_admin %}
+                                <td class="text-center">
+                                    {% set profit = plan.selling_price - plan.manufacturing_price %}
+                                    <span
+                                        class="badge {% if profit > 0 %}bg-success-subtle text-success{% else %}bg-danger-subtle text-danger{% endif %} rounded-pill px-3">
+                                        {{ "{:+.2f}".format(profit) }}
+                                    </span>
+                                </td>
+                                {% endif %}
+                                <td class="pe-4 text-center">
+                                    <form id="form-{{ plan.id }}" action="{{ url_for('admin_pricing') }}" method="POST">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <input type="hidden" name="plan_id" value="{{ plan.id }}">
+                                        <button type="submit" class="btn btn-sm btn-dark px-3 rounded-pill">
+                                            Update
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
                             {% endfor %}
                         </tbody>
                     </table>

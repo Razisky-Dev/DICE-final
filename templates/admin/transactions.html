@@ -15,10 +15,28 @@
 
     <!-- Profit Breakdown -->
     <div class="row g-4 mb-4">
+        <!-- TOTAL SYSTEM PROFIT -->
+        <div class="col-12 mb-2">
+            <div class="card border-success border-start border-4 shadow-sm">
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="text-uppercase text-secondary fw-bold mb-1 text-center">Total System Profit (Net)
+                        </h5>
+                        <div class="text-muted small text-center">Accumulated from all networks & sales</div>
+                    </div>
+                    <div class="text-end">
+                        <div class="display-6 fw-bold text-success">+ GH₵ {{ "{:,.2f}".format(total_profit_all) }}</div>
+                        <div class="text-muted small">Total Sales Volume: GH₵ {{ "{:,.2f}".format(total_sales_all) }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- MTN -->
         <div class="col-md-4">
             <div class="card border-warning border-start border-4 shadow-sm h-100">
-                <div class="card-body">
+                <div class="card-body text-center">
                     <h6 class="text-uppercase text-muted small fw-bold mb-2">MTN Profitability</h6>
                     <div class="d-flex justify-content-between mb-2">
                         <span>Sales:</span>
@@ -35,7 +53,7 @@
         <!-- TELECEL -->
         <div class="col-md-4">
             <div class="card border-danger border-start border-4 shadow-sm h-100">
-                <div class="card-body">
+                <div class="card-body text-center">
                     <h6 class="text-uppercase text-muted small fw-bold mb-2">Telecel Profitability</h6>
                     <div class="d-flex justify-content-between mb-2">
                         <span>Sales:</span>
@@ -52,7 +70,7 @@
         <!-- AIRTELTIGO -->
         <div class="col-md-4">
             <div class="card border-primary border-start border-4 shadow-sm h-100">
-                <div class="card-body">
+                <div class="card-body text-center">
                     <h6 class="text-uppercase text-muted small fw-bold mb-2">AirtelTigo Profitability</h6>
                     <div class="d-flex justify-content-between mb-2">
                         <span>Sales:</span>
@@ -68,132 +86,71 @@
         </div>
     </div>
 
-    <div class="table-responsive rounded-4 shadow-sm border border-light">
-        <table class="table table-hover align-middle mb-0" style="min-width: 600px;">
-            <thead class="bg-light">
-                <tr class="text-secondary small text-uppercase">
-                    <th class="ps-4 py-3" style="min-width: 200px;">Transaction Details</th>
-                    <th class="py-3">User info</th>
-                    <th class="py-3 text-end pe-4">Amount & Status</th>
-                    <th class="py-3 text-end pe-4">Actions</th>
-                </tr>
-            </thead>
-            <tbody class="bg-white">
-                {% for txn in transactions.items %}
-                <tr class="border-bottom">
-                    <!-- Transaction Details (Type, Ref, Date) -->
-                    <td class="ps-4 py-3">
-                        <div class="d-flex align-items-center gap-3">
-                            <div class="rounded-circle p-2 d-flex align-items-center justify-content-center
-                                {% if txn.type == 'Deposit' %}bg-success-subtle text-success
-                                {% elif txn.type == 'Withdrawal' %}bg-danger-subtle text-danger
-                                {% else %}bg-primary-subtle text-primary{% endif %}"
-                                style="width: 40px; height: 40px;">
-                                <i class="bi 
-                                    {% if txn.type == 'Deposit' %}bi-arrow-down-left
-                                    {% elif txn.type == 'Withdrawal' %}bi-arrow-up-right
-                                    {% else %}bi-arrow-left-right{% endif %} fs-5"></i>
-                            </div>
-                            <div>
-                                <div class="fw-bold text-dark">{{ txn.type }}</div>
-                                <div class="small text-muted font-monospace">{{ txn.reference }}</div>
-                                <div class="small text-secondary mt-1" style="font-size: 0.75rem;">
-                                    {{ txn.date.strftime('%b %d, %Y • %I:%M %p') }}
-                                </div>
-                            </div>
-                        </div>
-                    </td>
+    </td>
 
-                    <!-- User Info -->
-                    <td class="py-3">
-                        <div class="d-flex align-items-center gap-2">
-                            <div class="avatar-initials bg-light text-secondary rounded-circle"
-                                style="width: 32px; height: 32px; font-size: 0.8rem;">
-                                {{ txn.user.username[0] | upper }}
-                            </div>
-                            <div>
-                                <div class="fw-bold text-dark" style="font-size: 0.9rem;">{{ txn.user.username }}</div>
-                                {% if txn.user.store %}
-                                <div class="badge bg-light text-secondary border fw-normal" style="font-size: 0.7rem;">
-                                    <i class="bi bi-shop me-1"></i>{{ txn.user.store.name }}
-                                </div>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </td>
+    <!-- User Info -->
+    <td class="py-3">
+        <div class="d-flex align-items-center justify-content-center gap-2">
+            <div class="avatar-initials bg-light text-secondary rounded-circle"
+                style="width: 32px; height: 32px; font-size: 0.8rem;">
+                {{ txn.user.username[0] | upper }}
+            </div>
+            <div>
+                <div class="fw-bold text-dark" style="font-size: 0.9rem;">{{ txn.user.username }}</div>
+                {% if txn.user.store %}
+                <div class="badge bg-light text-secondary border fw-normal" style="font-size: 0.7rem;">
+                    <i class="bi bi-shop me-1"></i>{{ txn.user.store.name }}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </td>
 
-                    <!-- Amount & Status -->
-                    <td class="text-end pe-4 py-3">
-                        <div
-                            class="fw-bold mb-1 fs-6 {% if txn.type == 'Deposit' or txn.type == 'Store Credit Transfer' %}text-success{% else %}text-dark{% endif %}">
-                            {% if txn.type == 'Deposit' or txn.type == 'Store Credit Transfer' %}+{% else %}-{% endif %}
-                            GH₵ {{ "{:,.2f}".format(txn.amount | default(0)) }}
-                        </div>
-                        <div>
-                            {% if txn.status == 'Success' %}
-                            <span class="badge bg-success-subtle text-success rounded-pill px-3">Success</span>
-                            {% elif txn.status == 'Pending' %}
-                            <span class="badge bg-warning-subtle text-warning rounded-pill px-3">Pending</span>
-                            {% else %}
-                            <span class="badge bg-danger-subtle text-danger rounded-pill px-3">{{ txn.status }}</span>
-                            {% endif %}
-                        </div>
-                    </td>
-
-                    <!-- ACTIONS -->
-                    <td class="text-end pe-4 py-3">
-                        {% if (txn.type == 'Withdrawal' or txn.type == 'Store Withdrawal') and txn.status == 'Pending'
-                        %}
-                        <div class="d-flex justify-content-end gap-2" style="position: relative; z-index: 10;">
-                            <!-- Approve -->
-                            <form action="{{ url_for('approve_withdrawal', txn_id=txn.id) }}" method="POST"
-                                onsubmit="return confirm('Approve this withdrawal & Send Money?');"
-                                style="display: inline-block;">
-                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                <button type="submit" class="btn btn-success btn-sm rounded-circle shadow-sm"
-                                    title="Approve" style="cursor: pointer; position: relative;">
-                                    <i class="bi bi-check-lg" style="pointer-events: none;"></i>
-                                </button>
-                            </form>
-                            <!-- Reject -->
-                            <form action="{{ url_for('reject_withdrawal', txn_id=txn.id) }}" method="POST"
-                                onsubmit="return confirm('Reject & Refund User?');" style="display: inline-block;">
-                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                <button type="submit" class="btn btn-danger btn-sm rounded-circle shadow-sm"
-                                    title="Reject" style="cursor: pointer; position: relative;">
-                                    <i class="bi bi-x-lg" style="pointer-events: none;"></i>
-                                </button>
-                            </form>
-                        </div>
-                        {% else %}
-                        <span class="text-muted small">-</span>
-                        {% endif %}
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-
-    <!-- Pagination -->
-    <nav class="mt-4">
-        <ul class="pagination justify-content-center">
-            {% if transactions.has_prev %}
-            <li class="page-item"><a class="page-link"
-                    href="{{ url_for('admin_transactions', page=transactions.prev_num) }}">Previous</a></li>
+    <!-- Amount & Status -->
+    <td class="pe-4 py-3" style="text-align: right;">
+        <div
+            class="fw-bold mb-1 fs-6 {% if txn.type == 'Deposit' or txn.type == 'Store Credit Transfer' %}text-success{% else %}text-dark{% endif %}">
+            {% if txn.type == 'Deposit' or txn.type == 'Store Credit Transfer' %}+{% else %}-{% endif %}
+            GH₵ {{ "{:,.2f}".format(txn.amount | default(0)) }}
+        </div>
+        <div>
+            {% if txn.status == 'Success' %}
+            <span class="badge bg-success-subtle text-success rounded-pill px-3">Success</span>
+            {% elif txn.status == 'Pending' %}
+            <span class="badge bg-warning-subtle text-warning rounded-pill px-3">Pending</span>
             {% else %}
-            <li class="page-item disabled"><span class="page-link">Previous</span></li>
+            <span class="badge bg-danger-subtle text-danger rounded-pill px-3">{{ txn.status }}</span>
             {% endif %}
+        </div>
+    </td>
 
-            <li class="page-item active"><span class="page-link">{{ transactions.page }}</span></li>
+    <!-- REMOVED ACTIONS COLUMN BODY -->
 
-            {% if transactions.has_next %}
-            <li class="page-item"><a class="page-link"
-                    href="{{ url_for('admin_transactions', page=transactions.next_num) }}">Next</a></li>
-            {% else %}
-            <li class="page-item disabled"><span class="page-link">Next</span></li>
-            {% endif %}
-        </ul>
-    </nav>
+    </tr>
+    {% endfor %}
+    </tbody>
+    </table>
+</div>
+
+<!-- Pagination -->
+<nav class="mt-4">
+    <ul class="pagination justify-content-center">
+        {% if transactions.has_prev %}
+        <li class="page-item"><a class="page-link"
+                href="{{ url_for('admin_transactions', page=transactions.prev_num) }}">Previous</a></li>
+        {% else %}
+        <li class="page-item disabled"><span class="page-link">Previous</span></li>
+        {% endif %}
+
+        <li class="page-item active"><span class="page-link">{{ transactions.page }}</span></li>
+
+        {% if transactions.has_next %}
+        <li class="page-item"><a class="page-link"
+                href="{{ url_for('admin_transactions', page=transactions.next_num) }}">Next</a></li>
+        {% else %}
+        <li class="page-item disabled"><span class="page-link">Next</span></li>
+        {% endif %}
+    </ul>
+</nav>
 </div>
 {% endblock %}

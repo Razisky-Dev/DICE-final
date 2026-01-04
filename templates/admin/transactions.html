@@ -86,71 +86,98 @@
         </div>
     </div>
 
-    </td>
-
-    <!-- User Info -->
-    <td class="py-3">
-        <div class="d-flex align-items-center justify-content-center gap-2">
-            <div class="avatar-initials bg-light text-secondary rounded-circle"
-                style="width: 32px; height: 32px; font-size: 0.8rem;">
-                {{ txn.user.username[0] | upper }}
-            </div>
-            <div>
-                <div class="fw-bold text-dark" style="font-size: 0.9rem;">{{ txn.user.username }}</div>
-                {% if txn.user.store %}
-                <div class="badge bg-light text-secondary border fw-normal" style="font-size: 0.7rem;">
-                    <i class="bi bi-shop me-1"></i>{{ txn.user.store.name }}
-                </div>
-                {% endif %}
-            </div>
-        </div>
-    </td>
-
-    <!-- Amount & Status -->
-    <td class="pe-4 py-3" style="text-align: right;">
-        <div
-            class="fw-bold mb-1 fs-6 {% if txn.type == 'Deposit' or txn.type == 'Store Credit Transfer' %}text-success{% else %}text-dark{% endif %}">
-            {% if txn.type == 'Deposit' or txn.type == 'Store Credit Transfer' %}+{% else %}-{% endif %}
-            GH₵ {{ "{:,.2f}".format(txn.amount | default(0)) }}
-        </div>
-        <div>
-            {% if txn.status == 'Success' %}
-            <span class="badge bg-success-subtle text-success rounded-pill px-3">Success</span>
-            {% elif txn.status == 'Pending' %}
-            <span class="badge bg-warning-subtle text-warning rounded-pill px-3">Pending</span>
-            {% else %}
-            <span class="badge bg-danger-subtle text-danger rounded-pill px-3">{{ txn.status }}</span>
-            {% endif %}
-        </div>
-    </td>
-
-    <!-- REMOVED ACTIONS COLUMN BODY -->
-
-    </tr>
-    {% endfor %}
-    </tbody>
-    </table>
 </div>
 
-<!-- Pagination -->
-<nav class="mt-4">
-    <ul class="pagination justify-content-center">
-        {% if transactions.has_prev %}
-        <li class="page-item"><a class="page-link"
-                href="{{ url_for('admin_transactions', page=transactions.prev_num) }}">Previous</a></li>
-        {% else %}
-        <li class="page-item disabled"><span class="page-link">Previous</span></li>
-        {% endif %}
+<!-- Transactions Table -->
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light text-muted">
+                    <tr>
+                        <th class="ps-4 border-0 text-uppercase small fw-bold">Reference / Date</th>
+                        <th class="border-0 text-uppercase small fw-bold text-center">User</th>
+                        <th class="pe-4 border-0 text-uppercase small fw-bold text-end">Amount / Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for txn in transactions.items %}
+                    <tr>
+                        <!-- Reference & Date -->
+                        <td class="ps-4">
+                            <div class="fw-bold text-dark">{{ txn.reference }}</div>
+                            <div class="small text-muted">{{ txn.date.strftime('%Y-%m-%d %H:%M') }}</div>
+                            <div class="badge bg-light text-secondary border fw-normal mt-1">{{ txn.type }}</div>
+                        </td>
 
-        <li class="page-item active"><span class="page-link">{{ transactions.page }}</span></li>
+                        <!-- User Info -->
+                        <td class="py-3">
+                            <div class="d-flex align-items-center justify-content-center gap-2">
+                                <div class="avatar-initials bg-light text-secondary rounded-circle"
+                                    style="width: 32px; height: 32px; font-size: 0.8rem;">
+                                    {{ txn.user.username[0] | upper }}
+                                </div>
+                                <div>
+                                    <div class="fw-bold text-dark" style="font-size: 0.9rem;">{{ txn.user.username }}
+                                    </div>
+                                    {% if txn.user.store %}
+                                    <div class="badge bg-light text-secondary border fw-normal"
+                                        style="font-size: 0.7rem;">
+                                        <i class="bi bi-shop me-1"></i>{{ txn.user.store.name }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </td>
 
-        {% if transactions.has_next %}
-        <li class="page-item"><a class="page-link"
-                href="{{ url_for('admin_transactions', page=transactions.next_num) }}">Next</a></li>
-        {% else %}
-        <li class="page-item disabled"><span class="page-link">Next</span></li>
-        {% endif %}
-    </ul>
-</nav>
+                        <!-- Amount & Status -->
+                        <td class="pe-4 py-3" style="text-align: right;">
+                            <div
+                                class="fw-bold mb-1 fs-6 {% if txn.type == 'Deposit' or txn.type == 'Store Credit Transfer' %}text-success{% else %}text-dark{% endif %}">
+                                {% if txn.type == 'Deposit' or txn.type == 'Store Credit Transfer' %}+{% else %}-{%
+                                endif %}
+                                GH₵ {{ "{:,.2f}".format(txn.amount | default(0)) }}
+                            </div>
+                            <div>
+                                {% if txn.status == 'Success' %}
+                                <span class="badge bg-success-subtle text-success rounded-pill px-3">Success</span>
+                                {% elif txn.status == 'Pending' %}
+                                <span class="badge bg-warning-subtle text-warning rounded-pill px-3">Pending</span>
+                                {% else %}
+                                <span class="badge bg-danger-subtle text-danger rounded-pill px-3">{{ txn.status
+                                    }}</span>
+                                {% endif %}
+                            </div>
+                        </td>
+
+                        <!-- REMOVED ACTIONS COLUMN BODY -->
+
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <nav class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if transactions.has_prev %}
+                <li class="page-item"><a class="page-link"
+                        href="{{ url_for('admin_transactions', page=transactions.prev_num) }}">Previous</a></li>
+                {% else %}
+                <li class="page-item disabled"><span class="page-link">Previous</span></li>
+                {% endif %}
+
+                <li class="page-item active"><span class="page-link">{{ transactions.page }}</span></li>
+
+                {% if transactions.has_next %}
+                <li class="page-item"><a class="page-link"
+                        href="{{ url_for('admin_transactions', page=transactions.next_num) }}">Next</a></li>
+                {% else %}
+                <li class="page-item disabled"><span class="page-link">Next</span></li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
 </div>
 {% endblock %}
